@@ -1,0 +1,3461 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LPT-UNO - Emulador Impressora Paralela</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        
+        .controls {
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        button.toggle {
+            position: relative;
+            padding-left: 50px;
+        }
+        
+        button.toggle::before {
+            content: '';
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 30px;
+            height: 16px;
+            background: #e74c3c;
+            border-radius: 10px;
+            transition: background 0.3s;
+        }
+        
+        button.toggle::after {
+            content: '';
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 12px;
+            height: 12px;
+            background: white;
+            border-radius: 50%;
+            transition: left 0.3s;
+        }
+        
+        button.toggle.active::before {
+            background: #28a745;
+        }
+        
+        button.toggle.active::after {
+            left: 28px;
+        }
+        
+        button.toggle:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        button.toggle:disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .controls-secondary {
+            padding: 15px 20px;
+            background: #f1f3f5;
+            border-bottom: 2px solid #e9ecef;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        #connectBtn {
+            background: #28a745;
+            color: white;
+        }
+        
+        #connectBtn:hover {
+            background: #218838;
+        }
+        
+        #connectBtn.connected {
+            background: #dc3545;
+        }
+        
+        #connectBtn.connected:hover {
+            background: #c82333;
+        }
+        
+        #clearBtn {
+            background: #ffc107;
+            color: #333;
+        }
+        
+        #clearBtn:hover {
+            background: #e0a800;
+        }
+        
+        #saveBtn {
+            background: #17a2b8;
+            color: white;
+        }
+        
+        #saveBtn:hover {
+            background: #138496;
+        }
+        
+        #resetBtn {
+            background: #ff6b6b;
+            color: white;
+        }
+        
+        #resetBtn:hover {
+            background: #ee5a52;
+        }
+        
+        #statsBtn {
+            background: #6f42c1;
+            color: white;
+        }
+        
+        #statsBtn:hover {
+            background: #5a32a3;
+        }
+        
+        #printBtn {
+            background: #ff6f00;
+            color: white;
+        }
+        
+        #printBtn:hover {
+            background: #e65100;
+        }
+        
+        #autoSaveBtn {
+            background: #00bcd4;
+            color: white;
+        }
+        
+        #autoSaveBtn:hover {
+            background: #0097a7;
+        }
+        
+        #autoPrintBtn {
+            background: #9c27b0;
+            color: white;
+        }
+        
+        #autoPrintBtn:hover {
+            background: #7b1fa2;
+        }
+        
+        #recipientsBtn {
+            background: #ff4081;
+            color: white;
+        }
+        
+        #recipientsBtn:hover {
+            background: #f50057;
+        }
+        
+        #settingsBtn {
+            background: #607d8b;
+            color: white;
+        }
+        
+        #settingsBtn:hover {
+            background: #455a64;
+        }
+        
+        .status {
+            margin-left: auto;
+            padding: 12px 24px;
+            background: white;
+            border-radius: 5px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #dc3545;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-indicator.connected {
+            background: #28a745;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .stats-bar {
+            padding: 15px 20px;
+            background: #e9ecef;
+            display: flex;
+            gap: 30px;
+            font-size: 0.9em;
+            color: #495057;
+        }
+        
+        .stat-item {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .stat-label {
+            font-weight: 600;
+        }
+        
+        .output-container {
+            padding: 20px;
+        }
+        
+        .view-options {
+            display: none !important;
+        }
+        
+        .view-btn {
+            display: none !important;
+        }
+        
+        .view-btn[data-view="hex"],
+        .view-btn[data-view="binary"] {
+            display: none !important;
+        }
+        
+        .view-btn.active {
+            display: none !important;
+        }
+        
+        /* Modal de Definições */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s;
+        }
+        
+        .modal.show {
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 90%;
+            animation: slideDown 0.3s;
+        }
+        
+        #emailConfigModal .modal-content {
+            max-width: 800px;
+        }
+        
+        #recipientsModal .modal-content {
+            max-width: 900px;
+        }
+        
+        @keyframes slideDown {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .modal-header h2 {
+            margin: 0;
+            color: #1e3c72;
+            font-size: 1.5em;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #6c757d;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+        
+        .modal-close:hover {
+            background: #f8f9fa;
+            color: #dc3545;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .modal-section {
+            margin-bottom: 20px;
+        }
+        
+        .modal-section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .modal-section h3 {
+            margin: 0 0 10px 0;
+            color: #495057;
+            font-size: 1.1em;
+        }
+        
+        .modal-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .modal-option {
+            padding: 12px 20px;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .modal-option:hover {
+            background: #e9ecef;
+            border-color: #dee2e6;
+        }
+        
+        .modal-option.selected {
+            background: #007bff;
+            color: white;
+            border-color: #0056b3;
+        }
+        
+        .modal-option input[type="radio"] {
+            margin: 0;
+            cursor: pointer;
+        }
+        
+        .modal-select-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 20px;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 5px;
+        }
+        
+        .modal-select-group label {
+            font-weight: 600;
+            color: #495057;
+            flex-shrink: 0;
+        }
+        
+        .modal-select-group select {
+            flex: 1;
+            padding: 8px 12px;
+            border: 2px solid #ced4da;
+            border-radius: 5px;
+            background: white;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .modal-btn {
+            width: 100%;
+            padding: 12px 24px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .modal-btn:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,123,255,0.3);
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #ced4da;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+        
+        .form-note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            color: #856404;
+        }
+        
+        .form-note strong {
+            display: block;
+            margin-bottom: 5px;
+            color: #664d03;
+        }
+        
+        .field-note {
+            background: #e7f3ff;
+            border-left: 3px solid #007bff;
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            color: #004085;
+            line-height: 1.4;
+        }
+        
+        .field-note strong {
+            color: #003366;
+            font-weight: 700;
+        }
+        
+        .form-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .form-column {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .modal-btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .modal-btn-group .modal-btn {
+            flex: 1;
+        }
+        
+        .modal-btn-test {
+            background: #28a745;
+        }
+        
+        .modal-btn-test:hover {
+            background: #218838;
+        }
+        
+        .recipients-container {
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        
+        .recipients-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .recipients-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        
+        .recipients-container::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        
+        .recipients-container::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        
+        .recipient-row {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .recipient-row input {
+            padding: 10px 12px;
+            border: 2px solid #ced4da;
+            border-radius: 5px;
+            font-size: 0.95em;
+            transition: border-color 0.3s;
+        }
+        
+        .recipient-row input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+        
+        .recipient-row input::placeholder {
+            color: #adb5bd;
+        }
+        
+        .modal-select-group select:hover {
+            border-color: #007bff;
+        }
+        
+        .modal-select-group select:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+        
+        #output {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 20px;
+            min-height: 500px;
+            max-height: 600px;
+            overflow-y: auto;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+        }
+        
+        #output.hex-view {
+            color: #00d4ff;
+        }
+        
+        #output::-webkit-scrollbar {
+            width: 10px;
+        }
+        
+        #output::-webkit-scrollbar-track {
+            background: #2e2e2e;
+        }
+        
+        #output::-webkit-scrollbar-thumb {
+            background: #555;
+            border-radius: 5px;
+        }
+        
+        #output::-webkit-scrollbar-thumb:hover {
+            background: #777;
+        }
+        
+        footer {
+            padding: 20px;
+            text-align: center;
+            color: #6c757d;
+            background: #f8f9fa;
+            border-top: 2px solid #e9ecef;
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            margin: 20px;
+            border-radius: 5px;
+            border: 1px solid #f5c6cb;
+            display: none;
+        }
+        
+        .info-message {
+            background: #d1ecf1;
+            color: #0c5460;
+            padding: 15px;
+            margin: 20px;
+            border-radius: 5px;
+            border: 1px solid #bee5eb;
+        }
+        
+        /* ========================================
+           DARK MODE THEME
+           ======================================== */
+        body.dark-mode {
+            background: #1a1a1a;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .container {
+            background: #2d2d2d;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        
+        body.dark-mode header {
+            background: linear-gradient(135deg, #434343 0%, #000000 100%);
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .subtitle {
+            color: #b0b0b0;
+        }
+        
+        body.dark-mode .controls,
+        body.dark-mode .controls-secondary {
+            background: #3a3a3a;
+            border-bottom-color: #555;
+        }
+        
+        body.dark-mode .stats-bar {
+            background: #333;
+            color: #b0b0b0;
+        }
+        
+        body.dark-mode #output {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            border-color: #444;
+        }
+        
+        body.dark-mode .status {
+            background: #333;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .modal-content {
+            background: #2d2d2d;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .modal-header {
+            background: linear-gradient(135deg, #434343 0%, #000000 100%);
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .modal-section {
+            background: #3a3a3a;
+            border-color: #555;
+        }
+        
+        body.dark-mode input[type="text"],
+        body.dark-mode input[type="email"],
+        body.dark-mode input[type="password"],
+        body.dark-mode input[type="number"],
+        body.dark-mode select,
+        body.dark-mode textarea {
+            background: #1e1e1e;
+            color: #e0e0e0;
+            border-color: #555;
+        }
+        
+        body.dark-mode .field-note {
+            background: #333;
+            border-left-color: #666;
+            color: #b0b0b0;
+        }
+        
+        body.dark-mode .recipients-container {
+            background: #1e1e1e;
+            border-color: #555;
+        }
+        
+        body.dark-mode footer {
+            background: #2d2d2d;
+            color: #b0b0b0;
+            border-top-color: #555;
+        }
+        
+        body.dark-mode table thead {
+            background: #333 !important;
+        }
+        
+        body.dark-mode table td,
+        body.dark-mode table th {
+            border-bottom: 1px solid #555;
+        }
+        
+        /* ========================================
+           OCEAN THEME
+           ======================================== */
+        body.ocean-theme {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #e8f4f8;
+        }
+        
+        body.ocean-theme .container {
+            background: linear-gradient(to bottom, #0a4d68, #05161a);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        }
+        
+        body.ocean-theme header {
+            background: linear-gradient(135deg, #006994 0%, #004d6d 100%);
+            color: #e8f4f8;
+        }
+        
+        body.ocean-theme .subtitle {
+            color: #a8dadc;
+        }
+        
+        body.ocean-theme .controls,
+        body.ocean-theme .controls-secondary {
+            background: #0c2d48;
+            border-bottom-color: #1b4965;
+        }
+        
+        body.ocean-theme .stats-bar {
+            background: #0a3d5c;
+            color: #a8dadc;
+        }
+        
+        body.ocean-theme #output {
+            background: #041c32;
+            color: #cae9ff;
+            border-color: #1b4965;
+        }
+        
+        body.ocean-theme .status {
+            background: #0c2d48;
+            color: #e8f4f8;
+        }
+        
+        body.ocean-theme .modal-content {
+            background: #0a3d5c;
+            color: #e8f4f8;
+        }
+        
+        body.ocean-theme .modal-header {
+            background: linear-gradient(135deg, #006994 0%, #004d6d 100%);
+            color: #e8f4f8;
+        }
+        
+        body.ocean-theme .modal-section {
+            background: #0c2d48;
+            border-color: #1b4965;
+        }
+        
+        body.ocean-theme input[type="text"],
+        body.ocean-theme input[type="email"],
+        body.ocean-theme input[type="password"],
+        body.ocean-theme input[type="number"],
+        body.ocean-theme select,
+        body.ocean-theme textarea {
+            background: #041c32;
+            color: #cae9ff;
+            border-color: #1b4965;
+        }
+        
+        body.ocean-theme .field-note {
+            background: #0c2d48;
+            border-left-color: #2196f3;
+            color: #a8dadc;
+        }
+        
+        body.ocean-theme #connectBtn {
+            background: #0288d1;
+        }
+        
+        body.ocean-theme #connectBtn:hover {
+            background: #0277bd;
+        }
+        
+        body.ocean-theme #connectBtn.connected {
+            background: #d32f2f;
+        }
+        
+        body.ocean-theme #resetBtn {
+            background: #0097a7;
+        }
+        
+        body.ocean-theme #resetBtn:hover {
+            background: #00838f;
+        }
+        
+        body.ocean-theme #statsBtn {
+            background: #5e35b1;
+        }
+        
+        body.ocean-theme #statsBtn:hover {
+            background: #4527a0;
+        }
+        
+        body.ocean-theme #clearBtn {
+            background: #ffa726;
+        }
+        
+        body.ocean-theme #clearBtn:hover {
+            background: #fb8c00;
+        }
+        
+        body.ocean-theme #saveBtn {
+            background: #26c6da;
+        }
+        
+        body.ocean-theme #saveBtn:hover {
+            background: #00acc1;
+        }
+        
+        body.ocean-theme #printBtn {
+            background: #0277bd;
+        }
+        
+        body.ocean-theme #printBtn:hover {
+            background: #01579b;
+        }
+        
+        body.ocean-theme #autoSaveBtn {
+            background: #0097a7;
+        }
+        
+        body.ocean-theme #autoSaveBtn:hover {
+            background: #00838f;
+        }
+        
+        body.ocean-theme #autoPrintBtn {
+            background: #5e35b1;
+        }
+        
+        body.ocean-theme #autoPrintBtn:hover {
+            background: #4527a0;
+        }
+        
+        body.ocean-theme #recipientsBtn {
+            background: #ec407a;
+        }
+        
+        body.ocean-theme #recipientsBtn:hover {
+            background: #d81b60;
+        }
+        
+        body.ocean-theme #settingsBtn {
+            background: #455a64;
+        }
+        
+        body.ocean-theme #settingsBtn:hover {
+            background: #37474f;
+        }
+        
+        /* ========================================
+           FOREST THEME
+           ======================================== */
+        body.forest-theme {
+            background: linear-gradient(135deg, #2d5016 0%, #1a2f0d 100%);
+            color: #d5e8cf;
+        }
+        
+        body.forest-theme .container {
+            background: linear-gradient(to bottom, #1e3a0f, #0d1f07);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        }
+        
+        body.forest-theme header {
+            background: linear-gradient(135deg, #2d5016 0%, #1a3409 100%);
+            color: #d5e8cf;
+        }
+        
+        body.forest-theme .subtitle {
+            color: #a3c796;
+        }
+        
+        body.forest-theme .controls,
+        body.forest-theme .controls-secondary {
+            background: #243d16;
+            border-bottom-color: #345720;
+        }
+        
+        body.forest-theme .stats-bar {
+            background: #1a2f0d;
+            color: #a3c796;
+        }
+        
+        body.forest-theme #output {
+            background: #0f1f08;
+            color: #c9e4bd;
+            border-color: #345720;
+        }
+        
+        body.forest-theme .status {
+            background: #243d16;
+            color: #d5e8cf;
+        }
+        
+        body.forest-theme .modal-content {
+            background: #1e3a0f;
+            color: #d5e8cf;
+        }
+        
+        body.forest-theme .modal-header {
+            background: linear-gradient(135deg, #2d5016 0%, #1a3409 100%);
+            color: #d5e8cf;
+        }
+        
+        body.forest-theme .modal-section {
+            background: #243d16;
+            border-color: #345720;
+        }
+        
+        body.forest-theme input[type="text"],
+        body.forest-theme input[type="email"],
+        body.forest-theme input[type="password"],
+        body.forest-theme input[type="number"],
+        body.forest-theme select,
+        body.forest-theme textarea {
+            background: #0f1f08;
+            color: #c9e4bd;
+            border-color: #345720;
+        }
+        
+        body.forest-theme .field-note {
+            background: #243d16;
+            border-left-color: #4caf50;
+            color: #a3c796;
+        }
+        
+        body.forest-theme #connectBtn {
+            background: #388e3c;
+        }
+        
+        body.forest-theme #connectBtn:hover {
+            background: #2e7d32;
+        }
+        
+        body.forest-theme #connectBtn.connected {
+            background: #d32f2f;
+        }
+        
+        body.forest-theme #resetBtn {
+            background: #558b2f;
+        }
+        
+        body.forest-theme #resetBtn:hover {
+            background: #33691e;
+        }
+        
+        body.forest-theme #statsBtn {
+            background: #7cb342;
+        }
+        
+        body.forest-theme #statsBtn:hover {
+            background: #689f38;
+        }
+        
+        body.forest-theme #clearBtn {
+            background: #ffa726;
+        }
+        
+        body.forest-theme #clearBtn:hover {
+            background: #fb8c00;
+        }
+        
+        body.forest-theme #saveBtn {
+            background: #66bb6a;
+        }
+        
+        body.forest-theme #saveBtn:hover {
+            background: #4caf50;
+        }
+        
+        body.forest-theme #printBtn {
+            background: #558b2f;
+        }
+        
+        body.forest-theme #printBtn:hover {
+            background: #33691e;
+        }
+        
+        body.forest-theme #autoSaveBtn {
+            background: #43a047;
+        }
+        
+        body.forest-theme #autoSaveBtn:hover {
+            background: #388e3c;
+        }
+        
+        body.forest-theme #autoPrintBtn {
+            background: #7cb342;
+        }
+        
+        body.forest-theme #autoPrintBtn:hover {
+            background: #689f38;
+        }
+        
+        body.forest-theme #recipientsBtn {
+            background: #8d6e63;
+        }
+        
+        body.forest-theme #recipientsBtn:hover {
+            background: #6d4c41;
+        }
+        
+        body.forest-theme #settingsBtn {
+            background: #5d4037;
+        }
+        
+        body.forest-theme #settingsBtn:hover {
+            background: #4e342e;
+        }
+        
+        /* ========================================
+           SUNSET THEME
+           ======================================== */
+        body.sunset-theme {
+            background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%);
+            color: #ffe5e5;
+        }
+        
+        body.sunset-theme .container {
+            background: linear-gradient(to bottom, #6a1b4d, #2d0a24);
+            box-shadow: 0 10px 30px rgba(255,107,107,0.3);
+        }
+        
+        body.sunset-theme header {
+            background: linear-gradient(135deg, #c44569 0%, #8b2e52 100%);
+            color: #ffe5e5;
+        }
+        
+        body.sunset-theme .subtitle {
+            color: #ffb3c6;
+        }
+        
+        body.sunset-theme .controls,
+        body.sunset-theme .controls-secondary {
+            background: #4a1942;
+            border-bottom-color: #6b2454;
+        }
+        
+        body.sunset-theme .stats-bar {
+            background: #3a1235;
+            color: #ffb3c6;
+        }
+        
+        body.sunset-theme #output {
+            background: #2d0a24;
+            color: #ffd3e0;
+            border-color: #6b2454;
+        }
+        
+        body.sunset-theme .status {
+            background: #4a1942;
+            color: #ffe5e5;
+        }
+        
+        body.sunset-theme .modal-content {
+            background: #3a1235;
+            color: #ffe5e5;
+        }
+        
+        body.sunset-theme .modal-header {
+            background: linear-gradient(135deg, #c44569 0%, #8b2e52 100%);
+            color: #ffe5e5;
+        }
+        
+        body.sunset-theme .modal-section {
+            background: #4a1942;
+            border-color: #6b2454;
+        }
+        
+        body.sunset-theme input[type="text"],
+        body.sunset-theme input[type="email"],
+        body.sunset-theme input[type="password"],
+        body.sunset-theme input[type="number"],
+        body.sunset-theme select,
+        body.sunset-theme textarea {
+            background: #2d0a24;
+            color: #ffd3e0;
+            border-color: #6b2454;
+        }
+        
+        body.sunset-theme .field-note {
+            background: #4a1942;
+            border-left-color: #ff6b9d;
+            color: #ffb3c6;
+        }
+        
+        body.sunset-theme table thead {
+            background: #4a1942 !important;
+        }
+        
+        body.sunset-theme table td,
+        body.sunset-theme table th {
+            border-bottom: 1px solid #6b2454;
+        }
+        
+        body.sunset-theme #connectBtn {
+            background: #ec407a;
+        }
+        
+        body.sunset-theme #connectBtn:hover {
+            background: #d81b60;
+        }
+        
+        body.sunset-theme #connectBtn.connected {
+            background: #ef5350;
+        }
+        
+        body.sunset-theme #resetBtn {
+            background: #ab47bc;
+        }
+        
+        body.sunset-theme #resetBtn:hover {
+            background: #9c27b0;
+        }
+        
+        body.sunset-theme #statsBtn {
+            background: #7e57c2;
+        }
+        
+        body.sunset-theme #statsBtn:hover {
+            background: #673ab7;
+        }
+        
+        body.sunset-theme #clearBtn {
+            background: #ffa726;
+        }
+        
+        body.sunset-theme #clearBtn:hover {
+            background: #fb8c00;
+        }
+        
+        body.sunset-theme #saveBtn {
+            background: #26a69a;
+        }
+        
+        body.sunset-theme #saveBtn:hover {
+            background: #00897b;
+        }
+        
+        body.sunset-theme #printBtn {
+            background: #d4526e;
+        }
+        
+        body.sunset-theme #printBtn:hover {
+            background: #c2185b;
+        }
+        
+        body.sunset-theme #autoSaveBtn {
+            background: #26a69a;
+        }
+        
+        body.sunset-theme #autoSaveBtn:hover {
+            background: #00897b;
+        }
+        
+        body.sunset-theme #autoPrintBtn {
+            background: #ab47bc;
+        }
+        
+        body.sunset-theme #autoPrintBtn:hover {
+            background: #9c27b0;
+        }
+        
+        body.sunset-theme #recipientsBtn {
+            background: #f06292;
+        }
+        
+        body.sunset-theme #recipientsBtn:hover {
+            background: #ec407a;
+        }
+        
+        body.sunset-theme #settingsBtn {
+            background: #8e24aa;
+        }
+        
+        body.sunset-theme #settingsBtn:hover {
+            background: #7b1fa2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🖨️ LPT-UNO</h1>
+            <p class="subtitle">Emulador de Impressora Paralela</p>
+            <p id="firmwareInfo" style="margin-top: 10px; opacity: 0.8; font-size: 0.9em;">Web Interface v1.0 | Build: 2026-01-25</p>
+        </header>
+        
+        <div class="controls">
+            <button id="connectBtn">🔌 Conectar Arduino</button>
+            <button id="resetBtn">🔄 Reset Buffer</button>
+            <button id="clearBtn">🗑️ Limpar</button>
+            
+            <div style="flex: 1;"></div>
+            
+            <button id="settingsBtn">⚙️ Definições</button>
+            
+            <div class="status">
+                <div class="status-indicator" id="statusIndicator"></div>
+                <span id="statusText">Desconectado</span>
+            </div>
+        </div>
+        
+        <div class="controls-secondary">
+            <button id="saveBtn">💾 Salvar Agora</button>
+            <button id="printBtn">🖨️ Imprimir Agora</button>
+            <button id="autoSaveBtn" class="toggle active">💾 Auto-salvar</button>
+            <button id="autoPrintBtn" class="toggle" title="Para impressão direta sem diálogo, consulte o guia GUIA_IMPRESSAO_SILENCIOSA.md">🖨️ Auto-imprimir</button>
+            <div style="flex: 1;"></div>
+            <button id="recipientsBtn">📧 Configurar Destinatários</button>
+        </div>
+        
+        <div class="stats-bar">
+            <div class="stat-item">
+                <span class="stat-label">Bytes recebidos:</span>
+                <span id="byteCount">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Taxa:</span>
+                <span id="dataRate">0 B/s</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Tempo ativo:</span>
+                <span id="uptime">00:00:00</span>
+            </div>
+        </div>
+        
+        <div class="output-container">
+            <div class="info-message" id="infoMsg">
+                ℹ️ Clique em "Conectar Arduino" e selecione a porta COM do Arduino Uno (115200 baud)
+            </div>
+            
+            <div class="error-message" id="errorMsg"></div>
+            
+            <div id="output"></div>
+        </div>
+        
+        <!-- Modal de Definições -->
+        <div id="settingsModal" class="modal">
+            <div class="modal-content" style="max-width: 1000px;">
+                <div class="modal-header">
+                    <h2>⚙️ Definições</h2>
+                    <button class="modal-close" id="closeModal">×</button>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <!-- Coluna Esquerda -->
+                    <div>
+                        <div class="modal-section">
+                            <h3>📊 Modo de Visualização</h3>
+                            <div class="modal-options">
+                                <label class="modal-option selected" data-view="text">
+                                    <input type="radio" name="viewMode" value="text" checked>
+                                    <span>📝 Texto (ASCII)</span>
+                                </label>
+                                <label class="modal-option" data-view="hex">
+                                    <input type="radio" name="viewMode" value="hex">
+                                    <span>🔢 Hexadecimal</span>
+                                </label>
+                                <label class="modal-option" data-view="binary">
+                                    <input type="radio" name="viewMode" value="binary">
+                                    <span>💻 Binário</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="modal-section">
+                            <h3>⏱️ Tempo de Auto-Salvar</h3>
+                            <div class="modal-select-group">
+                                <label for="autoSaveTime">⏰ Tempo de Inatividade:</label>
+                                <select id="autoSaveTime">
+                                    <option value="10">10 segundos</option>
+                                    <option value="15">15 segundos</option>
+                                    <option value="30">30 segundos</option>
+                                    <option value="60">1 minuto</option>
+                                    <option value="120">2 minutos</option>
+                                    <option value="300">5 minutos</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Coluna Direita -->
+                    <div>
+                        <div class="modal-section">
+                            <h3 id="langSectionTitle">🌐 Idioma</h3>
+                            <div class="modal-select-group">
+                                <label for="languageSelect" id="langLabel">🌍 Selecione o idioma:</label>
+                                <select id="languageSelect">
+                                    <option value="pt">Português</option>
+                                    <option value="en">English</option>
+                                    <option value="es">Español</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="modal-section">
+                            <h3>� Tema Visual</h3>
+                            <div class="modal-select-group">
+                                <label for="themeSelect">🌈 Selecione o tema:</label>
+                                <select id="themeSelect">
+                                    <option value="light">☀️ Light (Padrão)</option>
+                                    <option value="dark">🌙 Dark</option>
+                                    <option value="ocean">🌊 Ocean</option>
+                                    <option value="forest">🌲 Forest</option>
+                                    <option value="sunset">🌅 Sunset</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="modal-section">
+                            <h3>🔔 Notificações</h3>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <button id="notificationsToggle" class="toggle" style="flex: 1;">🔔 Notificações Desktop</button>
+                            </div>
+                        </div>
+                        
+                        <div class="modal-section">
+                            <button class="modal-btn" id="openEmailConfig">📧 Configurar Email</button>
+                            <button class="modal-btn" id="openSessionHistory" style="background: #17a2b8;">💾 Histórico de Sessões</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Modal de Configuração de Email -->
+        <div id="emailConfigModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="emailConfigTitle">📧 Configuração de Email</h2>
+                    <button class="modal-close" id="closeEmailModal">×</button>
+                </div>
+                
+                <form id="emailForm">
+                    <div class="form-group form-full-width">
+                        <h3 style="color: #007bff; margin-bottom: 15px;">🚀 Google Apps Script - Envio Gratuito e Ilimitado!</h3>
+                        <div class="field-note" style="background: #d1ecf1; border-left-color: #0c5460; color: #0c5460; margin-bottom: 20px;">
+                            <strong>⚡ Configuração Assistida - Máxima Automação Possível!</strong><br>
+                            Clique no botão abaixo e siga os passos guiados. O sistema faz tudo automaticamente! 🎉
+                        </div>
+                        <button type="button" class="modal-btn" id="autoConfigScriptBtn" style="width: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-size: 1.1em; padding: 15px;">
+                            🚀 Configurar Script Automaticamente
+                        </button>
+                        
+                        <div id="wizardSteps" style="display: none; margin-top: 20px;">
+                            <!-- Passo 1 -->
+                            <div id="step1" class="wizard-step" style="background: #e7f3ff; border-left: 4px solid #2196f3; padding: 15px; margin-bottom: 15px; border-radius: 5px;">
+                                <h4 style="margin: 0 0 10px 0; color: #1976d2;">📋 Passo 1: Script Copiado!</h4>
+                                <p style="margin: 5px 0; line-height: 1.6;">
+                                    ✅ O código foi copiado automaticamente para a área de transferência.<br>
+                                    🌐 Uma nova janela do Google Apps Script vai abrir em 3 segundos...<br>
+                                    ⏳ <strong id="countdown">3</strong>
+                                </p>
+                            </div>
+                            
+                            <!-- Passo 2 -->
+                            <div id="step2" class="wizard-step" style="display: none; background: #fff3e0; border-left: 4px solid #ff9800; padding: 15px; margin-bottom: 15px; border-radius: 5px;">
+                                <h4 style="margin: 0 0 10px 0; color: #f57c00;">📝 Passo 2: Cole o Código</h4>
+                                <p style="margin: 5px 0; line-height: 1.6;">
+                                    Na janela que abriu:<br>
+                                    <strong>1.</strong> Faça login com sua conta Gmail (se necessário)<br>
+                                    <strong>2.</strong> Clique em <strong>"Novo projeto"</strong><br>
+                                    <strong>3.</strong> Apague o código padrão<br>
+                                    <strong>4.</strong> Cole o código copiado (<strong>Ctrl+V</strong> ou <strong>Cmd+V</strong>)<br>
+                                    <strong>5.</strong> Prossiga para o próximo passo! ➡️
+                                </p>
+                            </div>
+                            
+                            <!-- Passo 3 -->
+                            <div id="step3" class="wizard-step" style="display: none; background: #f3e5f5; border-left: 4px solid #9c27b0; padding: 15px; margin-bottom: 15px; border-radius: 5px;">
+                                <h4 style="margin: 0 0 10px 0; color: #7b1fa2;">🚀 Passo 3: Implantar como Web App</h4>
+                                <p style="margin: 5px 0; line-height: 1.6;">
+                                    No editor do Apps Script:<br>
+                                    <strong>1.</strong> Clique no botão <strong>"Implantar"</strong> (canto superior direito)<br>
+                                    <strong>2.</strong> Selecione <strong>"Nova implantação"</strong><br>
+                                    <strong>3.</strong> Clique na ⚙️ engrenagem e escolha <strong>"Web app"</strong><br>
+                                    <strong>4.</strong> Configure:<br>
+                                    &nbsp;&nbsp;&nbsp;• Executar como: <strong>"Eu"</strong><br>
+                                    &nbsp;&nbsp;&nbsp;• Quem tem acesso: <strong>"Qualquer pessoa"</strong><br>
+                                    <strong>5.</strong> Clique em <strong>"Implantar"</strong><br>
+                                    <strong>6.</strong> Autorize o script (clique em "Autorizar acesso")<br>
+                                    <strong>7.</strong> Copie a <strong>URL do Web app</strong> gerada
+                                </p>
+                            </div>
+                            
+                            <!-- Passo 4 -->
+                            <div id="step4" class="wizard-step" style="display: none; background: #e8f5e9; border-left: 4px solid #4caf50; padding: 15px; margin-bottom: 15px; border-radius: 5px;">
+                                <h4 style="margin: 0 0 10px 0; color: #2e7d32;">✅ Passo 4: Quase Pronto!</h4>
+                                <p style="margin: 5px 0; line-height: 1.6;">
+                                    Quando terminar, <strong>cole a URL abaixo</strong> e clique em <strong>"Validar e Salvar"</strong>.<br>
+                                    O sistema irá verificar e configurar tudo automaticamente! 🎉
+                                </p>
+                                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                                    <input type="text" id="wizardUrlInput" placeholder="Cole aqui: https://script.google.com/macros/s/.../exec" style="flex: 1; padding: 10px; border: 2px solid #4caf50; border-radius: 5px; font-size: 0.95em;">
+                                    <button type="button" id="validateUrlBtn" class="modal-btn" style="background: #4caf50; white-space: nowrap;">
+                                        ✅ Validar e Salvar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 5px; font-size: 0.9em; color: #6c757d;">
+                            💡 <strong>Dica:</strong> Mantenha esta janela aberta enquanto configura o script!
+                        </div>
+                    </div>
+                    
+                    <div class="form-group form-full-width">
+                        <label for="appsScriptUrl" id="appsScriptUrlLabel">URL do Google Apps Script:</label>
+                        <div class="field-note" id="appsScriptUrlNote">
+                            <strong>Formato:</strong> https://script.google.com/macros/s/SEU_ID_AQUI/exec<br>
+                            <strong>Como obter:</strong> Apps Script → Implantar → Nova implantação → Web app → Copiar URL
+                        </div>
+                        <input type="text" id="appsScriptUrl" placeholder="https://script.google.com/macros/s/.../exec" value="">
+                    </div>
+                    
+                    <div class="form-group form-full-width">
+                        <label for="senderName" id="senderNameLabel">Nome do Remetente (Opcional):</label>
+                        <input type="text" id="senderName" placeholder="LPT-UNO" value="LPT-UNO">
+                    </div>
+                    
+                    <div class="modal-btn-group">
+                        <button type="button" class="modal-btn modal-btn-test" id="testEmailConfig">✅ Testar Configuração</button>
+                        <button type="submit" class="modal-btn" id="saveEmailConfig">💾 Salvar Configurações</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Modal de Configurar Destinatários -->
+        <div id="recipientsModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="recipientsTitle">📧 Configurar Destinatários</h2>
+                    <button class="modal-close" id="closeRecipientsModal">×</button>
+                </div>
+                
+                <div style="padding: 15px 20px; background: #e3f2fd; border-left: 4px solid #2196f3; margin-bottom: 20px; border-radius: 5px;">
+                    <p style="margin: 0; font-size: 0.95em; line-height: 1.6;">
+                        <strong>ℹ️ Como funciona:</strong><br>
+                        O sistema procura <strong>automaticamente</strong> os nomes configurados nos dados recebidos (ex: "João Silva").<br>
+                        Quando encontra uma correspondência (ignora maiúsculas/minúsculas), envia o email automaticamente para o destinatário.<br>
+                        <em>Exemplo: Se configurar "Maria Santos", qualquer dado contendo "maria santos" ou "MARIA SANTOS" ativa o envio.</em>
+                    </p>
+                </div>
+                
+                <div class="recipients-container" id="recipientsContainer">
+                    <!-- Linhas serão adicionadas dinamicamente -->
+                </div>
+                
+                <button type="button" class="modal-btn" id="saveRecipients">💾 Salvar Destinatários</button>
+            </div>
+        </div>
+        
+        <!-- Modal de Histórico de Sessões -->
+        <div id="sessionHistoryModal" class="modal">
+            <div class="modal-content" style="max-width: 900px;">
+                <div class="modal-header">
+                    <h2>💾 Histórico de Sessões</h2>
+                    <button class="modal-close" id="closeSessionHistory">×</button>
+                </div>
+                
+                <div style="max-height: 500px; overflow-y: auto;" id="sessionHistoryList">
+                    <p style="padding: 20px; text-align: center; color: #6c757d;">
+                        Nenhuma sessão salva ainda
+                    </p>
+                </div>
+                
+                <div style="margin-top: 20px; display: flex; gap: 10px;">
+                    <button type="button" class="modal-btn" id="clearSessionHistory" style="background: #dc3545;">
+                        🗑️ Limpar Todas as Sessões
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p><strong>LPT-UNO</strong> | Interface Paralela LPT (DB25) | Web Serial API</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">
+                Requer navegador compatível com Web Serial API (Chrome, Edge, Opera)
+            </p>
+            <p style="margin-top: 10px; font-size: 0.9em;">
+                📧 Contacto: <a href="mailto:aharmonica@sapo.pt" style="color: #667eea; text-decoration: none;">aharmonica@sapo.pt</a>
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        // Variáveis globais
+        let port = null;
+        let reader = null;
+        let writer = null;
+        let isConnected = false;
+        let byteCount = 0;
+        let startTime = null;
+        let lastByteCount = 0;
+        let currentView = 'text';
+        let inactivityTimer = null;
+        let lastDataTime = null;
+        let pendingData = '';
+        let firmwareVersion = 'Unknown';
+        let firmwareBuild = 'Unknown';
+        
+        // Sistema de Tradução (i18n)
+        const translations = {
+            pt: {
+                title: 'LPT-UNO - Emulador Impressora Paralela',
+                subtitle: 'Emulador de Impressora Paralela - Arduino Uno',
+                connect: 'Conectar Arduino',
+                disconnect: 'Desconectar',
+                reset: 'Reset Buffer',
+                stats: 'Estatísticas',
+                clear: 'Limpar',
+                settings: 'Definições',
+                connected: 'Conectado',
+                disconnected: 'Desconectado',
+                saveNow: 'Salvar Agora',
+                printNow: 'Imprimir Agora',
+                autoSave: 'Auto-salvar',
+                autoPrint: 'Auto-imprimir',
+                bytesReceived: 'Bytes recebidos:',
+                rate: 'Taxa:',
+                uptime: 'Tempo ativo:',
+                infoMessage: 'Clique em "Conectar Arduino" e selecione a porta COM do Arduino Uno (115200 baud)',
+                settingsTitle: 'Definições',
+                viewMode: 'Modo de Visualização',
+                textMode: 'Texto (ASCII)',
+                hexMode: 'Hexadecimal',
+                binaryMode: 'Binário',
+                autoSaveTime: 'Tempo de Auto-Salvar',
+                inactivity: 'Inatividade:',
+                seconds: 'segundos',
+                minute: 'minuto',
+                minutes: 'minutos',
+                language: 'Idioma',
+                selectLanguage: 'Selecione o idioma:',
+                footer1: 'Interface Paralela LPT (DB25) | Web Serial API',
+                footer2: 'Requer navegador compatível com Web Serial API (Chrome, Edge, Opera)',
+                contact: 'Contacto:',
+                webInterface: 'Web Interface',
+                arduinoFirmware: 'Arduino Firmware',
+                noData: 'Nenhum dado para',
+                save: 'salvar',
+                print: 'imprimir',
+                activated: 'ativado',
+                deactivated: 'desativado',
+                fileSaved: 'Arquivo salvo',
+                sentToPrinter: 'Enviado para impressora padrão',
+                autoSaved: 'Arquivo salvo automaticamente:',
+                viewModeChanged: 'Modo de visualização:',
+                autoSaveTimeChanged: 'Tempo de auto-salvar:',
+                languageChanged: 'Idioma alterado para:',
+                configureEmail: 'Configurar Email',
+                emailConfigTitle: 'Configuração de Email',
+                smtpServerNote: '<strong>Gmail:</strong> smtp.gmail.com | <strong>Sapo:</strong> smtp.sapo.pt | <strong>Hotmail/Outlook:</strong> smtp-mail.outlook.com',
+                smtpPortNote: '<strong>TLS:</strong> 587 (recomendado) | <strong>SSL:</strong> 465',
+                smtpPasswordNote: '<strong>⚠️ Gmail:</strong> Use "Senha de Aplicativo" (não a senha normal). Gere em: Conta Google → Segurança → Verificação em duas etapas → Senhas de app',
+                senderName: 'Nome do Remetente:',
+                senderEmail: 'Email do Remetente:',
+                smtpServer: 'Servidor SMTP:',
+                smtpPort: 'Porta SMTP:',
+                smtpSecure: 'Tipo de Segurança:',
+                smtpUser: 'Usuário SMTP:',
+                smtpPassword: 'Senha/App Password:',
+                saveEmailConfig: 'Salvar Configurações',
+                testEmailConfig: 'Testar Configuração',
+                emailConfigSaved: 'Configurações de email salvas com sucesso!',
+                testingEmail: 'Testando configuração de email...',
+                emailTestSuccess: 'Teste bem-sucedido! Verifique sua caixa de entrada.',
+                emailTestError: 'Erro ao testar: Verifique suas configurações.',
+                emailTestNote: 'Nota: Envio de email via navegador requer backend. Esta função valida os campos.',
+                fillAllFields: 'Por favor, preencha todos os campos obrigatórios.',
+                configureRecipients: 'Configurar Destinatários',
+                recipientsTitle: 'Configurar Destinatários',
+                recipientName: 'Nome do Destinatário',
+                recipientEmail: 'Email(s) - separe vários com vírgula',
+                saveRecipients: 'Salvar Destinatários',
+                recipientsSaved: 'Destinatários salvos com sucesso!',
+                errorConnect: 'Erro ao conectar:',
+                errorDisconnect: 'Erro ao desconectar:',
+                errorRead: 'Erro na leitura:',
+                errorCommand: 'Erro ao enviar comando:',
+                errorStats: 'Erro ao solicitar estatísticas:',
+                errorPrint: 'Erro ao imprimir:',
+                notConnected: 'Arduino não conectado',
+                apiNotSupported: 'Web Serial API não suportada. Use Chrome, Edge ou Opera.'
+            },
+            en: {
+                title: 'LPT-UNO - Parallel Printer Emulator',
+                subtitle: 'Parallel Printer Emulator - Arduino Uno',
+                connect: 'Connect Arduino',
+                disconnect: 'Disconnect',
+                reset: 'Reset Buffer',
+                stats: 'Statistics',
+                clear: 'Clear',
+                settings: 'Settings',
+                connected: 'Connected',
+                disconnected: 'Disconnected',
+                saveNow: 'Save Now',
+                printNow: 'Print Now',
+                autoSave: 'Auto-save',
+                autoPrint: 'Auto-print',
+                bytesReceived: 'Bytes received:',
+                rate: 'Rate:',
+                uptime: 'Uptime:',
+                infoMessage: 'Click "Connect Arduino" and select the Arduino Uno COM port (115200 baud)',
+                settingsTitle: 'Settings',
+                viewMode: 'Display Mode',
+                textMode: 'Text (ASCII)',
+                hexMode: 'Hexadecimal',
+                binaryMode: 'Binary',
+                autoSaveTime: 'Auto-Save Time',
+                inactivity: 'Inactivity:',
+                seconds: 'seconds',
+                minute: 'minute',
+                minutes: 'minutes',
+                language: 'Language',
+                selectLanguage: 'Select language:',
+                footer1: 'Parallel Interface LPT (DB25) | Web Serial API',
+                footer2: 'Requires browser compatible with Web Serial API (Chrome, Edge, Opera)',
+                contact: 'Contact:',
+                webInterface: 'Web Interface',
+                arduinoFirmware: 'Arduino Firmware',
+                noData: 'No data to',
+                save: 'save',
+                print: 'print',
+                activated: 'activated',
+                deactivated: 'deactivated',
+                fileSaved: 'File saved',
+                sentToPrinter: 'Sent to default printer',
+                autoSaved: 'File saved automatically:',
+                viewModeChanged: 'Display mode:',
+                autoSaveTimeChanged: 'Auto-save time:',
+                languageChanged: 'Language changed to:',
+                configureEmail: 'Configure Email',
+                emailConfigTitle: 'Email Configuration',
+                smtpServerNote: '<strong>Gmail:</strong> smtp.gmail.com | <strong>Sapo:</strong> smtp.sapo.pt | <strong>Hotmail/Outlook:</strong> smtp-mail.outlook.com',
+                smtpPortNote: '<strong>TLS:</strong> 587 (recommended) | <strong>SSL:</strong> 465',
+                smtpPasswordNote: '<strong>⚠️ Gmail:</strong> Use "App Password" (not regular password). Generate at: Google Account → Security → 2-Step Verification → App passwords',
+                senderName: 'Sender Name:',
+                senderEmail: 'Sender Email:',
+                smtpServer: 'SMTP Server:',
+                smtpPort: 'SMTP Port:',
+                smtpSecure: 'Security Type:',
+                smtpUser: 'SMTP User:',
+                smtpPassword: 'Password/App Password:',
+                saveEmailConfig: 'Save Settings',
+                testEmailConfig: 'Test Configuration',
+                emailConfigSaved: 'Email settings saved successfully!',
+                testingEmail: 'Testing email configuration...',
+                emailTestSuccess: 'Test successful! Check your inbox.',
+                emailTestError: 'Test error: Check your settings.',
+                emailTestNote: 'Note: Sending email via browser requires backend. This validates fields.',
+                fillAllFields: 'Please fill in all required fields.',
+                configureRecipients: 'Configure Recipients',
+                recipientsTitle: 'Configure Recipients',
+                recipientName: 'Recipient Name',
+                recipientEmail: 'Email(s) - separate multiple with comma',
+                saveRecipients: 'Save Recipients',
+                recipientsSaved: 'Recipients saved successfully!',
+                errorConnect: 'Connection error:',
+                errorDisconnect: 'Disconnection error:',
+                errorRead: 'Read error:',
+                errorCommand: 'Error sending command:',
+                errorStats: 'Error requesting statistics:',
+                errorPrint: 'Print error:',
+                notConnected: 'Arduino not connected',
+                apiNotSupported: 'Web Serial API not supported. Use Chrome, Edge or Opera.'
+            },
+            es: {
+                title: 'LPT-UNO - Emulador Impresora Paralela',
+                subtitle: 'Emulador de Impresora Paralela - Arduino Uno',
+                connect: 'Conectar Arduino',
+                disconnect: 'Desconectar',
+                reset: 'Reiniciar Buffer',
+                stats: 'Estadísticas',
+                clear: 'Limpiar',
+                settings: 'Configuración',
+                connected: 'Conectado',
+                disconnected: 'Desconectado',
+                saveNow: 'Guardar Ahora',
+                printNow: 'Imprimir Ahora',
+                autoSave: 'Auto-guardar',
+                autoPrint: 'Auto-imprimir',
+                bytesReceived: 'Bytes recibidos:',
+                rate: 'Tasa:',
+                uptime: 'Tiempo activo:',
+                infoMessage: 'Haga clic en "Conectar Arduino" y seleccione el puerto COM del Arduino Uno (115200 baud)',
+                settingsTitle: 'Configuración',
+                viewMode: 'Modo de Visualización',
+                textMode: 'Texto (ASCII)',
+                hexMode: 'Hexadecimal',
+                binaryMode: 'Binario',
+                autoSaveTime: 'Tiempo de Auto-Guardado',
+                inactivity: 'Inactividad:',
+                seconds: 'segundos',
+                minute: 'minuto',
+                minutes: 'minutos',
+                language: 'Idioma',
+                selectLanguage: 'Seleccione el idioma:',
+                footer1: 'Interfaz Paralela LPT (DB25) | Web Serial API',
+                footer2: 'Requiere navegador compatible con Web Serial API (Chrome, Edge, Opera)',
+                contact: 'Contacto:',
+                webInterface: 'Interfaz Web',
+                arduinoFirmware: 'Firmware Arduino',
+                noData: 'No hay datos para',
+                save: 'guardar',
+                print: 'imprimir',
+                activated: 'activado',
+                deactivated: 'desactivado',
+                fileSaved: 'Archivo guardado',
+                sentToPrinter: 'Enviado a impresora predeterminada',
+                autoSaved: 'Archivo guardado automáticamente:',
+                viewModeChanged: 'Modo de visualización:',
+                autoSaveTimeChanged: 'Tiempo de auto-guardado:',
+                languageChanged: 'Idioma cambiado a:',
+                configureEmail: 'Configurar Email',
+                emailConfigTitle: 'Configuración de Email',
+                smtpServerNote: '<strong>Gmail:</strong> smtp.gmail.com | <strong>Sapo:</strong> smtp.sapo.pt | <strong>Hotmail/Outlook:</strong> smtp-mail.outlook.com',
+                smtpPortNote: '<strong>TLS:</strong> 587 (recomendado) | <strong>SSL:</strong> 465',
+                smtpPasswordNote: '<strong>⚠️ Gmail:</strong> Use "Contraseña de Aplicación" (no la contraseña normal). Genere en: Cuenta de Google → Seguridad → Verificación en dos pasos → Contraseñas de aplicaciones',
+                senderName: 'Nombre del Remitente:',
+                senderEmail: 'Email del Remitente:',
+                smtpServer: 'Servidor SMTP:',
+                smtpPort: 'Puerto SMTP:',
+                smtpSecure: 'Tipo de Seguridad:',
+                smtpUser: 'Usuario SMTP:',
+                smtpPassword: 'Contraseña/App Password:',
+                saveEmailConfig: 'Guardar Configuración',
+                testEmailConfig: 'Probar Configuración',
+                emailConfigSaved: '¡Configuración de email guardada con éxito!',
+                testingEmail: 'Probando configuración de email...',
+                emailTestSuccess: '¡Prueba exitosa! Verifique su bandeja de entrada.',
+                emailTestError: 'Error en prueba: Verifique su configuración.',
+                emailTestNote: 'Nota: Enviar email desde el navegador requiere backend. Esto valida los campos.',
+                fillAllFields: 'Por favor, complete todos los campos obligatorios.',
+                configureRecipients: 'Configurar Destinatarios',
+                recipientsTitle: 'Configurar Destinatarios',
+                recipientName: 'Nombre del Destinatario',
+                recipientEmail: 'Email(s) - separe varios con coma',
+                saveRecipients: 'Guardar Destinatarios',
+                recipientsSaved: '¡Destinatarios guardados con éxito!',
+                errorConnect: 'Error al conectar:',
+                errorDisconnect: 'Error al desconectar:',
+                errorRead: 'Error de lectura:',
+                errorCommand: 'Error al enviar comando:',
+                errorStats: 'Error al solicitar estadísticas:',
+                errorPrint: 'Error al imprimir:',
+                notConnected: 'Arduino no conectado',
+                apiNotSupported: 'Web Serial API no compatible. Use Chrome, Edge u Opera.'
+            }
+        };
+        
+        let currentLanguage = 'pt';
+        
+        // LocalStorage - Salvar preferências
+        const STORAGE_KEY = 'lpt-uno-preferences';
+        
+        // Função: Carregar preferências
+        function loadPreferences() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    return JSON.parse(saved);
+                }
+            } catch (e) {
+                console.error('Erro ao carregar preferências:', e);
+            }
+            // Preferências padrão
+            return {
+                autoSave: true,
+                autoPrint: false,
+                viewMode: 'text',
+                autoSaveTime: 10,
+                language: 'pt'
+            };
+        }
+        
+        // Função: Salvar preferências
+        function savePreferences(prefs) {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
+            } catch (e) {
+                console.error('Erro ao salvar preferências:', e);
+            }
+        }
+        
+        // Função: Aplicar traduções
+        function applyTranslations(lang) {
+            const t = translations[lang];
+            currentLanguage = lang;
+            
+            // Título da página
+            document.title = t.title;
+            
+            // Header
+            const h1 = document.querySelector('h1');
+            const subtitle = document.querySelector('.subtitle');
+            if (h1) h1.textContent = '🖨️ LPT-UNO';
+            if (subtitle) subtitle.textContent = t.subtitle;
+            
+            // Botões principais
+            if (connectBtn) connectBtn.innerHTML = isConnected ? `🔌 ${t.disconnect}` : `🔌 ${t.connect}`;
+            if (resetBtn) resetBtn.innerHTML = `🔄 ${t.reset}`;
+            if (clearBtn) clearBtn.innerHTML = `🗑️ ${t.clear}`;
+            if (settingsBtn) settingsBtn.innerHTML = `⚙️ ${t.settings}`;
+            
+            // Status
+            if (statusText) statusText.textContent = isConnected ? t.connected : t.disconnected;
+            
+            // Botões secundários
+            if (saveBtn) saveBtn.innerHTML = `💾 ${t.saveNow}`;
+            if (printBtn) printBtn.innerHTML = `🖨️ ${t.printNow}`;
+            if (autoSaveBtn) autoSaveBtn.innerHTML = `💾 ${t.autoSave}`;
+            
+            if (autoPrintBtn) {
+                const urlParams = new URLSearchParams(window.location.search);
+                const isKiosk = urlParams.get('kiosk') === 'true';
+                
+                if (isKiosk) {
+                    autoPrintBtn.innerHTML = `🖨️ ${t.autoPrint}`;
+                    autoPrintBtn.title = '✅ Modo de impressão silenciosa ATIVO';
+                    autoPrintBtn.style.color = ''; // Reset
+                } else {
+                    autoPrintBtn.innerHTML = `⚠️ ${t.autoPrint} (Manual)`;
+                    autoPrintBtn.title = '🛑 Impressão Silenciosa DESATIVADA. Abra pelo arquivo LPT-UNO.bat para ativar.';
+                    autoPrintBtn.style.color = 'yellow'; // Destaque visual
+                }
+            }
+            
+            // Estatísticas
+            const statLabels = document.querySelectorAll('.stat-label');
+            if (statLabels.length >= 3) {
+                statLabels[0].textContent = t.bytesReceived;
+                statLabels[1].textContent = t.rate;
+                statLabels[2].textContent = t.uptime;
+            }
+            
+            // Mensagem info
+            if (infoMsg) {
+                const infoText = infoMsg.textContent;
+                if (infoText.includes('Clique') || infoText.includes('Click') || infoText.includes('Haga')) {
+                    infoMsg.textContent = `ℹ️ ${t.infoMessage}`;
+                }
+            }
+            
+            // Modal
+            const modalH2 = document.querySelector('.modal-header h2');
+            if (modalH2) modalH2.textContent = `⚙️ ${t.settingsTitle}`;
+            
+            const modalSectionH3 = document.querySelectorAll('.modal-section h3');
+            if (modalSectionH3.length >= 3) {
+                modalSectionH3[0].textContent = `📊 ${t.viewMode}`;
+                modalSectionH3[1].textContent = `⏱️ ${t.autoSaveTime}`;
+                modalSectionH3[2].textContent = `🌐 ${t.language}`;
+            }
+            
+            const modalOptionSpans = document.querySelectorAll('.modal-option span');
+            if (modalOptionSpans.length >= 3) {
+                modalOptionSpans[0].textContent = `📝 ${t.textMode}`;
+                modalOptionSpans[1].textContent = `🔢 ${t.hexMode}`;
+                modalOptionSpans[2].textContent = `💻 ${t.binaryMode}`;
+            }
+            
+            const autoSaveTimeLabel = document.querySelector('label[for="autoSaveTime"]');
+            if (autoSaveTimeLabel) autoSaveTimeLabel.textContent = `⏰ ${t.inactivity}`;
+            
+            const langSectionTitle = document.getElementById('langSectionTitle');
+            if (langSectionTitle) langSectionTitle.textContent = `🌐 ${t.language}`;
+            
+            const langLabel = document.getElementById('langLabel');
+            if (langLabel) langLabel.textContent = `🌍 ${t.selectLanguage}`;
+            
+            // Botão configurar email
+            const openEmailConfig = document.getElementById('openEmailConfig');
+            if (openEmailConfig) openEmailConfig.textContent = `📧 ${t.configureEmail}`;
+            
+            // Modal de email
+            const emailConfigTitle = document.getElementById('emailConfigTitle');
+            if (emailConfigTitle) emailConfigTitle.textContent = `📧 ${t.emailConfigTitle}`;
+            
+            const smtpServerNote = document.getElementById('smtpServerNote');
+            if (smtpServerNote) smtpServerNote.innerHTML = t.smtpServerNote;
+            
+            const smtpPortNote = document.getElementById('smtpPortNote');
+            if (smtpPortNote) smtpPortNote.innerHTML = t.smtpPortNote;
+            
+            const smtpPasswordNote = document.getElementById('smtpPasswordNote');
+            if (smtpPasswordNote) smtpPasswordNote.innerHTML = t.smtpPasswordNote;
+            
+            const senderNameLabel = document.getElementById('senderNameLabel');
+            if (senderNameLabel) senderNameLabel.textContent = t.senderName;
+            
+            const senderEmailLabel = document.getElementById('senderEmailLabel');
+            if (senderEmailLabel) senderEmailLabel.textContent = t.senderEmail;
+            
+            const smtpServerLabel = document.getElementById('smtpServerLabel');
+            if (smtpServerLabel) smtpServerLabel.textContent = t.smtpServer;
+            
+            const smtpPortLabel = document.getElementById('smtpPortLabel');
+            if (smtpPortLabel) smtpPortLabel.textContent = t.smtpPort;
+            
+            const smtpSecureLabel = document.getElementById('smtpSecureLabel');
+            if (smtpSecureLabel) smtpSecureLabel.textContent = t.smtpSecure;
+            
+            const smtpUserLabel = document.getElementById('smtpUserLabel');
+            if (smtpUserLabel) smtpUserLabel.textContent = t.smtpUser;
+            
+            const smtpPasswordLabel = document.getElementById('smtpPasswordLabel');
+            if (smtpPasswordLabel) smtpPasswordLabel.textContent = t.smtpPassword;
+            
+            const saveEmailConfig = document.getElementById('saveEmailConfig');
+            if (saveEmailConfig) saveEmailConfig.textContent = `💾 ${t.saveEmailConfig}`;
+            
+            const testEmailConfig = document.getElementById('testEmailConfig');
+            if (testEmailConfig) testEmailConfig.textContent = `✅ ${t.testEmailConfig}`;
+            
+            // Botão destinatários
+            const recipientsBtn = document.getElementById('recipientsBtn');
+            if (recipientsBtn) recipientsBtn.innerHTML = `📧 ${t.configureRecipients}`;
+            
+            // Modal de destinatários
+            const recipientsTitle = document.getElementById('recipientsTitle');
+            if (recipientsTitle) recipientsTitle.textContent = `📧 ${t.recipientsTitle}`;
+            
+            const saveRecipients = document.getElementById('saveRecipients');
+            if (saveRecipients) saveRecipients.textContent = `💾 ${t.saveRecipients}`;
+            
+            // Atualizar placeholders dos destinatários
+            updateRecipientPlaceholders();
+            
+            // Atualizar opções de tempo
+            if (autoSaveTimeSelect) {
+                const timeOptions = autoSaveTimeSelect.querySelectorAll('option');
+                if (timeOptions.length >= 6) {
+                    timeOptions[0].textContent = `10 ${t.seconds}`;
+                    timeOptions[1].textContent = `15 ${t.seconds}`;
+                    timeOptions[2].textContent = `30 ${t.seconds}`;
+                    timeOptions[3].textContent = `1 ${t.minute}`;
+                    timeOptions[4].textContent = `2 ${t.minutes}`;
+                    timeOptions[5].textContent = `5 ${t.minutes}`;
+                }
+            }
+            
+            // Footer
+            const footerPs = document.querySelectorAll('footer p');
+            if (footerPs.length >= 2) {
+                footerPs[0].innerHTML = `<strong>LPT-UNO</strong> | ${t.footer1}`;
+                footerPs[1].innerHTML = footerPs[1].innerHTML.replace(
+                    /Requer.*Opera|Requires.*Opera|Requiere.*Opera/,
+                    t.footer2
+                );
+            }
+        }
+        
+        // Elementos DOM
+        const connectBtn = document.getElementById('connectBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const saveBtn = document.getElementById('saveBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const output = document.getElementById('output');
+        const statusIndicator = document.getElementById('statusIndicator');
+        const statusText = document.getElementById('statusText');
+        const byteCountEl = document.getElementById('byteCount');
+        const dataRateEl = document.getElementById('dataRate');
+        const uptimeEl = document.getElementById('uptime');
+        const errorMsg = document.getElementById('errorMsg');
+        const infoMsg = document.getElementById('infoMsg');
+        const autoSaveBtn = document.getElementById('autoSaveBtn');
+        const autoPrintBtn = document.getElementById('autoPrintBtn');
+        const printBtn = document.getElementById('printBtn');
+        const settingsBtn = document.getElementById('settingsBtn');
+        const settingsModal = document.getElementById('settingsModal');
+        const closeModal = document.getElementById('closeModal');
+        const viewOptions = document.querySelectorAll('.modal-option');
+        const autoSaveTimeSelect = document.getElementById('autoSaveTime');
+        const languageSelect = document.getElementById('languageSelect');
+        const openEmailConfig = document.getElementById('openEmailConfig');
+        const emailConfigModal = document.getElementById('emailConfigModal');
+        const closeEmailModal = document.getElementById('closeEmailModal');
+        const emailForm = document.getElementById('emailForm');
+        const testEmailConfig = document.getElementById('testEmailConfig');
+        const recipientsBtn = document.getElementById('recipientsBtn');
+        const recipientsModal = document.getElementById('recipientsModal');
+        const closeRecipientsModal = document.getElementById('closeRecipientsModal');
+        const recipientsContainer = document.getElementById('recipientsContainer');
+        const saveRecipientsBtn = document.getElementById('saveRecipients');
+        
+        // Verificar suporte Web Serial API
+        if (!('serial' in navigator)) {
+            showError('Web Serial API não suportada. Use Chrome, Edge ou Opera.');
+            connectBtn.disabled = true;
+        }
+        
+        // Carregar preferências salvas
+        const preferences = loadPreferences();
+        
+        // Aplicar idioma salvo (será chamado depois)
+        currentLanguage = preferences.language || 'pt';
+        if (languageSelect) {
+            languageSelect.value = currentLanguage;
+        }
+        
+        // Tentar conexão automática ao Arduino
+        setTimeout(async () => {
+            const autoConnect = localStorage.getItem('lptUnoAutoConnect');
+            if (autoConnect === 'true') {
+                try {
+                    // Obter portas já autorizadas
+                    const ports = await navigator.serial.getPorts();
+                    if (ports.length > 0) {
+                        port = ports[0]; // Usar a primeira porta autorizada
+                        await connect(true);
+                        showInfo('✅ Conectado automaticamente ao Arduino!');
+                    }
+                } catch (error) {
+                    console.log('Auto-conexão não disponível:', error);
+                }
+            }
+        }, 1000);
+        
+        // Aplicar preferências salvas
+        if (preferences.autoSave) {
+            autoSaveBtn.classList.add('active');
+            autoPrintBtn.disabled = false;
+        } else {
+            autoSaveBtn.classList.remove('active');
+            autoPrintBtn.disabled = true;
+        }
+        
+        if (preferences.autoPrint) {
+            autoPrintBtn.classList.add('active');
+        } else {
+            autoPrintBtn.classList.remove('active');
+        }
+        
+        // Aplicar modo de visualização salvo
+        currentView = preferences.viewMode;
+        viewOptions.forEach(option => {
+            const radio = option.querySelector('input[type="radio"]');
+            if (option.dataset.view === preferences.viewMode) {
+                option.classList.add('selected');
+                radio.checked = true;
+            } else {
+                option.classList.remove('selected');
+                radio.checked = false;
+            }
+        });
+        if (currentView === 'hex') {
+            output.className = 'hex-view';
+        }
+        
+        // Aplicar tempo de auto-salvar
+        if (autoSaveTimeSelect && preferences.autoSaveTime) {
+            autoSaveTimeSelect.value = preferences.autoSaveTime;
+        }
+        
+        // Função: Conectar/Desconectar Arduino
+        connectBtn.addEventListener('click', async () => {
+            if (isConnected) {
+                await disconnect();
+            } else {
+                await connect();
+            }
+        });
+        
+        async function connect(autoConnect = false) {
+            try {
+                // Solicitar porta serial
+                if (!autoConnect) {
+                    port = await navigator.serial.requestPort();
+                }
+                
+                if (!port) return;
+                
+                await port.open({ baudRate: 115200 });
+                
+                isConnected = true;
+                updateStatus(true);
+                infoMsg.style.display = 'none';
+                startTime = Date.now();
+                
+                // Configurar leitor com encoding UTF-8 para suportar caracteres portugueses
+                const decoder = new TextDecoderStream('utf-8');
+                port.readable.pipeTo(decoder.writable);
+                reader = decoder.readable.getReader();
+                
+                // Configurar escritor
+                const encoder = new TextEncoderStream();
+                encoder.readable.pipeTo(port.writable);
+                writer = encoder.writable.getWriter();
+                
+                // Solicitar identificação e versão do firmware
+                await writer.write('I'); // Comando de identificação
+                await new Promise(resolve => setTimeout(resolve, 100));
+                await writer.write('V');
+                
+                // Salvar que conectámos com sucesso
+                localStorage.setItem('lptUnoAutoConnect', 'true');
+                
+                // Limpeza inicial do buffer visual após 3 segundos
+                // Isto remove o banner de inicialização sem afetar o buffer interno de parsing
+                setTimeout(() => {
+                    output.textContent = '';
+                    byteCount = 0;
+                    byteCountEl.textContent = '0';
+                    pendingData = ''; // Limpar dados pendentes para que o banner não seja salvo
+                    showInfo('Buffer limpo automaticamente (Pós-conexão)');
+                }, 3000);
+                
+                // Iniciar leitura de dados
+                readData();
+                
+                // Iniciar atualização de estatísticas
+                setInterval(updateStats, 1000);
+                
+            } catch (error) {
+                showError('Erro ao conectar: ' + error.message);
+            }
+        }
+        
+        async function disconnect() {
+            try {
+                if (reader) {
+                    await reader.cancel();
+                    reader = null;
+                }
+                if (writer) {
+                    await writer.close();
+                    writer = null;
+                }
+                if (port) {
+                    await port.close();
+                    port = null;
+                }
+                
+                isConnected = false;
+                updateStatus(false);
+                
+                // Não reconectar automaticamente na próxima vez
+                localStorage.removeItem('lptUnoAutoConnect');
+                
+            } catch (error) {
+                showError('Erro ao desconectar: ' + error.message);
+            }
+        }
+        
+        // Buffer para parsing de metadados
+        let metadataBuffer = '';
+
+        // Função: Ler dados do Arduino
+        async function readData() {
+            try {
+                while (true) {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+                    
+                    // Acumular para parsing de versão (robusto contra pacotes fragmentados)
+                    metadataBuffer += value;
+                    // Limitar tamanho do buffer de metadados para não crescer infinitamente
+                    if (metadataBuffer.length > 200) {
+                         // Manter apenas os últimos 200 chars se não encontrarmos quebras de linha logo
+                         // Mas o ideal é processar linha a linha.
+                         const lastNewline = metadataBuffer.lastIndexOf('\n');
+                         if (lastNewline !== -1) {
+                             metadataBuffer = metadataBuffer.substring(lastNewline + 1);
+                         } 
+                    }
+
+                    // Tentar extrair versão do buffer acumulado
+                    const firmwareRegex = /Firmware: v([\d.]+)/;
+                    const buildRegex = /Build: ([\w\s:]+)/;
+                    
+                    const fwMatch = metadataBuffer.match(firmwareRegex);
+                    if (fwMatch) {
+                        firmwareVersion = fwMatch[1];
+                        updateFirmwareDisplay();
+                    }
+
+                    const buildMatch = metadataBuffer.match(buildRegex);
+                    if (buildMatch) {
+                        firmwareBuild = buildMatch[1].trim();
+                        updateFirmwareDisplay();
+                    }
+                    
+                    // Processar dados recebidos (Exibição imediata)
+                    for (let i = 0; i < value.length; i++) {
+                        const byte = value.charCodeAt(i);
+                        byteCount++;
+                        displayByte(byte);
+                        
+                        // Acumular dados para auto-save/print
+                        if (byte >= 32 && byte <= 126) {
+                            pendingData += String.fromCharCode(byte);
+                        } else if (byte === 10 || byte === 13) {
+                            pendingData += String.fromCharCode(byte);
+                        }
+                    }
+                    
+                    // Resetar timer de inatividade
+                    resetInactivityTimer();
+                }
+            } catch (error) {
+                if (isConnected) {
+                    showError('Erro na leitura: ' + error.message);
+                    await disconnect();
+                }
+            }
+        }
+        
+        // Função: Exibir byte conforme modo de visualização
+        function displayByte(byte) {
+            let text = '';
+            
+            switch (currentView) {
+                case 'text':
+                    // Modo texto (ASCII)
+                    if (byte >= 32 && byte <= 126) {
+                        text = String.fromCharCode(byte);
+                    } else if (byte === 10) {
+                        text = '\n';
+                    } else if (byte === 13) {
+                        text = '\r';
+                    } else if (byte === 9) {
+                        text = '\t';
+                    } else {
+                        text = `[${byte.toString(16).padStart(2, '0')}]`;
+                    }
+                    break;
+                    
+                case 'hex':
+                    // Modo hexadecimal
+                    text = byte.toString(16).padStart(2, '0').toUpperCase() + ' ';
+                    if (byteCount % 16 === 0) text += '\n';
+                    break;
+                    
+                case 'binary':
+                    // Modo binário
+                    text = byte.toString(2).padStart(8, '0') + ' ';
+                    if (byteCount % 8 === 0) text += '\n';
+                    break;
+            }
+            
+            output.textContent += text;
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        // Função: Atualizar exibição de firmware
+        function updateFirmwareDisplay() {
+            const firmwareInfo = document.getElementById('firmwareInfo');
+            if (firmwareInfo) {
+                firmwareInfo.innerHTML = `Web Interface v1.0 | Build: 2026-01-25<br>Arduino Firmware: v${firmwareVersion} | Build: ${firmwareBuild}`;
+            }
+        }
+        
+        // Função: Atualizar status
+        function updateStatus(connected) {
+            const t = translations[currentLanguage];
+            if (connected) {
+                statusIndicator.classList.add('connected');
+                statusText.textContent = t.connected;
+                connectBtn.textContent = `🔌 ${t.disconnect}`;
+                connectBtn.classList.add('connected');
+            } else {
+                statusIndicator.classList.remove('connected');
+                statusText.textContent = t.disconnected;
+                connectBtn.textContent = `🔌 ${t.connect}`;
+                connectBtn.classList.remove('connected');
+            }
+        }
+        
+        // Função: Atualizar estatísticas
+        function updateStats() {
+            if (!isConnected) return;
+            
+            // Atualizar contador de bytes
+            byteCountEl.textContent = byteCount.toLocaleString();
+            
+            // Calcular taxa de dados
+            const bytesPerSecond = byteCount - lastByteCount;
+            lastByteCount = byteCount;
+            dataRateEl.textContent = bytesPerSecond + ' B/s';
+            
+            // Atualizar tempo ativo
+            if (startTime) {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                const hours = Math.floor(elapsed / 3600).toString().padStart(2, '0');
+                const minutes = Math.floor((elapsed % 3600) / 60).toString().padStart(2, '0');
+                const seconds = (elapsed % 60).toString().padStart(2, '0');
+                uptimeEl.textContent = `${hours}:${minutes}:${seconds}`;
+            }
+        }
+        
+        // Função: Limpar output
+        clearBtn.addEventListener('click', () => {
+            output.textContent = '';
+            errorMsg.style.display = 'none';
+        });
+        
+        // Função: Salvar output
+        saveBtn.addEventListener('click', () => {
+            const text = output.textContent;
+            if (!text || text.trim().length === 0) {
+                showError('Nenhum dado para salvar');
+                return;
+            }
+            const blob = new Blob([text], { type: 'text/plain; charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+            a.href = url;
+            a.download = `LPT-UNO_${timestamp}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showInfo('✅ Arquivo salvo com sucesso');
+        });
+        
+        // Função: Imprimir agora
+        printBtn.addEventListener('click', () => {
+            const text = output.textContent;
+            if (!text || text.trim().length === 0) {
+                showError('Nenhum dado para imprimir');
+                return;
+            }
+            printData(text);
+        });
+        
+        // Função: Toggle Auto-salvar
+        autoSaveBtn.addEventListener('click', () => {
+            autoSaveBtn.classList.toggle('active');
+            const isActive = autoSaveBtn.classList.contains('active');
+            showInfo(isActive ? '✅ Auto-salvar ativado' : '⛔ Auto-salvar desativado');
+            
+            // Se auto-salvar for desativado, desativar também auto-imprimir
+            if (!isActive && autoPrintBtn.classList.contains('active')) {
+                autoPrintBtn.classList.remove('active');
+                autoPrintBtn.disabled = true;
+                const prefs = loadPreferences();
+                prefs.autoPrint = false;
+                savePreferences(prefs);
+            } else {
+                autoPrintBtn.disabled = !isActive;
+            }
+            
+            // Salvar preferência
+            const prefs = loadPreferences();
+            prefs.autoSave = isActive;
+            savePreferences(prefs);
+        });
+        
+        // Função: Toggle Auto-imprimir
+        autoPrintBtn.addEventListener('click', () => {
+            // Só permitir ativar se auto-salvar estiver ativo
+            if (!autoSaveBtn.classList.contains('active')) {
+                showError('⚠️ Auto-imprimir requer Auto-salvar ativado!');
+                return;
+            }
+            
+            autoPrintBtn.classList.toggle('active');
+            const isActive = autoPrintBtn.classList.contains('active');
+            showInfo(isActive ? '✅ Auto-imprimir ativado' : '⛔ Auto-imprimir desativado');
+            
+            // Salvar preferência
+            const prefs = loadPreferences();
+            prefs.autoPrint = isActive;
+            savePreferences(prefs);
+        });
+        
+        // Função: Enviar comando Reset ao Arduino
+        resetBtn.addEventListener('click', async () => {
+            if (isConnected && writer) {
+                try {
+                    await writer.write('R');
+                    showInfo('Comando Reset enviado ao Arduino');
+                } catch (error) {
+                    showError('Erro ao enviar comando: ' + error.message);
+                }
+            } else {
+                showError('Arduino não conectado');
+            }
+        });
+        
+        // Função: Abrir modal de definições
+        settingsBtn.addEventListener('click', () => {
+            settingsModal.classList.add('show');
+        });
+        
+        // Função: Fechar modal
+        closeModal.addEventListener('click', () => {
+            settingsModal.classList.remove('show');
+        });
+        
+        // Fechar modal ao clicar fora
+        settingsModal.addEventListener('click', (e) => {
+            if (e.target === settingsModal) {
+                settingsModal.classList.remove('show');
+            }
+        });
+        
+        // Função: Alternar modo de visualização no modal
+        viewOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                // Remover seleção anterior
+                viewOptions.forEach(opt => opt.classList.remove('selected'));
+                
+                // Adicionar seleção atual
+                option.classList.add('selected');
+                const radio = option.querySelector('input[type="radio"]');
+                radio.checked = true;
+                
+                // Atualizar modo
+                currentView = option.dataset.view;
+                
+                // Atualizar classe CSS do output
+                output.className = currentView === 'hex' ? 'hex-view' : '';
+                
+                // Limpar output ao mudar visualização
+                output.textContent = '';
+                
+                // Salvar preferência
+                const prefs = loadPreferences();
+                prefs.viewMode = currentView;
+                savePreferences(prefs);
+                
+                showInfo(`Modo de visualização: ${currentView === 'text' ? 'Texto' : currentView === 'hex' ? 'Hexadecimal' : 'Binário'}`);
+            });
+        });
+        
+        // Função: Alterar tempo de auto-salvar
+        autoSaveTimeSelect.addEventListener('change', () => {
+            const selectedTime = parseInt(autoSaveTimeSelect.value);
+            const prefs = loadPreferences();
+            prefs.autoSaveTime = selectedTime;
+            savePreferences(prefs);
+            
+            const timeText = selectedTime >= 60 ? 
+                `${selectedTime / 60} minuto${selectedTime > 60 ? 's' : ''}` : 
+                `${selectedTime} segundos`;
+            showInfo(`⏱️ ${translations[currentLanguage].autoSaveTimeChanged} ${timeText}`);
+        });
+        
+        // Função: Alterar idioma
+        if (languageSelect) {
+            languageSelect.addEventListener('change', () => {
+                const selectedLang = languageSelect.value;
+                const prefs = loadPreferences();
+                prefs.language = selectedLang;
+                savePreferences(prefs);
+                
+                applyTranslations(selectedLang);
+                
+                const langNames = { pt: 'Português', en: 'English', es: 'Español' };
+                showInfo(`🌐 ${translations[selectedLang].languageChanged} ${langNames[selectedLang]}`);
+            });
+        }
+        
+        // Abrir modal de configuração de email
+        if (openEmailConfig) {
+            openEmailConfig.addEventListener('click', () => {
+                if (emailConfigModal) {
+                    emailConfigModal.classList.add('show');
+                    loadEmailConfig();
+                }
+            });
+        }
+        
+        // ========================================
+        // ASSISTENTE DE CONFIGURAÇÃO AUTOMÁTICA
+        // ========================================
+        const autoConfigScriptBtn = document.getElementById('autoConfigScriptBtn');
+        const wizardSteps = document.getElementById('wizardSteps');
+        const validateUrlBtn = document.getElementById('validateUrlBtn');
+        const wizardUrlInput = document.getElementById('wizardUrlInput');
+        
+        if (autoConfigScriptBtn) {
+            autoConfigScriptBtn.addEventListener('click', async () => {
+                // Código do Google Apps Script (embutido)
+                const scriptCode = `// ========================================
+// Google Apps Script - LPT-UNO Email Sender
+// ========================================
+// Este script permite enviar emails do navegador usando sua conta Gmail
+// GRATUITO e ILIMITADO!
+//
+// Versão: 1.0 | Data: 2026-01-25
+// ========================================
+
+function doPost(e) {
+  try {
+    const data = JSON.parse(e.postData.contents);
+    const to = data.to;
+    const toName = data.toName;
+    const fromName = data.fromName;
+    const subject = data.subject;
+    const body = data.body;
+    
+    if (!to || !subject || !body) {
+      return ContentService
+        .createTextOutput(JSON.stringify({
+          success: false,
+          message: 'Campos obrigatórios faltando (to, subject, body)'
+        }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    GmailApp.sendEmail(to, subject, body, {
+      name: fromName || 'LPT-UNO',
+      noReply: false
+    });
+    
+    Logger.log('✅ Email enviado para: ' + to);
+    
+    return ContentService
+      .createTextOutput(JSON.stringify({
+        success: true,
+        message: 'Email enviado com sucesso!',
+        to: to
+      }))
+      .setMimeType(ContentService.MimeType.JSON);
+    
+  } catch (error) {
+    Logger.log('❌ Erro: ' + error.toString());
+    return ContentService
+      .createTextOutput(JSON.stringify({
+        success: false,
+        message: 'Erro ao enviar email: ' + error.toString()
+      }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function doGet(e) {
+  return ContentService
+    .createTextOutput('LPT-UNO Email Sender está rodando! ✅')
+    .setMimeType(ContentService.MimeType.TEXT);
+}`;
+                
+                try {
+                    // Passo 1: Copiar script automaticamente
+                    await navigator.clipboard.writeText(scriptCode);
+                    
+                    // Mostrar wizard
+                    wizardSteps.style.display = 'block';
+                    autoConfigScriptBtn.style.display = 'none';
+                    
+                    // Mostrar Passo 1
+                    document.getElementById('step1').style.display = 'block';
+                    showInfo('✅ Script copiado! Abrindo Google Apps Script em 3 segundos...');
+                    
+                    // Contagem regressiva
+                    let countdown = 3;
+                    const countdownEl = document.getElementById('countdown');
+                    const countdownInterval = setInterval(() => {
+                        countdown--;
+                        if (countdownEl) countdownEl.textContent = countdown;
+                        if (countdown === 0) {
+                            clearInterval(countdownInterval);
+                        }
+                    }, 1000);
+                    
+                    // Passo 2: Abrir Google Apps Script após 3 segundos
+                    setTimeout(() => {
+                        const appsScriptWindow = window.open('https://script.google.com/home/start', '_blank', 'width=1200,height=800');
+                        
+                        // Mostrar Passo 2
+                        document.getElementById('step1').style.display = 'none';
+                        document.getElementById('step2').style.display = 'block';
+                        
+                        // Aguardar alguns segundos e mostrar Passo 3
+                        setTimeout(() => {
+                            document.getElementById('step2').style.display = 'none';
+                            document.getElementById('step3').style.display = 'block';
+                            showInfo('📝 Siga as instruções para implantar o script!');
+                            
+                            // Mostrar Passo 4 após mais tempo
+                            setTimeout(() => {
+                                document.getElementById('step3').style.display = 'none';
+                                document.getElementById('step4').style.display = 'block';
+                                showInfo('🎯 Quase lá! Cole a URL gerada e clique em Validar!');
+                                wizardUrlInput.focus();
+                            }, 30000); // 30 segundos para implantar
+                            
+                        }, 10000); // 10 segundos para colar código
+                        
+                    }, 3000);
+                    
+                } catch (error) {
+                    showError('❌ Erro ao copiar script: ' + error.message);
+                    
+                    // Fallback para navegadores mais antigos
+                    const textarea = document.createElement('textarea');
+                    textarea.value = scriptCode;
+                    textarea.style.position = 'fixed';
+                    textarea.style.opacity = '0';
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    
+                    showInfo('✅ Script copiado (modo compatibilidade)!');
+                    wizardSteps.style.display = 'block';
+                    autoConfigScriptBtn.style.display = 'none';
+                    document.getElementById('step1').style.display = 'block';
+                }
+            });
+        }
+        
+        // Validar e salvar URL automaticamente
+        if (validateUrlBtn) {
+            validateUrlBtn.addEventListener('click', () => {
+                const url = wizardUrlInput.value.trim();
+                
+                // Validar formato da URL
+                const appsScriptRegex = /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/;
+                
+                if (!url) {
+                    showError('❌ Por favor, cole a URL do Google Apps Script!');
+                    wizardUrlInput.focus();
+                    return;
+                }
+                
+                if (!appsScriptRegex.test(url)) {
+                    showError('❌ URL inválida! Formato esperado: https://script.google.com/macros/s/SEU_ID/exec');
+                    wizardUrlInput.focus();
+                    return;
+                }
+                
+                // URL válida! Salvar automaticamente
+                document.getElementById('appsScriptUrl').value = url;
+                
+                // Salvar configuração
+                const senderName = document.getElementById('senderName').value || 'LPT-UNO';
+                const emailConfig = {
+                    appsScriptUrl: url,
+                    senderName: senderName
+                };
+                localStorage.setItem('emailConfig', JSON.stringify(emailConfig));
+                
+                // Feedback de sucesso
+                showInfo('🎉 Configuração salva com sucesso!');
+                showInfo('✅ Você pode agora fechar este modal e testar o envio de emails!');
+                
+                // Resetar wizard
+                setTimeout(() => {
+                    wizardSteps.style.display = 'none';
+                    autoConfigScriptBtn.style.display = 'block';
+                    document.getElementById('step1').style.display = 'none';
+                    document.getElementById('step2').style.display = 'none';
+                    document.getElementById('step3').style.display = 'none';
+                    document.getElementById('step4').style.display = 'none';
+                    wizardUrlInput.value = '';
+                    
+                    // Fechar modal após sucesso
+                    setTimeout(() => {
+                        if (emailConfigModal) {
+                            emailConfigModal.classList.remove('show');
+                        }
+                    }, 2000);
+                }, 2000);
+            });
+        }
+        
+        // Fechar modal de email
+        if (closeEmailModal) {
+            closeEmailModal.addEventListener('click', () => {
+                if (emailConfigModal) emailConfigModal.classList.remove('show');
+            });
+        }
+        
+        // Fechar modal de email ao clicar fora
+        if (emailConfigModal) {
+            emailConfigModal.addEventListener('click', (e) => {
+                if (e.target === emailConfigModal) {
+                    emailConfigModal.classList.remove('show');
+                }
+            });
+        }
+        
+        // Salvar configurações de email
+        if (emailForm) {
+            emailForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                saveEmailConfig();
+            });
+        }
+        
+        // Testar configuração de email
+        if (testEmailConfig) {
+            testEmailConfig.addEventListener('click', () => {
+                testEmailConfiguration();
+            });
+        }
+        
+        // Função: Testar configuração de email
+        function testEmailConfiguration() {
+            const t = translations[currentLanguage];
+            
+            // Validar campo obrigatório
+            const appsScriptUrl = document.getElementById('appsScriptUrl').value.trim();
+            const senderName = document.getElementById('senderName').value.trim();
+            
+            if (!appsScriptUrl) {
+                showError(t.fillAllFields || 'Preencha a URL do Google Apps Script!');
+                return;
+            }
+            
+            // Validar formato da URL do Apps Script
+            const appsScriptRegex = /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/;
+            if (!appsScriptRegex.test(appsScriptUrl)) {
+                showError('❌ URL inválida! Formato esperado: https://script.google.com/macros/s/SEU_ID/exec');
+                return;
+            }
+            
+            showInfo(`📧 ${t.testingEmail || 'Testando configuração de email...'}`);
+            
+            // Enviar email de teste real via Google Apps Script
+            const testPayload = {
+                to: 'teste@exemplo.com',
+                toName: 'Destinatário Teste',
+                fromName: senderName || 'LPT-UNO',
+                subject: '🧪 Teste LPT-UNO - Email Automático',
+                body: `Este é um email de teste enviado em ${new Date().toLocaleString('pt-PT')}.\n\nSe você receber esta mensagem, sua configuração está funcionando!\n\n---\nLPT-UNO Email System\nGoogle Apps Script Integration`
+            };
+            
+            fetch(appsScriptUrl, {
+                method: 'POST',
+                mode: 'no-cors', // Necessário para Apps Script
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(testPayload)
+            })
+            .then(() => {
+                // Com mode: 'no-cors', não conseguimos ler a resposta
+                // Mas se não houver erro, assume-se que funcionou
+                showInfo(`✅ ${t.emailTestSuccess || 'Teste enviado! Verifique sua caixa de entrada (teste@exemplo.com).'}`);
+                showInfo(`⚠️ ${t.emailTestNote || 'Nota: Com Google Apps Script, você verá o email sendo enviado. Verifique seus Enviados no Gmail.'}`);
+            })
+            .catch(error => {
+                console.error('Erro ao testar email:', error);
+                showError(`❌ ${t.emailTestError || 'Erro ao enviar teste!'} ${error.message}`);
+            });
+        }
+        
+        // Abrir modal de destinatários
+        if (recipientsBtn) {
+            recipientsBtn.addEventListener('click', () => {
+                if (recipientsModal) {
+                    recipientsModal.classList.add('show');
+                    loadRecipients();
+                }
+            });
+        }
+        
+        // Fechar modal de destinatários
+        if (closeRecipientsModal) {
+            closeRecipientsModal.addEventListener('click', () => {
+                if (recipientsModal) recipientsModal.classList.remove('show');
+            });
+        }
+        
+        // Fechar modal de destinatários ao clicar fora
+        if (recipientsModal) {
+            recipientsModal.addEventListener('click', (e) => {
+                if (e.target === recipientsModal) {
+                    recipientsModal.classList.remove('show');
+                }
+            });
+        }
+        
+        // Salvar destinatários
+        if (saveRecipientsBtn) {
+            saveRecipientsBtn.addEventListener('click', () => {
+                saveRecipientsData();
+            });
+        }
+        
+        // Função: Criar linha de destinatário
+        function createRecipientRow(name = '', email = '') {
+            const t = translations[currentLanguage];
+            const row = document.createElement('div');
+            row.className = 'recipient-row';
+            
+            const nameInput = document.createElement('input');
+            nameInput.type = 'text';
+            nameInput.placeholder = t.recipientName;
+            nameInput.value = name;
+            nameInput.className = 'recipient-name';
+            
+            const emailInput = document.createElement('input');
+            emailInput.type = 'text';
+            emailInput.placeholder = t.recipientEmail;
+            emailInput.value = email;
+            emailInput.className = 'recipient-email';
+            
+            // Adicionar evento para criar novas linhas quando todas estiverem preenchidas
+            const checkAndAddRows = () => {
+                const allRows = recipientsContainer.querySelectorAll('.recipient-row');
+                let allFilled = true;
+                
+                allRows.forEach(row => {
+                    const name = row.querySelector('.recipient-name').value.trim();
+                    const email = row.querySelector('.recipient-email').value.trim();
+                    if (!name || !email) {
+                        allFilled = false;
+                    }
+                });
+                
+                if (allFilled) {
+                    // Adicionar mais 5 linhas vazias
+                    for (let i = 0; i < 5; i++) {
+                        recipientsContainer.appendChild(createRecipientRow());
+                    }
+                    // Scroll para o final
+                    recipientsContainer.scrollTop = recipientsContainer.scrollHeight;
+                }
+            };
+            
+            nameInput.addEventListener('input', checkAndAddRows);
+            emailInput.addEventListener('input', checkAndAddRows);
+            
+            row.appendChild(nameInput);
+            row.appendChild(emailInput);
+            
+            return row;
+        }
+        
+        // Função: Carregar destinatários
+        function loadRecipients() {
+            recipientsContainer.innerHTML = '';
+            
+            const prefs = loadPreferences();
+            const recipients = prefs.recipients || [];
+            
+            if (recipients.length === 0) {
+                // Criar 5 linhas vazias iniciais
+                for (let i = 0; i < 5; i++) {
+                    recipientsContainer.appendChild(createRecipientRow());
+                }
+            } else {
+                // Carregar destinatários salvos
+                recipients.forEach(recipient => {
+                    recipientsContainer.appendChild(createRecipientRow(recipient.name, recipient.email));
+                });
+                // Adicionar 5 linhas vazias no final
+                for (let i = 0; i < 5; i++) {
+                    recipientsContainer.appendChild(createRecipientRow());
+                }
+            }
+        }
+        
+        // Função: Salvar destinatários
+        function saveRecipientsData() {
+            const t = translations[currentLanguage];
+            const rows = recipientsContainer.querySelectorAll('.recipient-row');
+            const recipients = [];
+            
+            rows.forEach(row => {
+                const name = row.querySelector('.recipient-name').value.trim();
+                const email = row.querySelector('.recipient-email').value.trim();
+                
+                if (name && email) {
+                    recipients.push({ name, email });
+                }
+            });
+            
+            const prefs = loadPreferences();
+            prefs.recipients = recipients;
+            savePreferences(prefs);
+            
+            showInfo(`✅ ${t.recipientsSaved}`);
+            if (recipientsModal) recipientsModal.classList.remove('show');
+        }
+        
+        // Função: Atualizar placeholders dos destinatários
+        function updateRecipientPlaceholders() {
+            const t = translations[currentLanguage];
+            const nameInputs = document.querySelectorAll('.recipient-name');
+            const emailInputs = document.querySelectorAll('.recipient-email');
+            
+            nameInputs.forEach(input => {
+                input.placeholder = t.recipientName;
+            });
+            
+            emailInputs.forEach(input => {
+                input.placeholder = t.recipientEmail;
+            });
+        }
+        
+        // Função: Verificar e enviar emails para destinatários encontrados no buffer
+        function checkAndSendEmails(data, timestamp) {
+            const prefs = loadPreferences();
+            const recipients = prefs.recipients || [];
+            const emailConfig = prefs.email || {};
+            
+            if (recipients.length === 0) {
+                return; // Sem destinatários configurados
+            }
+            
+            if (!emailConfig.senderEmail || !emailConfig.smtpServer) {
+                return; // Configuração de email incompleta
+            }
+            
+            // Converter dados para minúsculas para busca case-insensitive
+            const dataLower = data.toLowerCase();
+            const matchedRecipients = [];
+            
+            // Procurar por cada nome de destinatário no buffer
+            recipients.forEach(recipient => {
+                const nameLower = recipient.name.toLowerCase();
+                if (dataLower.includes(nameLower)) {
+                    matchedRecipients.push(recipient);
+                }
+            });
+            
+            // Se encontrou correspondências, enviar emails
+            if (matchedRecipients.length > 0) {
+                matchedRecipients.forEach(recipient => {
+                    sendEmailToRecipient(recipient, data, timestamp, emailConfig);
+                });
+                
+                const t = translations[currentLanguage];
+                const names = matchedRecipients.map(r => r.name).join(', ');
+                showInfo(`📧 Email enviado para: ${names}`);
+            }
+        }
+        
+        // Função: Enviar email para um destinatário
+        async function sendEmailToRecipient(recipient, data, timestamp, emailConfig) {
+            // Usando Google Apps Script - 100% gratuíto e ilimitado!
+            
+            if (!emailConfig.appsScriptUrl) {
+                console.warn('⚠️ Google Apps Script não configurado. Configure em Definições > Configurar Email');
+                return;
+            }
+            
+            try {
+                // Separar múltiplos emails por vírgula
+                const emails = recipient.email.split(',').map(e => e.trim());
+                
+                // Enviar para cada email
+                for (const email of emails) {
+                    const payload = {
+                        to: email,
+                        toName: recipient.name,
+                        fromName: emailConfig.senderName || 'LPT-UNO',
+                        subject: `LPT-UNO - Dados recebidos - ${timestamp}`,
+                        body: `Olá ${recipient.name},\n\nSegue os dados recebidos pela impressora LPT-UNO:\n\n${data}\n\n---\nEnviado automaticamente em ${new Date().toLocaleString('pt-PT')}`
+                    };
+                    
+                    const response = await fetch(emailConfig.appsScriptUrl, {
+                        method: 'POST',
+                        mode: 'no-cors', // Google Apps Script requer no-cors
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    // No-cors não retorna resposta, assumimos sucesso se não houver erro
+                    console.log('✅ Email enviado para:', recipient.name, '<' + email + '>');
+                    console.log('   Via Google Apps Script');
+                }
+                
+            } catch (error) {
+                console.error('❌ Erro ao enviar email via Google Apps Script:', error);
+                console.log('💡 Verifique a URL do Apps Script em Definições > Configurar Email');
+            }
+        }
+        
+        // Função: Carregar configurações de email
+        function loadEmailConfig() {
+            const prefs = loadPreferences();
+            const email = prefs.email || {};
+            
+            document.getElementById('appsScriptUrl').value = email.appsScriptUrl || '';
+            document.getElementById('senderName').value = email.senderName || 'LPT-UNO';
+        }
+        
+        // Função: Salvar configurações de email
+        function saveEmailConfig() {
+            const prefs = loadPreferences();
+            prefs.email = {
+                appsScriptUrl: document.getElementById('appsScriptUrl').value,
+                senderName: document.getElementById('senderName').value
+            };
+            savePreferences(prefs);
+            
+            showInfo(`✅ ${translations[currentLanguage].emailConfigSaved}`);
+            if (emailConfigModal) emailConfigModal.classList.remove('show');
+        }
+        
+        // Aplicar traduções inicial após todos os elementos estarem prontos
+        applyTranslations(currentLanguage);
+        
+        // Função: Mostrar erro
+        function showError(message) {
+            errorMsg.textContent = '❌ ' + message;
+            errorMsg.style.display = 'block';
+            setTimeout(() => {
+                errorMsg.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Função: Mostrar info
+        function showInfo(message) {
+            infoMsg.textContent = 'ℹ️ ' + message;
+            infoMsg.style.display = 'block';
+            setTimeout(() => {
+                infoMsg.style.display = 'none';
+            }, 3000);
+        }
+        
+        // Função: Resetar timer de inatividade
+        function resetInactivityTimer() {
+            lastDataTime = Date.now();
+            
+            // Limpar timer anterior
+            if (inactivityTimer) {
+                clearTimeout(inactivityTimer);
+            }
+            
+            // Obter tempo configurado (em segundos)
+            const prefs = loadPreferences();
+            const timeInSeconds = prefs.autoSaveTime || 10;
+            
+            // Criar novo timer com tempo configurado
+            inactivityTimer = setTimeout(() => {
+                handleInactivity();
+            }, timeInSeconds * 1000);
+        }
+        
+        // Função: Lidar com inatividade (10 segundos sem dados)
+        function handleInactivity() {
+            if (!pendingData || pendingData.trim().length === 0) {
+                return; // Nada para processar
+            }
+            
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+            const shouldClearMonitor = autoSaveBtn.classList.contains('active') || autoPrintBtn.classList.contains('active');
+            
+            // Auto-salvar se habilitado
+            if (autoSaveBtn.classList.contains('active')) {
+                const blob = new Blob([pendingData], { type: 'text/plain; charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `LPT-UNO_${timestamp}.txt`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showInfo('✅ Arquivo salvo automaticamente: LPT-UNO_' + timestamp + '.txt');
+                
+                // Verificar se há destinatários correspondentes no buffer
+                checkAndSendEmails(pendingData, timestamp);
+            }
+            
+            // Auto-imprimir se habilitado
+            if (autoPrintBtn.classList.contains('active')) {
+                printData(pendingData);
+            }
+            
+            // Limpar dados pendentes
+            pendingData = '';
+            
+            // Limpar monitor apenas se auto-salvar ou auto-imprimir estiver ativo
+            if (shouldClearMonitor) {
+                output.textContent = '';
+                byteCount = 0;
+                byteCountEl.textContent = '0';
+            }
+        }
+        
+        // Função: Imprimir dados na impressora padrão
+        function printData(data) {
+            try {
+                // Criar iframe invisível para impressão
+                const printFrame = document.createElement('iframe');
+                printFrame.style.position = 'absolute';
+                printFrame.style.width = '0';
+                printFrame.style.height = '0';
+                printFrame.style.border = 'none';
+                document.body.appendChild(printFrame);
+                
+                // Escrever conteúdo no iframe
+                const doc = printFrame.contentWindow.document;
+                doc.open();
+                doc.write('<html><head><meta charset="UTF-8"><title>LPT-UNO Print</title>');
+                doc.write('<style>body { font-family: "Courier New", monospace; white-space: pre-wrap; }</style>');
+                doc.write('</head><body>');
+                doc.write(data.replace(/</g, '&lt;').replace(/>/g, '&gt;'));
+                doc.write('</body></html>');
+                doc.close();
+                
+                // Aguardar carregamento e imprimir
+                printFrame.contentWindow.focus();
+                setTimeout(() => {
+                    printFrame.contentWindow.print();
+                    showInfo('🖨️ Enviado para impressora padrão');
+                    
+                    // Remover iframe após impressão
+                    setTimeout(() => {
+                        document.body.removeChild(printFrame);
+                    }, 1000);
+                }, 500);
+                
+            } catch (error) {
+                showError('Erro ao imprimir: ' + error.message);
+            }
+        }
+        
+        // ========================================
+        // SISTEMA DE TEMAS
+        // ========================================
+        const themeSelect = document.getElementById('themeSelect');
+        
+        function applyTheme(theme) {
+            // Remover todos os temas
+            document.body.classList.remove('dark-mode', 'ocean-theme', 'forest-theme', 'sunset-theme');
+            
+            // Aplicar novo tema
+            if (theme === 'dark') {
+                document.body.classList.add('dark-mode');
+            } else if (theme === 'ocean') {
+                document.body.classList.add('ocean-theme');
+            } else if (theme === 'forest') {
+                document.body.classList.add('forest-theme');
+            } else if (theme === 'sunset') {
+                document.body.classList.add('sunset-theme');
+            }
+            
+            // Salvar preferência
+            const prefs = loadPreferences();
+            prefs.theme = theme;
+            savePreferences(prefs);
+            
+            const themeNames = {
+                light: '☀️ Light Mode',
+                dark: '🌙 Dark Mode',
+                ocean: '🌊 Ocean Theme',
+                forest: '🌲 Forest Theme',
+                sunset: '🌅 Sunset Theme'
+            };
+            
+            showInfo(themeNames[theme] + ' ativado!');
+        }
+        
+        if (themeSelect) {
+            themeSelect.addEventListener('change', () => {
+                applyTheme(themeSelect.value);
+            });
+        }
+        
+        // Aplicar tema salvo
+        const savedPrefs = loadPreferences();
+        const savedTheme = savedPrefs.theme || 'light';
+        if (themeSelect) themeSelect.value = savedTheme;
+        applyTheme(savedTheme);
+        
+        // Aplicar preferências salvas: Auto-salvar (padrão true)
+        if (savedPrefs.autoSave !== false) { // Default true
+            if (!autoSaveBtn.classList.contains('active')) {
+                autoSaveBtn.classList.add('active');
+            }
+        } else {
+            autoSaveBtn.classList.remove('active');
+        }
+
+        // Aplicar preferências salvas: Auto-imprimir (restaurar estado)
+        if (savedPrefs.autoPrint && savedPrefs.autoSave !== false) {
+             if (!autoPrintBtn.classList.contains('active')) {
+                autoPrintBtn.classList.add('active');
+                
+                // Aviso de 1ª vez sobre o modo Kiosk
+                if (!sessionStorage.getItem('kioskWarningShown')) {
+                    console.log('Modo Auto-imprimir restaurado. Certifique-se de estar usando o --kiosk-printing.');
+                    sessionStorage.setItem('kioskWarningShown', 'true');
+                }
+             }
+        } else {
+            autoPrintBtn.classList.remove('active');
+        }
+        
+        // ========================================
+        // NOTIFICAÇÕES DESKTOP
+        // ========================================
+        const notificationsToggle = document.getElementById('notificationsToggle');
+        let notificationsEnabled = false;
+        
+        async function requestNotificationPermission() {
+            if ('Notification' in window) {
+                const permission = await Notification.requestPermission();
+                notificationsEnabled = (permission === 'granted');
+                
+                if (notificationsEnabled) {
+                    showInfo('🔔 Notificações ativadas!');
+                    if (notificationsToggle) notificationsToggle.classList.add('active');
+                } else {
+                    showError('❌ Permissão de notificações negada');
+                    if (notificationsToggle) notificationsToggle.classList.remove('active');
+                }
+                
+                // Salvar preferência
+                const prefs = loadPreferences();
+                prefs.notifications = notificationsEnabled;
+                savePreferences(prefs);
+            }
+        }
+        
+        function sendNotification(title, body) {
+            if (notificationsEnabled && 'Notification' in window && Notification.permission === 'granted') {
+                new Notification(title, {
+                    body: body,
+                    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="0.9em" font-size="90">🖨️</text></svg>'
+                });
+            }
+        }
+        
+        if (notificationsToggle) {
+            notificationsToggle.addEventListener('click', () => {
+                if (notificationsEnabled) {
+                    notificationsEnabled = false;
+                    notificationsToggle.classList.remove('active');
+                    showInfo('🔕 Notificações desativadas');
+                    
+                    const prefs = loadPreferences();
+                    prefs.notifications = false;
+                    savePreferences(prefs);
+                } else {
+                    requestNotificationPermission();
+                }
+            });
+        }
+        
+        // Verificar se notificações estavam ativas
+        if (savedPrefs.notifications && 'Notification' in window && Notification.permission === 'granted') {
+            notificationsEnabled = true;
+            if (notificationsToggle) notificationsToggle.classList.add('active');
+        }
+        
+        // ========================================
+        // HISTÓRICO DE SESSÕES
+        // ========================================
+        const openSessionHistory = document.getElementById('openSessionHistory');
+        const sessionHistoryModal = document.getElementById('sessionHistoryModal');
+        const closeSessionHistory = document.getElementById('closeSessionHistory');
+        const clearSessionHistory = document.getElementById('clearSessionHistory');
+        const sessionHistoryList = document.getElementById('sessionHistoryList');
+        
+        function saveSession(data) {
+            if (!data || data.trim().length === 0) return;
+            
+            const sessions = JSON.parse(localStorage.getItem('sessionHistory') || '[]');
+            
+            sessions.unshift({
+                timestamp: new Date().toISOString(),
+                data: data,
+                bytes: data.length
+            });
+            
+            // Manter apenas últimas 10 sessões
+            if (sessions.length > 10) {
+                sessions.pop();
+            }
+            
+            localStorage.setItem('sessionHistory', JSON.stringify(sessions));
+        }
+        
+        function loadSessionHistory() {
+            const sessions = JSON.parse(localStorage.getItem('sessionHistory') || '[]');
+            
+            if (sessions.length === 0) {
+                sessionHistoryList.innerHTML = `
+                    <p style="padding: 20px; text-align: center; color: #6c757d;">
+                        Nenhuma sessão salva ainda
+                    </p>
+                `;
+                return;
+            }
+            
+            sessionHistoryList.innerHTML = sessions.map((session, index) => {
+                const date = new Date(session.timestamp);
+                const preview = session.data.substring(0, 100) + (session.data.length > 100 ? '...' : '');
+                
+                return `
+                    <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px; padding: 15px; margin-bottom: 10px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <strong>📅 ${date.toLocaleString('pt-PT')}</strong>
+                            <span style="color: #6c757d;">${session.bytes} bytes</span>
+                        </div>
+                        <pre style="background: #fff; padding: 10px; border-radius: 3px; margin: 10px 0; max-height: 100px; overflow: auto; font-size: 0.85em;">${preview}</pre>
+                        <div style="display: flex; gap: 10px;">
+                            <button onclick="restoreSession(${index})" class="modal-btn" style="flex: 1; padding: 8px; font-size: 0.9em; background: #28a745;">
+                                ♻️ Restaurar
+                            </button>
+                            <button onclick="deleteSession(${index})" class="modal-btn" style="flex: 1; padding: 8px; font-size: 0.9em; background: #dc3545;">
+                                🗑️ Deletar
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        window.restoreSession = function(index) {
+            const sessions = JSON.parse(localStorage.getItem('sessionHistory') || '[]');
+            if (sessions[index]) {
+                output.textContent = sessions[index].data;
+                sessionHistoryModal.classList.remove('show');
+                showInfo('✅ Sessão restaurada!');
+            }
+        };
+        
+        window.deleteSession = function(index) {
+            const sessions = JSON.parse(localStorage.getItem('sessionHistory') || '[]');
+            sessions.splice(index, 1);
+            localStorage.setItem('sessionHistory', JSON.stringify(sessions));
+            loadSessionHistory();
+            showInfo('🗑️ Sessão deletada!');
+        };
+        
+        if (openSessionHistory) {
+            openSessionHistory.addEventListener('click', () => {
+                sessionHistoryModal.classList.add('show');
+                loadSessionHistory();
+            });
+        }
+        
+        if (closeSessionHistory) {
+            closeSessionHistory.addEventListener('click', () => {
+                sessionHistoryModal.classList.remove('show');
+            });
+        }
+        
+        if (clearSessionHistory) {
+            clearSessionHistory.addEventListener('click', () => {
+                if (confirm('Deseja limpar todas as sessões salvas?')) {
+                    localStorage.removeItem('sessionHistory');
+                    loadSessionHistory();
+                    showInfo('🗑️ Histórico de sessões limpo!');
+                }
+            });
+        }
+        
+        // Salvar sessão automaticamente ao desconectar
+        const originalDisconnect = disconnect;
+        window.disconnect = async function() {
+            if (output.textContent.trim().length > 0) {
+                saveSession(output.textContent);
+            }
+            await originalDisconnect();
+        };
+        
+        // Modificar sendEmailToRecipient para adicionar notificação
+        const originalSendEmail = sendEmailToRecipient;
+        window.sendEmailToRecipient = async function(recipient, data, timestamp, emailConfig) {
+            try {
+                await originalSendEmail(recipient, data, timestamp, emailConfig);
+                sendNotification('Email Enviado', 'Para: ' + recipient.name);
+            } catch (error) {
+                sendNotification('Erro ao Enviar Email', 'Para: ' + recipient.name);
+            }
+        };
+    </script>
+</body>
+</html>

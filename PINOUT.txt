@@ -1,0 +1,117 @@
+╔════════════════════════════════════════════════════════════════╗
+║      PINOUT - LPT PRINTER EMULATOR FOR ARDUINO UNO             ║
+╚════════════════════════════════════════════════════════════════╝
+
+┌─────────────────────────────────────────────────────────────────┐
+│ DB25 CONNECTOR (FEMALE) - FRONT VIEW                           │
+│                                                                 │
+│     13  12  11  10   9   8   7   6   5   4   3   2   1        │
+│    ○   ○   ○   ○   ○   ○   ○   ○   ○   ○   ○   ○   ○          │
+│      ○   ○   ○   ○   ○   ○   ○   ○   ○   ○   ○   ○            │
+│     25  24  23  22  21  20  19  18  17  16  15  14             │
+└─────────────────────────────────────────────────────────────────┘
+
+╔════════════════════════════════════════════════════════════════╗
+║                    CONNECTION TABLE                            ║
+╠════════╦═══════════╦═════════════╦═══════╦═════════════════════╣
+║ DB25   ║  SIGNAL   ║  ARDUINO    ║ TYPE  ║  DESCRIPTION        ║
+╠════════╬═══════════╬═════════════╬═══════╬═════════════════════╣
+║   1    ║  STROBE   ║  Digital 10 ║  IN   ║ Data ready          ║
+║   2    ║  D0       ║  Digital 2  ║  IN   ║ Data bit 0          ║
+║   3    ║  D1       ║  Digital 3  ║  IN   ║ Data bit 1          ║
+║   4    ║  D2       ║  Digital 4  ║  IN   ║ Data bit 2          ║
+║   5    ║  D3       ║  Digital 5  ║  IN   ║ Data bit 3          ║
+║   6    ║  D4       ║  Digital 6  ║  IN   ║ Data bit 4          ║
+║   7    ║  D5       ║  Digital 7  ║  IN   ║ Data bit 5          ║
+║   8    ║  D6       ║  Digital 8  ║  IN   ║ Data bit 6          ║
+║   9    ║  D7       ║  Digital 9  ║  IN   ║ Data bit 7          ║
+║  10    ║  ACK      ║  Digital 11 ║  OUT  ║ Acknowledge         ║
+║  11    ║  BUSY     ║  Digital 12 ║  OUT  ║ Busy                ║
+║  12    ║  PAPER    ║  (not used) ║   -   ║ Paper out           ║
+║  13    ║  SELECT   ║  Digital 13 ║  OUT  ║ Selected            ║
+║  14    ║  AUTOFEED ║  (not used) ║   -   ║ Auto feed           ║
+║  15    ║  ERROR    ║  (not used) ║   -   ║ Error               ║
+║  16    ║  INIT     ║  (not used) ║   -   ║ Initialize          ║
+║  17    ║  SELECT IN║  (not used) ║   -   ║ Select input        ║
+║ 18-25  ║  GND      ║  GND        ║   -   ║ Ground              ║
+╚════════╩═══════════╩═════════════╩═══════╩═════════════════════╝
+
+╔════════════════════════════════════════════════════════════════╗
+║                 ARDUINO WIRING DIAGRAM                         ║
+╠════════════════════════════════════════════════════════════════╣
+║                                                                ║
+║   DB25 Pin 1  (STROBE) ──────────► Arduino D10 (INT0)         ║
+║   DB25 Pin 2  (D0)     ──────────► Arduino D2                 ║
+║   DB25 Pin 3  (D1)     ──────────► Arduino D3                 ║
+║   DB25 Pin 4  (D2)     ──────────► Arduino D4                 ║
+║   DB25 Pin 5  (D3)     ──────────► Arduino D5                 ║
+║   DB25 Pin 6  (D4)     ──────────► Arduino D6                 ║
+║   DB25 Pin 7  (D5)     ──────────► Arduino D7                 ║
+║   DB25 Pin 8  (D6)     ──────────► Arduino D8                 ║
+║   DB25 Pin 9  (D7)     ──────────► Arduino D9                 ║
+║   DB25 Pin 10 (ACK)    ◄────────── Arduino D11                ║
+║   DB25 Pin 11 (BUSY)   ◄────────── Arduino D12                ║
+║   DB25 Pin 13 (SELECT) ◄────────── Arduino D13 (LED)          ║
+║   DB25 Pin 18-25 (GND) ──────────► Arduino GND                ║
+║                                                                ║
+║   Arduino USB ───────────────────► PC (Serial 115200 baud)    ║
+╚════════════════════════════════════════════════════════════════╝
+
+╔════════════════════════════════════════════════════════════════╗
+║                    LOGIC LEVELS                                ║
+╠════════════════════════════════════════════════════════════════╣
+║  HIGH = 5V (logic 1)                                           ║
+║  LOW  = 0V (logic 0)                                           ║
+║                                                                ║
+║  STROBE: Active LOW (low pulse indicates data ready)          ║
+║  ACK:    Active LOW (low pulse = acknowledgment)              ║
+║  BUSY:   Active HIGH (high level = busy)                      ║
+║  SELECT: Active HIGH (high level = ready)                     ║
+╚════════════════════════════════════════════════════════════════╝
+
+╔════════════════════════════════════════════════════════════════╗
+║                  PROTOCOL TIMING                               ║
+╠════════════════════════════════════════════════════════════════╣
+║                                                                ║
+║  1. PC places data on D0-D7                                   ║
+║  2. PC activates STROBE (HIGH → LOW)  ───┐                    ║
+║  3. Arduino detects STROBE                │ < 2 µs (interrupt)║
+║  4. Arduino activates BUSY (LOW → HIGH) ──┘                   ║
+║  5. Arduino reads data                    ──┐                 ║
+║  6. Arduino stores in buffer                │ ~10 µs          ║
+║  7. Arduino sends ACK (LOW pulse)           │                 ║
+║  8. Arduino deactivates BUSY (HIGH → LOW)───┘                 ║
+║                                                                ║
+║  ACK pulse width:   ~5 microseconds                           ║
+║  BUSY time:         ~10 microseconds                          ║
+║  Maximum rate:      ~100 kB/s (theoretical)                   ║
+╚════════════════════════════════════════════════════════════════╝
+
+╔════════════════════════════════════════════════════════════════╗
+║                   IMPORTANT NOTES                              ║
+╠════════════════════════════════════════════════════════════════╣
+║                                                                ║
+║  • Use short cables (< 2 meters) to avoid noise              ║
+║  • Connect ALL GND pins (18-25) to Arduino GND               ║
+║  • Arduino Uno uses 5V TTL levels (compatible with LPT)      ║
+║  • Pin D10 has external interrupt (essential for STROBE)     ║
+║  • Pin D13 has onboard LED (useful for debugging)            ║
+║  • Serial rate: 115200 baud (maximum speed)                  ║
+║  • Buffer: 256 bytes circular                                 ║
+║                                                                ║
+╚════════════════════════════════════════════════════════════════╝
+
+╔════════════════════════════════════════════════════════════════╗
+║                  REQUIRED MATERIALS                            ║
+╠════════════════════════════════════════════════════════════════╣
+║                                                                ║
+║  [ ] 1x Arduino Uno R3                                        ║
+║  [ ] 1x DB25 female connector                                 ║
+║  [ ] 1x USB cable type A-B                                    ║
+║  [ ] 13x Jumper wires male-male (data + control)             ║
+║  [ ] 1x Jumper wire for GND                                   ║
+║  [ ] 1x Breadboard (optional, for organization)              ║
+║  [ ] 1x Soldering iron + solder (if soldering DB25)          ║
+║                                                                ║
+╚════════════════════════════════════════════════════════════════╝
+
