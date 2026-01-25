@@ -425,8 +425,8 @@ SOFTWARE.
 
 ## 📞 Support
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/LPT-UNO/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/LPT-UNO/discussions)
+- **Issues**: [GitHub Issues](https://github.com/nasp2000/lpt-uno/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/nasp2000/lpt-uno/discussions)
 - **Documentation**: See `PINOUT.txt` for detailed wiring diagrams
 
 ---
