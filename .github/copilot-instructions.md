@@ -4,33 +4,36 @@
 
 ### 1. Versionamento e Build Date
 
-**IMPORTANTE**: Sempre que modificar o código do projeto, você DEVE atualizar as informações de versão:
+**⚠️ REGRA CRÍTICA**: **NÃO ALTERAR** versões de firmware ou web interface sem autorização explícita do desenvolvedor!
 
 #### No Código Arduino (`LPT_Emulator.ino`):
 ```cpp
-#define FIRMWARE_VERSION "X.Y"  // Atualizar conforme mudanças
+#define FIRMWARE_VERSION "X.Y"  // ⚠️ NÃO MODIFICAR sem autorização
 #define BUILD_DATE __DATE__     // Automaticamente atualizado na compilação
 #define BUILD_TIME __TIME__     // Automaticamente atualizado na compilação
 ```
-
-**Regras de versionamento:**
-- **Major (X.0)**: Mudanças estruturais, quebra de compatibilidade, novos recursos principais
-- **Minor (X.Y)**: Novos recursos, melhorias, correções significativas
-- **Patch**: Pequenas correções de bugs (opcional, usar X.Y.Z se necessário)
-
-**Quando atualizar:**
-- ✅ Adição de novos recursos
-- ✅ Correção de bugs importantes
-- ✅ Mudanças no protocolo de comunicação
-- ✅ Otimizações significativas
-- ✅ Mudanças na pinagem ou configuração de hardware
 
 #### No Interface Web (`web_interface.html`):
 ```html
 <p id="firmwareInfo" style="...">Web Interface v1.0 | Build: YYYY-MM-DD</p>
 ```
 
-**Atualizar a data no formato ISO (YYYY-MM-DD)** sempre que modificar o HTML.
+**⚠️ APENAS o desenvolvedor pode:**
+- Alterar números de versão (FIRMWARE_VERSION ou Web Interface version)
+- Decidir quando incrementar Major, Minor ou Patch
+- Atualizar o BUILD_DATE manualmente no HTML
+
+**Regras de versionamento (apenas para referência):**
+- **Major (X.0)**: Mudanças estruturais, quebra de compatibilidade, novos recursos principais
+- **Minor (X.Y)**: Novos recursos, melhorias, correções significativas  
+- **Patch (X.Y.Z)**: Pequenas correções de bugs (opcional)
+
+**Quando o desenvolvedor solicitar atualização:**
+- ✅ Adição de novos recursos
+- ✅ Correção de bugs importantes
+- ✅ Mudanças no protocolo de comunicação
+- ✅ Otimizações significativas
+- ✅ Mudanças na pinagem ou configuração de hardware
 
 ### 2. Histórico de Versões
 
@@ -158,6 +161,31 @@ DB25 Pin  → Arduino Pin → Função
 - ⚠️ **Cabos curtos**: < 2 metros para evitar ruído
 - ⚠️ **GND comum**: Todos os pinos GND (18-25) conectados
 
+### 13. Sistema de Configurações (Web Interface)
+
+- **Armazenamento dual**: localStorage (browser) + arquivo config.json (pasta DATA)
+- **Sincronização automática**: Ao selecionar pasta DATA, cria config.json
+- **Backup automático**: Preferências salvas em arquivo JSON
+- **Campos salvos**:
+  - `autoSave`, `autoPrint`, `viewMode`, `autoSaveTime`
+  - `language` (padrão: 'en'), `saveFormat` (txt/csv/pdf)
+  - `theme`, `dataFolder`, `notifications`
+  - `lastSaved` (timestamp ISO), `version`, `appName`
+
+**Estrutura do config.json:**
+```json
+{
+  "autoSave": true,
+  "autoPrint": false,
+  "language": "en",
+  "saveFormat": "txt",
+  "dataFolder": "DATA",
+  "lastSaved": "2026-01-26T10:30:00.000Z",
+  "version": "1.1",
+  "appName": "LPT-UNO Web Interface"
+}
+```
+
 ---
 
 ## 🤖 Prompt Rápido para Copilot
@@ -165,10 +193,11 @@ DB25 Pin  → Arduino Pin → Função
 Quando trabalhar neste projeto, lembre-se:
 ```
 Projeto: LPT-UNO - Emulador Impressora Paralela
-Versão atual: 1.0
+Versão atual: 1.0 (NÃO ALTERAR sem autorização)
 Encoding: UTF-8 (caracteres portugueses)
-Atualizar: versão + build date em TODA modificação
+Idioma padrão: Inglês (EN)
 Idioma: Português (comentários e UI) | Inglês (código)
+Configurações: localStorage + config.json (pasta DATA)
 ```
 
 ---

@@ -563,6 +563,20 @@
             background: #218838;
         }
         
+        .tab-btn {
+            transition: all 0.3s ease;
+        }
+        
+        .tab-btn:hover {
+            background: #f0f0f0 !important;
+            color: #667eea;
+        }
+        
+        .tab-btn.active {
+            color: #667eea;
+            font-weight: bold;
+        }
+        
         .recipients-container {
             max-height: 400px;
             overflow-y: auto;
@@ -1269,6 +1283,22 @@
         body.sunset-theme #settingsBtn:hover {
             background: #7b1fa2;
         }
+        
+        /* Animação para botão de pasta (primeira vez) */
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+            }
+            50% {
+                transform: scale(1.15);
+                box-shadow: 0 0 20px 10px rgba(40, 167, 69, 0);
+            }
+        }
+        
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
     </style>
 </head>
 <body>
@@ -1286,6 +1316,7 @@
             
             <div style="flex: 1;"></div>
             
+            <button id="recipientsBtn">📧 Configurar Destinatários</button>
             <button id="settingsBtn">⚙️ Definições</button>
             
             <div class="status">
@@ -1297,10 +1328,17 @@
         <div class="controls-secondary">
             <button id="saveBtn">💾 Salvar Agora</button>
             <button id="printBtn">🖨️ Imprimir Agora</button>
+            
             <button id="autoSaveBtn" class="toggle active">💾 Auto-salvar</button>
             <button id="autoPrintBtn" class="toggle" title="Para impressão direta sem diálogo, consulte o guia GUIA_IMPRESSAO_SILENCIOSA.md">🖨️ Auto-imprimir</button>
             <div style="flex: 1;"></div>
-            <button id="recipientsBtn">📧 Configurar Destinatários</button>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="display: flex; flex-direction: column; gap: 3px;">
+                    <label for="subfolderNameInput" style="font-size: 0.85em; color: #666; white-space: nowrap;">Nome do arquivo:</label>
+                    <input type="text" id="subfolderNameInput" placeholder="Ex: Cliente_A" 
+                           style="width: 160px; padding: 6px 10px; border: 2px solid #007bff; border-radius: 5px; font-size: 0.9em;" title="Prefixo do arquivo: [nome]_[timestamp].ext">
+                </div>
+            </div>
         </div>
         
         <div class="stats-bar">
@@ -1330,17 +1368,22 @@
         
         <!-- Modal de Definições -->
         <div id="settingsModal" class="modal">
-            <div class="modal-content" style="max-width: 1000px;">
+            <div class="modal-content" style="max-width: 1100px;">
                 <div class="modal-header">
                     <h2>⚙️ Definições</h2>
                     <button class="modal-close" id="closeModal">×</button>
                 </div>
                 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                    <!-- Coluna Esquerda -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 25px; align-items: start;">
+                    
+                    <!-- 📊 COLUNA 1: VISUALIZAÇÃO -->
                     <div>
+                        <h3 style="color: #007bff; border-bottom: 2px solid #007bff; padding-bottom: 10px; margin-bottom: 15px;">
+                            📊 Visualização
+                        </h3>
+                        
                         <div class="modal-section">
-                            <h3>📊 Modo de Visualização</h3>
+                            <h4 style="font-size: 0.95em; margin-bottom: 10px;">Modo de Visualização</h4>
                             <div class="modal-options">
                                 <label class="modal-option selected" data-view="text">
                                     <input type="radio" name="viewMode" value="text" checked>
@@ -1357,10 +1400,10 @@
                             </div>
                         </div>
                         
-                        <div class="modal-section">
-                            <h3>⏱️ Tempo de Auto-Salvar</h3>
+                        <div class="modal-section" style="margin-top: 20px;">
+                            <h4 style="font-size: 0.95em; margin-bottom: 10px;">⏱️ Auto-Salvar</h4>
                             <div class="modal-select-group">
-                                <label for="autoSaveTime">⏰ Tempo de Inatividade:</label>
+                                <label for="autoSaveTime" style="font-size: 0.9em;">Tempo de Inatividade:</label>
                                 <select id="autoSaveTime">
                                     <option value="10">10 segundos</option>
                                     <option value="15">15 segundos</option>
@@ -1373,26 +1416,30 @@
                         </div>
                     </div>
                     
-                    <!-- Coluna Direita -->
+                    <!-- 🎨 COLUNA 2: INTERFACE -->
                     <div>
+                        <h3 style="color: #28a745; border-bottom: 2px solid #28a745; padding-bottom: 10px; margin-bottom: 15px;">
+                            🎨 Interface
+                        </h3>
+                        
                         <div class="modal-section">
-                            <h3 id="langSectionTitle">🌐 Idioma</h3>
+                            <h4 style="font-size: 0.95em; margin-bottom: 10px;" id="langSectionTitle">🌐 Idioma</h4>
                             <div class="modal-select-group">
-                                <label for="languageSelect" id="langLabel">🌍 Selecione o idioma:</label>
+                                <label for="languageSelect" id="langLabel" style="font-size: 0.9em;">Selecione:</label>
                                 <select id="languageSelect">
-                                    <option value="pt">Português</option>
-                                    <option value="en">English</option>
-                                    <option value="es">Español</option>
+                                    <option value="en">🇬🇧 English</option>
+                                    <option value="pt">🇵🇹 Português</option>
+                                    <option value="es">🇪🇸 Español</option>
                                 </select>
                             </div>
                         </div>
                         
-                        <div class="modal-section">
-                            <h3>� Tema Visual</h3>
+                        <div class="modal-section" style="margin-top: 20px;">
+                            <h4 style="font-size: 0.95em; margin-bottom: 10px;">🎨 Tema Visual</h4>
                             <div class="modal-select-group">
-                                <label for="themeSelect">🌈 Selecione o tema:</label>
+                                <label for="themeSelect" style="font-size: 0.9em;">Selecione:</label>
                                 <select id="themeSelect">
-                                    <option value="light">☀️ Light (Padrão)</option>
+                                    <option value="light">☀️ Light</option>
                                     <option value="dark">🌙 Dark</option>
                                     <option value="ocean">🌊 Ocean</option>
                                     <option value="forest">🌲 Forest</option>
@@ -1401,18 +1448,49 @@
                             </div>
                         </div>
                         
+                        <div class="modal-section" style="margin-top: 20px;">
+                            <h4 style="font-size: 0.95em; margin-bottom: 10px;">🔔 Notificações</h4>
+                            <button id="notificationsToggle" class="toggle" style="width: 100%; justify-content: center;">
+                                🔔 Notificações Desktop
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 💾 COLUNA 3: ARQUIVOS -->
+                    <div>
+                        <h3 style="color: #dc3545; border-bottom: 2px solid #dc3545; padding-bottom: 10px; margin-bottom: 15px;">
+                            💾 Arquivos
+                        </h3>
+                        
                         <div class="modal-section">
-                            <h3>🔔 Notificações</h3>
-                            <div style="display: flex; gap: 10px; align-items: center;">
-                                <button id="notificationsToggle" class="toggle" style="flex: 1;">🔔 Notificações Desktop</button>
+                            <h4 style="font-size: 0.95em; margin-bottom: 10px;">💾 Formato de Gravação</h4>
+                            <div class="modal-options">
+                                <label class="modal-option selected" data-format="txt">
+                                    <input type="radio" name="saveFormat" value="txt" checked>
+                                    <span>📝 Texto (.txt)</span>
+                                </label>
+                                <label class="modal-option" data-format="csv">
+                                    <input type="radio" name="saveFormat" value="csv">
+                                    <span>📊 CSV (.csv)</span>
+                                </label>
+                                <label class="modal-option" data-format="pdf">
+                                    <input type="radio" name="saveFormat" value="pdf">
+                                    <span>📄 PDF (.pdf)</span>
+                                </label>
                             </div>
                         </div>
                         
-                        <div class="modal-section">
-                            <button class="modal-btn" id="openEmailConfig">📧 Configurar Email</button>
-                            <button class="modal-btn" id="openSessionHistory" style="background: #17a2b8;">💾 Histórico de Sessões</button>
+                        <div class="modal-section" style="margin-top: 20px;">
+                            <h4 style="font-size: 0.95em; margin-bottom: 10px;">🔧 Avançado</h4>
+                            <button class="modal-btn" id="openEmailConfig" style="width: 100%; margin-bottom: 8px;">
+                                📧 Configurar Email
+                            </button>
+                            <button class="modal-btn" id="openSessionHistory" style="background: #17a2b8; width: 100%;">
+                                💾 Histórico de Sessões
+                            </button>
                         </div>
                     </div>
+                    
                 </div>
             </div>
         </div>
@@ -1545,24 +1623,73 @@
             </div>
         </div>
         
-        <!-- Modal de Histórico de Sessões -->
+        <!-- Modal de Histórico de Sessões e Backups -->
         <div id="sessionHistoryModal" class="modal">
             <div class="modal-content" style="max-width: 900px;">
                 <div class="modal-header">
-                    <h2>💾 Histórico de Sessões</h2>
+                    <h2>💾 Histórico de Sessões e Backups</h2>
                     <button class="modal-close" id="closeSessionHistory">×</button>
                 </div>
                 
-                <div style="max-height: 500px; overflow-y: auto;" id="sessionHistoryList">
-                    <p style="padding: 20px; text-align: center; color: #6c757d;">
-                        Nenhuma sessão salva ainda
-                    </p>
+                <!-- Tabs para alternar entre Sessões e Backups -->
+                <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e0e0e0;">
+                    <button id="tabSessions" class="tab-btn active" style="flex: 1; padding: 10px; border: none; background: transparent; cursor: pointer; font-weight: bold; border-bottom: 3px solid #667eea;">
+                        📂 Sessões Salvas
+                    </button>
+                    <button id="tabBackups" class="tab-btn" style="flex: 1; padding: 10px; border: none; background: transparent; cursor: pointer; font-weight: bold; border-bottom: 3px solid transparent;">
+                        🔄 Backups Automáticos
+                    </button>
                 </div>
                 
-                <div style="margin-top: 20px; display: flex; gap: 10px;">
-                    <button type="button" class="modal-btn" id="clearSessionHistory" style="background: #dc3545;">
-                        🗑️ Limpar Todas as Sessões
-                    </button>
+                <!-- Conteúdo: Sessões Salvas -->
+                <div id="sessionsContent" style="display: block;">
+                    <div style="max-height: 500px; overflow-y: auto;" id="sessionHistoryList">
+                        <p style="padding: 20px; text-align: center; color: #6c757d;">
+                            Nenhuma sessão salva ainda
+                        </p>
+                    </div>
+                    
+                    <div style="margin-top: 20px; display: flex; gap: 10px;">
+                        <button type="button" class="modal-btn" id="clearSessionHistory" style="background: #dc3545;">
+                            🗑️ Limpar Todas as Sessões
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Conteúdo: Backups Automáticos -->
+                <div id="backupsContent" style="display: none;">
+                    <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 15px; font-size: 0.9em;">
+                        <strong>ℹ️ Sistema de Backup Automático</strong>
+                        <p style="margin: 10px 0 0 0;">
+                            • Backup a cada 30 segundos enquanto houver dados<br>
+                            • Backup automático ao fechar página<br>
+                            • Máximo de 50 backups (mais antigos são removidos)<br>
+                            • Backups salvos no navegador (IndexedDB)<br>
+                            • Arquivos baixados vão para pasta Downloads
+                        </p>
+                    </div>
+                    
+                    <div id="backupStats" style="padding: 10px; background: #f5f5f5; border-radius: 6px; margin-bottom: 15px; font-size: 0.9em;">
+                        <span id="backupCount">Carregando...</span>
+                    </div>
+                    
+                    <div style="max-height: 400px; overflow-y: auto;" id="backupList">
+                        <p style="padding: 20px; text-align: center; color: #6c757d;">
+                            Nenhum backup encontrado
+                        </p>
+                    </div>
+                    
+                    <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button type="button" class="modal-btn" id="refreshBackups" style="background: #28a745;">
+                            🔄 Atualizar Lista
+                        </button>
+                        <button type="button" class="modal-btn" id="exportAllBackups" style="background: #17a2b8;">
+                            📦 Exportar Todos os Backups
+                        </button>
+                        <button type="button" class="modal-btn" id="clearAllBackups" style="background: #dc3545;">
+                            🗑️ Limpar Todos os Backups
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1593,6 +1720,29 @@
         let pendingData = '';
         let firmwareVersion = 'Unknown';
         let firmwareBuild = 'Unknown';
+        
+        // Novas variáveis para melhorias
+        let autoReconnectEnabled = true;
+        let reconnectAttempts = 0;
+        const MAX_RECONNECT_ATTEMPTS = 5;
+        let reconnectTimer = null;
+        
+        // Elementos do Monitor LPT
+        const ledStrobe = document.getElementById('ledStrobe');
+        const ledBusy = document.getElementById('ledBusy');
+        const ledAck = document.getElementById('ledAck');
+        const ledSelect = document.getElementById('ledSelect');
+        const dataLeds = [
+            document.getElementById('ledD0'),
+            document.getElementById('ledD1'),
+            document.getElementById('ledD2'),
+            document.getElementById('ledD3'),
+            document.getElementById('ledD4'),
+            document.getElementById('ledD5'),
+            document.getElementById('ledD6'),
+            document.getElementById('ledD7')
+        ];
+        const hexValueDisplay = document.getElementById('hexValue');
         
         // Sistema de Tradução (i18n)
         const translations = {
@@ -1676,7 +1826,14 @@
                 errorStats: 'Erro ao solicitar estatísticas:',
                 errorPrint: 'Erro ao imprimir:',
                 notConnected: 'Arduino não conectado',
-                apiNotSupported: 'Web Serial API não suportada. Use Chrome, Edge ou Opera.'
+                apiNotSupported: 'Web Serial API não suportada. Use Chrome, Edge ou Opera.',
+                manual: '(Manual)',
+                silentModeActive: '✅ Modo de impressão silenciosa ATIVO',
+                silentModeDisabled: '🛑 Impressão Silenciosa DESATIVADA. Abra pelo arquivo LPT-UNO.bat para ativar.',
+                autoDetectFound: '🔌 Detecção automática: Dispositivo encontrado! Conectando...',
+                connectionLost: '⚠️ Conexão perdida! Tentativa de reconexão',
+                reconnectFailed: '❌ Falha na reconexão automática após 5 tentativas.',
+                bufferCleared: 'Buffer limpo automaticamente (Pós-conexão)'
             },
             en: {
                 title: 'LPT-UNO - Parallel Printer Emulator',
@@ -1758,7 +1915,14 @@
                 errorStats: 'Error requesting statistics:',
                 errorPrint: 'Print error:',
                 notConnected: 'Arduino not connected',
-                apiNotSupported: 'Web Serial API not supported. Use Chrome, Edge or Opera.'
+                apiNotSupported: 'Web Serial API not supported. Use Chrome, Edge or Opera.',
+                manual: '(Manual)',
+                silentModeActive: '✅ Silent print mode ACTIVE',
+                silentModeDisabled: '🛑 Silent Printing DISABLED. Open via LPT-UNO.bat to activate.',
+                autoDetectFound: '🔌 Auto-detection: Device found! Connecting...',
+                connectionLost: '⚠️ Connection lost! Reconnection attempt',
+                reconnectFailed: '❌ Auto-reconnection failed after 5 attempts.',
+                bufferCleared: 'Buffer cleared automatically (Post-connection)'
             },
             es: {
                 title: 'LPT-UNO - Emulador Impresora Paralela',
@@ -1840,14 +2004,227 @@
                 errorStats: 'Error al solicitar estadísticas:',
                 errorPrint: 'Error al imprimir:',
                 notConnected: 'Arduino no conectado',
-                apiNotSupported: 'Web Serial API no compatible. Use Chrome, Edge u Opera.'
+                apiNotSupported: 'Web Serial API no compatible. Use Chrome, Edge u Opera.',
+                manual: '(Manual)',
+                silentModeActive: '✅ Modo de impresión silenciosa ACTIVO',
+                silentModeDisabled: '🛑 Impresión Silenciosa DESACTIVADA. Abra con LPT-UNO.bat para activar.',
+                autoDetectFound: '🔌 Detección automática: ¡Dispositivo encontrado! Conectando...',
+                connectionLost: '⚠️ ¡Conexión perdida! Intento de reconexión',
+                reconnectFailed: '❌ Falló la reconexión automática después de 5 intentos.',
+                bufferCleared: 'Buffer limpiado automáticamente (Post-conexión)'
             }
         };
         
-        let currentLanguage = 'pt';
+        let currentLanguage = 'en';
         
         // LocalStorage - Salvar preferências
         const STORAGE_KEY = 'lpt-uno-preferences';
+        
+        // ========================================
+        // SISTEMA DE BACKUP AUTOMÁTICO (IndexedDB)
+        // ========================================
+        const BACKUP_DB_NAME = 'lpt-uno-backups';
+        const BACKUP_DB_VERSION = 1;
+        const BACKUP_STORE = 'sessions';
+        const MAX_BACKUPS = 50; // Máximo de backups mantidos
+        
+        // Função: Abrir banco de dados de backup
+        function openBackupDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(BACKUP_DB_NAME, BACKUP_DB_VERSION);
+                
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => resolve(request.result);
+                
+                request.onupgradeneeded = (event) => {
+                    const db = event.target.result;
+                    
+                    if (!db.objectStoreNames.contains(BACKUP_STORE)) {
+                        const store = db.createObjectStore(BACKUP_STORE, { keyPath: 'id', autoIncrement: true });
+                        store.createIndex('timestamp', 'timestamp', { unique: false });
+                        store.createIndex('subfolder', 'subfolder', { unique: false });
+                    }
+                };
+            });
+        }
+        
+        // Função: Salvar backup automático
+        async function saveAutoBackup(data) {
+            if (!data || data.trim().length === 0) return;
+            
+            try {
+                const db = await openBackupDB();
+                const transaction = db.transaction([BACKUP_STORE], 'readwrite');
+                const store = transaction.objectStore(BACKUP_STORE);
+                
+                const prefs = loadPreferences();
+                const backup = {
+                    timestamp: new Date().toISOString(),
+                    subfolder: prefs.subfolderName || 'default',
+                    data: data,
+                    size: data.length,
+                    saved: false // Marca se foi salvo em arquivo
+                };
+                
+                store.add(backup);
+                
+                // Limitar número de backups
+                const countRequest = store.count();
+                countRequest.onsuccess = () => {
+                    const count = countRequest.result;
+                    if (count > MAX_BACKUPS) {
+                        const index = store.index('timestamp');
+                        const cursorRequest = index.openCursor();
+                        let deleted = 0;
+                        const toDelete = count - MAX_BACKUPS;
+                        
+                        cursorRequest.onsuccess = (e) => {
+                            const cursor = e.target.result;
+                            if (cursor && deleted < toDelete) {
+                                cursor.delete();
+                                deleted++;
+                                cursor.continue();
+                            }
+                        };
+                    }
+                };
+                
+                console.log(`💾 Backup automático salvo (${backup.size} bytes)`);
+            } catch (e) {
+                console.warn('Erro ao salvar backup:', e);
+            }
+        }
+        
+        // Função: Listar backups
+        async function listBackups() {
+            try {
+                const db = await openBackupDB();
+                const transaction = db.transaction([BACKUP_STORE], 'readonly');
+                const store = transaction.objectStore(BACKUP_STORE);
+                const index = store.index('timestamp');
+                
+                return new Promise((resolve, reject) => {
+                    const backups = [];
+                    const request = index.openCursor(null, 'prev');
+                    
+                    request.onsuccess = (e) => {
+                        const cursor = e.target.result;
+                        if (cursor) {
+                            backups.push({
+                                id: cursor.value.id,
+                                timestamp: cursor.value.timestamp,
+                                subfolder: cursor.value.subfolder,
+                                size: cursor.value.size,
+                                saved: cursor.value.saved || false
+                            });
+                            cursor.continue();
+                        } else {
+                            resolve(backups);
+                        }
+                    };
+                    
+                    request.onerror = () => reject(request.error);
+                });
+            } catch (e) {
+                console.error('Erro ao listar backups:', e);
+                return [];
+            }
+        }
+        
+        // Função: Recuperar backup
+        async function getBackup(id) {
+            try {
+                const db = await openBackupDB();
+                const transaction = db.transaction([BACKUP_STORE], 'readonly');
+                const store = transaction.objectStore(BACKUP_STORE);
+                
+                return new Promise((resolve, reject) => {
+                    const request = store.get(id);
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+            } catch (e) {
+                console.error('Erro ao recuperar backup:', e);
+                return null;
+            }
+        }
+        
+        // Função: Marcar backup como salvo
+        async function markBackupAsSaved(id) {
+            try {
+                const db = await openBackupDB();
+                const transaction = db.transaction([BACKUP_STORE], 'readwrite');
+                const store = transaction.objectStore(BACKUP_STORE);
+                
+                const backup = await getBackup(id);
+                if (backup) {
+                    backup.saved = true;
+                    store.put(backup);
+                }
+            } catch (e) {
+                console.warn('Erro ao marcar backup:', e);
+            }
+        }
+        
+        // Função: Exportar todos os backups
+        async function exportAllBackups() {
+            try {
+                const db = await openBackupDB();
+                const transaction = db.transaction([BACKUP_STORE], 'readonly');
+                const store = transaction.objectStore(BACKUP_STORE);
+                
+                return new Promise((resolve, reject) => {
+                    const request = store.getAll();
+                    request.onsuccess = () => {
+                        const backups = request.result;
+                        const exportData = {
+                            version: '1.0',
+                            exported: new Date().toISOString(),
+                            count: backups.length,
+                            backups: backups,
+                            config: loadPreferences()
+                        };
+                        
+                        const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `LPT-UNO_BACKUP_${new Date().toISOString().slice(0,10)}.json`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                        
+                        showInfo(`📦 ${backups.length} backups exportados`);
+                        resolve(true);
+                    };
+                    request.onerror = () => reject(request.error);
+                });
+            } catch (e) {
+                console.error('Erro ao exportar:', e);
+                showError('❌ Erro ao exportar backups');
+            }
+        }
+        
+        // Auto-backup periódico
+        let autoBackupTimer = null;
+        function startAutoBackupSystem() {
+            // Backup a cada 30 segundos
+            autoBackupTimer = setInterval(() => {
+                const text = output.textContent;
+                if (text && text.trim().length > 0) {
+                    saveAutoBackup(text);
+                }
+            }, 30000);
+            
+            // Backup antes de fechar página
+            window.addEventListener('beforeunload', () => {
+                const text = output.textContent;
+                if (text && text.trim().length > 0) {
+                    saveAutoBackup(text);
+                }
+            });
+            
+            console.log('🔄 Sistema de backup automático ativado (30s)');
+        }
         
         // Função: Carregar preferências
         function loadPreferences() {
@@ -1865,14 +2242,23 @@
                 autoPrint: false,
                 viewMode: 'text',
                 autoSaveTime: 10,
-                language: 'pt'
+                language: 'en',
+                saveFormat: 'txt',
+                dataFolder: null,
+                subfolderName: 'default'
             };
         }
         
         // Função: Salvar preferências
-        function savePreferences(prefs) {
+        async function savePreferences(prefs) {
             try {
+                // Salvar no localStorage
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
+                
+                // Salvar também em arquivo se temos acesso
+                if (rootDirectoryHandle) {
+                    await saveConfigToFile(prefs);
+                }
             } catch (e) {
                 console.error('Erro ao salvar preferências:', e);
             }
@@ -1912,11 +2298,11 @@
                 
                 if (isKiosk) {
                     autoPrintBtn.innerHTML = `🖨️ ${t.autoPrint}`;
-                    autoPrintBtn.title = '✅ Modo de impressão silenciosa ATIVO';
+                    autoPrintBtn.title = t.silentModeActive;
                     autoPrintBtn.style.color = ''; // Reset
                 } else {
-                    autoPrintBtn.innerHTML = `⚠️ ${t.autoPrint} (Manual)`;
-                    autoPrintBtn.title = '🛑 Impressão Silenciosa DESATIVADA. Abra pelo arquivo LPT-UNO.bat para ativar.';
+                    autoPrintBtn.innerHTML = `⚠️ ${t.autoPrint} ${t.manual}`;
+                    autoPrintBtn.title = t.silentModeDisabled;
                     autoPrintBtn.style.color = 'yellow'; // Destaque visual
                 }
             }
@@ -2148,18 +2534,57 @@
             autoSaveTimeSelect.value = preferences.autoSaveTime;
         }
         
+        // ========================================
+        // DETECÇÃO AUTOMÁTICA
+        // ========================================
+        
+        // Função: Auto-conectar se possível (ao carregar ou reconectar)
+        async function tryAutoConnect() {
+            if (!('serial' in navigator)) return;
+            const t = translations[currentLanguage];
+            
+            try {
+                // Obter portas já autorizadas
+                const ports = await navigator.serial.getPorts();
+                if (ports.length > 0) {
+                    console.log(`🔌 Detecção automática: ${ports.length} porta(s) encontrada(s). Tentando conectar...`);
+                    showInfo(t.autoDetectFound);
+                    
+                    // Tentar conectar na primeira porta disponível
+                    // Nota: Idealmente verificaríamos VID/PID, mas getPorts() retorna objetos SerialPort opacos
+                    // que podemos comparar se tivéssemos salvo o info, mas conectar no primeiro é seguro se o usuário só usa um Arduino.
+                    port = ports[0];
+                    await connectToPort(port);
+                } else {
+                    console.log('🔌 Detecção automática: Nenhuma porta autorizada encontrada.');
+                }
+            } catch (err) {
+                console.error('Erro na detecção automática:', err);
+            }
+        }
+        
         // Função: Conectar/Desconectar Arduino
         connectBtn.addEventListener('click', async () => {
             if (isConnected) {
+                // Usuário pediu para desconectar explicitamente: não reconectar automaticamente
+                autoReconnectEnabled = false;
                 await disconnect();
             } else {
+                autoReconnectEnabled = true;
                 await connect();
             }
         });
         
+        // Função auxiliar para conectar a uma porta específica
+        async function connectToPort(serialPort) {
+            port = serialPort;
+            await connect(true);
+        }
+        
         async function connect(autoConnect = false) {
+            const t = translations[currentLanguage];
             try {
-                // Solicitar porta serial
+                // Solicitar porta serial somente se não estamos em auto-connect
                 if (!autoConnect) {
                     port = await navigator.serial.requestPort();
                 }
@@ -2173,20 +2598,26 @@
                 infoMsg.style.display = 'none';
                 startTime = Date.now();
                 
+                // Monitorar sinais: Se houver desconexão, tentar reconectar
+                navigator.serial.addEventListener('disconnect', handleDisconnectEvent);
+                
                 // Configurar leitor com encoding UTF-8 para suportar caracteres portugueses
                 const decoder = new TextDecoderStream('utf-8');
-                port.readable.pipeTo(decoder.writable);
-                reader = decoder.readable.getReader();
+                const inputDone = port.readable.pipeTo(decoder.writable);
+                const inputStream = decoder.readable;
+                reader = inputStream.getReader();
                 
                 // Configurar escritor
                 const encoder = new TextEncoderStream();
-                encoder.readable.pipeTo(port.writable);
+                const outputDone = encoder.readable.pipeTo(port.writable);
                 writer = encoder.writable.getWriter();
                 
+                // Resetar tentativas de reconexão
+                reconnectAttempts = 0;
+                
                 // Solicitar identificação e versão do firmware
-                await writer.write('I'); // Comando de identificação
-                await new Promise(resolve => setTimeout(resolve, 100));
-                await writer.write('V');
+                writer.write('I'); // Comando de identificação
+                setTimeout(() => writer.write('V'), 100);
                 
                 // Salvar que conectámos com sucesso
                 localStorage.setItem('lptUnoAutoConnect', 'true');
@@ -2198,7 +2629,7 @@
                     byteCount = 0;
                     byteCountEl.textContent = '0';
                     pendingData = ''; // Limpar dados pendentes para que o banner não seja salvo
-                    showInfo('Buffer limpo automaticamente (Pós-conexão)');
+                    showInfo(t.bufferCleared);
                 }, 3000);
                 
                 // Iniciar leitura de dados
@@ -2208,12 +2639,52 @@
                 setInterval(updateStats, 1000);
                 
             } catch (error) {
-                showError('Erro ao conectar: ' + error.message);
+                console.error("Connection error:", error);
+                showError(`${t.errorConnect} ${error.message}`);
+                
+                // Se falhou no auto-connect, tentar novamente?
+                if (autoConnect && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+                    scheduleReconnect();
+                }
             }
+        }
+        
+        // Event listener para desconexão do dispositivo (cabo removido)
+        function handleDisconnectEvent(event) {
+            console.log('Evento de desconexão detectado:', event);
+            if (event.target === port || event.port === port) {
+                console.log('A porta ativa foi desconectada.');
+                if (autoReconnectEnabled) {
+                    scheduleReconnect();
+                }
+            }
+        }
+        
+        function scheduleReconnect() {
+            const t = translations[currentLanguage];
+            if (reconnectTimer) clearTimeout(reconnectTimer);
+            if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+                showError(t.reconnectFailed);
+                reconnectAttempts = 0;
+                return;
+            }
+            
+            reconnectAttempts++;
+            const delay = 2000; // 2 segundos
+            
+            showInfo(`${t.connectionLost} ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS} (2s)...`);
+            console.log(`Tentando reconectar em ${delay}ms...`);
+            
+            reconnectTimer = setTimeout(() => {
+                tryAutoConnect();
+            }, delay);
         }
         
         async function disconnect() {
             try {
+                // Remover listener de desconexão para não reconectar acidentalmente
+                navigator.serial.removeEventListener('disconnect', handleDisconnectEvent);
+                
                 if (reader) {
                     await reader.cancel();
                     reader = null;
@@ -2279,6 +2750,7 @@
                     // Processar dados recebidos (Exibição imediata)
                     for (let i = 0; i < value.length; i++) {
                         const byte = value.charCodeAt(i);
+                        
                         byteCount++;
                         displayByte(byte);
                         
@@ -2391,24 +2863,94 @@
         });
         
         // Função: Salvar output
-        saveBtn.addEventListener('click', () => {
+        saveBtn.addEventListener('click', async () => {
             const text = output.textContent;
             if (!text || text.trim().length === 0) {
                 showError('Nenhum dado para salvar');
                 return;
             }
-            const blob = new Blob([text], { type: 'text/plain; charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
-            a.href = url;
-            a.download = `LPT-UNO_${timestamp}.txt`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            showInfo('✅ Arquivo salvo com sucesso');
+            
+            const prefs = loadPreferences();
+            const format = prefs.saveFormat || 'txt';
+            const timestamp = generateTimestamp();
+            
+            await saveToFile(text, timestamp, format);
         });
+        
+        // Função: Salvar arquivo no formato escolhido
+        async function saveToFile(text, timestamp, format) {
+            try {
+                // Obter prefixo do arquivo (se configurado)
+                const prefs = loadPreferences();
+                const filePrefix = prefs.subfolderName || 'lpt-uno';
+                
+                // Sanitizar prefixo (remover caracteres inválidos)
+                const sanitizedPrefix = filePrefix.replace(/[<>:"\/\\|?*]/g, '_');
+                
+                let blob, filename, mimeType;
+                const baseFilename = `${sanitizedPrefix}_${timestamp}`;
+                
+                switch(format) {
+                    case 'csv':
+                        // Converter texto para CSV (uma linha por byte/caractere)
+                        const csvContent = 'Timestamp,Character,ASCII,Hex\\n' + 
+                            text.split('').map((char, i) => {
+                                const ascii = char.charCodeAt(0);
+                                const hex = ascii.toString(16).toUpperCase().padStart(2, '0');
+                                return `${timestamp},"${char.replace(/"/g, '""')}",${ascii},0x${hex}`;
+                            }).join('\\n');
+                        blob = new Blob([csvContent], { type: 'text/csv; charset=utf-8' });
+                        filename = `${baseFilename}.csv`;
+                        mimeType = 'text/csv';
+                        break;
+                        
+                    case 'pdf':
+                        // Gerar PDF simples usando jsPDF (inline)
+                        const pdfContent = generateSimplePDF(text, timestamp);
+                        blob = new Blob([pdfContent], { type: 'application/pdf' });
+                        filename = `${baseFilename}.pdf`;
+                        mimeType = 'application/pdf';
+                        break;
+                        
+                    case 'txt':
+                    default:
+                        blob = new Blob([text], { type: 'text/plain; charset=utf-8' });
+                        filename = `${baseFilename}.txt`;
+                        mimeType = 'text/plain';
+                        break;
+                }
+                
+                // Download do arquivo
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                showInfo(`💾 Arquivo ${filename} salvo na pasta Downloads!`);
+                
+            } catch (error) {
+                console.error('Erro ao salvar arquivo:', error);
+                showError('❌ Erro ao salvar arquivo');
+            }
+        }
+        
+        // Função: Gerar PDF simples (básico, sem biblioteca externa)
+        function generateSimplePDF(text, timestamp) {
+            // PDF básico em formato texto (para funcionar sem bibliotecas)
+            const pdfHeader = `%PDF-1.4\n1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n3 0 obj\n<< /Type /Page /Parent 2 0 R /Resources 4 0 R /MediaBox [0 0 612 792] /Contents 5 0 R >>\nendobj\n4 0 obj\n<< /Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Courier >> >> >>\nendobj\n5 0 obj\n<< /Length ${text.length + 100} >>\nstream\nBT\n/F1 10 Tf\n50 750 Td\n(LPT-UNO Output - ${timestamp}) Tj\n0 -15 Td\n`;
+            
+            const pdfContent = text.split('\n').slice(0, 50).map(line => 
+                `(${line.replace(/[()\\]/g, '\\$&').substring(0, 80)}) Tj\n0 -12 Td\n`
+            ).join('');
+            
+            const pdfFooter = `ET\nendstream\nendobj\nxref\n0 6\n0000000000 65535 f \n0000000009 00000 n \n0000000058 00000 n \n0000000115 00000 n \n0000000214 00000 n \n0000000304 00000 n \ntrailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${400 + text.length}\n%%EOF`;
+            
+            return pdfHeader + pdfContent + pdfFooter;
+        }
         
         // Função: Imprimir agora
         printBtn.addEventListener('click', () => {
@@ -2478,6 +3020,15 @@
         // Função: Abrir modal de definições
         settingsBtn.addEventListener('click', () => {
             settingsModal.classList.add('show');
+            
+            // Carregar preferências atuais
+            const prefs = loadPreferences();
+            
+            // Carregar valores se necessário
+            const autoSaveTimeSelect = document.getElementById('autoSaveTime');
+            if (autoSaveTimeSelect) {
+                autoSaveTimeSelect.value = prefs.autoSaveTime || 10;
+            }
         });
         
         // Função: Fechar modal
@@ -2546,6 +3097,48 @@
                 
                 const langNames = { pt: 'Português', en: 'English', es: 'Español' };
                 showInfo(`🌐 ${translations[selectedLang].languageChanged} ${langNames[selectedLang]}`);
+            });
+        }
+        
+        // Função: Alterar formato de salvamento
+        const saveFormatRadios = document.querySelectorAll('input[name="saveFormat"]');
+        saveFormatRadios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                const format = e.target.value;
+                const prefs = loadPreferences();
+                prefs.saveFormat = format;
+                savePreferences(prefs);
+                
+                // Atualizar visual
+                document.querySelectorAll('[data-format]').forEach(el => el.classList.remove('selected'));
+                e.target.closest('[data-format]').classList.add('selected');
+                
+                const formatNames = { txt: 'TXT', csv: 'CSV', pdf: 'PDF' };
+                showInfo(`💾 Formato alterado para: ${formatNames[format]}`);
+            });
+        });
+        
+        // Função: Salvar nome do arquivo (prefixo)
+        const subfolderNameInput = document.getElementById('subfolderNameInput');
+        if (subfolderNameInput) {
+            // Carregar valor salvo
+            const prefs = loadPreferences();
+            subfolderNameInput.value = prefs.subfolderName || '';
+            
+            // Salvar quando o usuário digitar (com debounce)
+            let debounceTimer;
+            subfolderNameInput.addEventListener('input', (e) => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    const value = e.target.value.trim();
+                    const prefs = loadPreferences();
+                    prefs.subfolderName = value || 'lpt-uno';
+                    savePreferences(prefs);
+                    
+                    if (value) {
+                        showInfo(`📝 Prefixo do arquivo: ${value}_[timestamp].[ext]`);
+                    }
+                }, 500); // 500ms debounce
             });
         }
         
@@ -3130,7 +3723,7 @@ function doGet(e) {
                 return; // Nada para processar
             }
             
-            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+            const timestamp = generateTimestamp();
             const shouldClearMonitor = autoSaveBtn.classList.contains('active') || autoPrintBtn.classList.contains('active');
             
             // Auto-salvar se habilitado
@@ -3251,6 +3844,19 @@ function doGet(e) {
         const savedTheme = savedPrefs.theme || 'light';
         if (themeSelect) themeSelect.value = savedTheme;
         applyTheme(savedTheme);
+        
+        // Aplicar idioma salvo
+        const savedLang = savedPrefs.language || 'en';
+        if (languageSelect) languageSelect.value = savedLang;
+        applyTranslations(savedLang);
+        
+        // Aplicar formato de salvamento
+        const savedFormat = savedPrefs.saveFormat || 'txt';
+        const formatRadio = document.querySelector(`input[name="saveFormat"][value="${savedFormat}"]`);
+        if (formatRadio) {
+            formatRadio.checked = true;
+            formatRadio.closest('[data-format]')?.classList.add('selected');
+        }
         
         // Aplicar preferências salvas: Auto-salvar (padrão true)
         if (savedPrefs.autoSave !== false) { // Default true
@@ -3437,6 +4043,230 @@ function doGet(e) {
             });
         }
         
+        // TABS: Alternar entre Sessões e Backups
+        // ========================================
+        const tabSessions = document.getElementById('tabSessions');
+        const tabBackups = document.getElementById('tabBackups');
+        const sessionsContent = document.getElementById('sessionsContent');
+        const backupsContent = document.getElementById('backupsContent');
+        
+        if (tabSessions) {
+            tabSessions.addEventListener('click', () => {
+                // Ativar tab Sessões
+                tabSessions.classList.add('active');
+                tabSessions.style.borderBottom = '3px solid #667eea';
+                tabBackups.classList.remove('active');
+                tabBackups.style.borderBottom = '3px solid transparent';
+                
+                // Mostrar conteúdo
+                sessionsContent.style.display = 'block';
+                backupsContent.style.display = 'none';
+                
+                loadSessionHistory();
+            });
+        }
+        
+        if (tabBackups) {
+            tabBackups.addEventListener('click', () => {
+                // Ativar tab Backups
+                tabBackups.classList.add('active');
+                tabBackups.style.borderBottom = '3px solid #667eea';
+                tabSessions.classList.remove('active');
+                tabSessions.style.borderBottom = '3px solid transparent';
+                
+                // Mostrar conteúdo
+                backupsContent.style.display = 'block';
+                sessionsContent.style.display = 'none';
+                
+                loadBackupList();
+            });
+        }
+        
+        // INTERFACE DE BACKUPS
+        // ========================================
+        const refreshBackups = document.getElementById('refreshBackups');
+        const exportAllBackupsBtn = document.getElementById('exportAllBackups');
+        const clearAllBackups = document.getElementById('clearAllBackups');
+        const backupList = document.getElementById('backupList');
+        const backupCount = document.getElementById('backupCount');
+        
+        async function loadBackupList() {
+            try {
+                const backups = await listBackups();
+                
+                // Atualizar contador
+                if (backupCount) {
+                    backupCount.innerHTML = `
+                        <strong>📊 Total de backups:</strong> ${backups.length} / ${MAX_BACKUPS}
+                        ${backups.length > 0 ? `| <strong>Último backup:</strong> ${new Date(backups[0].timestamp).toLocaleString('pt-PT')}` : ''}
+                    `;
+                }
+                
+                if (backups.length === 0) {
+                    backupList.innerHTML = `
+                        <p style="padding: 20px; text-align: center; color: #6c757d;">
+                            Nenhum backup encontrado
+                        </p>
+                    `;
+                    return;
+                }
+                
+                backupList.innerHTML = backups.map(backup => {
+                    const date = new Date(backup.timestamp);
+                    const preview = backup.data.substring(0, 80) + (backup.data.length > 80 ? '...' : '');
+                    const savedBadge = backup.saved ? '<span style="background: #28a745; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.8em;">✅ Salvo</span>' : '';
+                    
+                    return `
+                        <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px; padding: 15px; margin-bottom: 10px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 5px;">
+                                <strong>📅 ${date.toLocaleString('pt-PT')}</strong>
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                    ${savedBadge}
+                                    <span style="color: #6c757d; font-size: 0.9em;">${backup.size} bytes</span>
+                                    ${backup.subfolder ? `<span style="background: #667eea; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.8em;">📁 ${backup.subfolder}</span>` : ''}
+                                </div>
+                            </div>
+                            <pre style="background: #fff; padding: 10px; border-radius: 3px; margin: 10px 0; max-height: 80px; overflow: auto; font-size: 0.8em;">${preview}</pre>
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                <button onclick="restoreBackup('${backup.id}')" class="modal-btn" style="flex: 1; min-width: 120px; padding: 8px; font-size: 0.9em; background: #28a745;">
+                                    ♻️ Restaurar
+                                </button>
+                                <button onclick="downloadBackup('${backup.id}')" class="modal-btn" style="flex: 1; min-width: 120px; padding: 8px; font-size: 0.9em; background: #17a2b8;">
+                                    💾 Download
+                                </button>
+                                <button onclick="deleteBackup('${backup.id}')" class="modal-btn" style="flex: 1; min-width: 120px; padding: 8px; font-size: 0.9em; background: #dc3545;">
+                                    🗑️ Deletar
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Erro ao carregar backups:', error);
+                backupList.innerHTML = `
+                    <p style="padding: 20px; text-align: center; color: #dc3545;">
+                        ❌ Erro ao carregar backups: ${error.message}
+                    </p>
+                `;
+            }
+        }
+        
+        // Funções globais para backup
+        window.restoreBackup = async function(id) {
+            try {
+                const backup = await getBackup(id);
+                if (backup && backup.data) {
+                    output.textContent = backup.data;
+                    pendingData = backup.data;
+                    byteCount = backup.data.length;
+                    updateStats();
+                    sessionHistoryModal.classList.remove('show');
+                    showInfo(`✅ Backup restaurado! (${backup.size} bytes)`);
+                }
+            } catch (error) {
+                console.error('Erro ao restaurar backup:', error);
+                showInfo(`❌ Erro ao restaurar backup: ${error.message}`);
+            }
+        };
+        
+        window.downloadBackup = async function(id) {
+            try {
+                const backup = await getBackup(id);
+                if (backup && backup.data) {
+                    const date = new Date(backup.timestamp);
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const year = date.getFullYear();
+                    const hours = String(date.getHours()).padStart(2, '0');
+                    const minutes = String(date.getMinutes()).padStart(2, '0');
+                    const seconds = String(date.getSeconds()).padStart(2, '0');
+                    const timestamp = `${day}-${month}-${year}_${hours}h${minutes}m${seconds}s`;
+                    const filename = backup.subfolder ? `${backup.subfolder}_${timestamp}.txt` : `backup_${timestamp}.txt`;
+                    
+                    const blob = new Blob([backup.data], { type: 'text/plain; charset=utf-8' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    
+                    // Marcar como salvo
+                    await markBackupAsSaved(id);
+                    loadBackupList();
+                    
+                    showInfo(`💾 Backup baixado: ${filename}`);
+                }
+            } catch (error) {
+                console.error('Erro ao baixar backup:', error);
+                showInfo(`❌ Erro ao baixar backup: ${error.message}`);
+            }
+        };
+        
+        window.deleteBackup = async function(id) {
+            if (!confirm('Deseja deletar este backup?')) return;
+            
+            try {
+                const db = await openBackupDB();
+                const transaction = db.transaction(BACKUP_STORE, 'readwrite');
+                const store = transaction.objectStore(BACKUP_STORE);
+                
+                await new Promise((resolve, reject) => {
+                    const request = store.delete(id);
+                    request.onsuccess = () => resolve();
+                    request.onerror = () => reject(request.error);
+                });
+                
+                loadBackupList();
+                showInfo('🗑️ Backup deletado!');
+            } catch (error) {
+                console.error('Erro ao deletar backup:', error);
+                showInfo(`❌ Erro ao deletar backup: ${error.message}`);
+            }
+        };
+        
+        if (refreshBackups) {
+            refreshBackups.addEventListener('click', () => {
+                loadBackupList();
+                showInfo('🔄 Lista de backups atualizada!');
+            });
+        }
+        
+        if (exportAllBackupsBtn) {
+            exportAllBackupsBtn.addEventListener('click', async () => {
+                try {
+                    await exportAllBackups();
+                } catch (error) {
+                    console.error('Erro ao exportar backups:', error);
+                    showInfo(`❌ Erro ao exportar: ${error.message}`);
+                }
+            });
+        }
+        
+        if (clearAllBackups) {
+            clearAllBackups.addEventListener('click', async () => {
+                if (!confirm('⚠️ ATENÇÃO: Deseja deletar TODOS os backups? Esta ação não pode ser desfeita!')) return;
+                
+                try {
+                    const db = await openBackupDB();
+                    const transaction = db.transaction(BACKUP_STORE, 'readwrite');
+                    const store = transaction.objectStore(BACKUP_STORE);
+                    
+                    await new Promise((resolve, reject) => {
+                        const request = store.clear();
+                        request.onsuccess = () => resolve();
+                        request.onerror = () => reject(request.error);
+                    });
+                    
+                    loadBackupList();
+                    showInfo('🗑️ Todos os backups foram deletados!');
+                } catch (error) {
+                    console.error('Erro ao limpar backups:', error);
+                    showInfo(`❌ Erro ao limpar backups: ${error.message}`);
+                }
+            });
+        }
+        
         // Salvar sessão automaticamente ao desconectar
         const originalDisconnect = disconnect;
         window.disconnect = async function() {
@@ -3456,6 +4286,21 @@ function doGet(e) {
                 sendNotification('Erro ao Enviar Email', 'Para: ' + recipient.name);
             }
         };
+        
+        // ========================================
+        // INICIALIZAÇÃO AUTOMÁTICA DO SISTEMA
+        // ========================================
+        (function() {
+            console.log('✅ Sistema LPT-UNO iniciado');
+            console.log('💾 Arquivos serão salvos na pasta Downloads');
+            console.log('🔄 Sistema de backup automático via IndexedDB');
+            
+            // Iniciar sistema de backup automático
+            startAutoBackupSystem();
+            
+            // Detecção automática de dispositivo (Auto-Connect)
+            setTimeout(tryAutoConnect, 1000); // 1s de delay para garantir renderização correta
+        })();
     </script>
 </body>
 </html>

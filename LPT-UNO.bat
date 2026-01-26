@@ -9,6 +9,8 @@ echo.
 echo ATENCAO: Feche outras janelas do navegador antes
 echo para melhor funcionamento da impressao automatica.
 echo.
+echo Arquivos serao salvos na pasta Downloads do navegador.
+echo.
 echo Procurando Google Chrome ou Microsoft Edge...
 echo.
 
