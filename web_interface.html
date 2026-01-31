@@ -1455,8 +1455,11 @@
                             <button class="modal-btn" id="openEmailConfig" style="width: 100%; margin-bottom: 8px;">
                                 📧 Configurar Email
                             </button>
+                            <button class="modal-btn" id="importIniBtn" style="width: 100%; margin-bottom: 8px; background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+                                📥 Importar Configurações (.ini)
+                            </button>
                             <button class="modal-btn" id="setupIniBtn" style="width: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                                💾 Criar/Configurar config.ini
+                                💾 Exportar Configurações (.ini)
                             </button>
                         </div>
                     </div>
@@ -1561,7 +1564,6 @@
                     </div>
                     
                     <div class="modal-btn-group">
-                        <button type="button" class="modal-btn modal-btn-test" id="testEmailConfig">✅ Testar Configuração</button>
                         <button type="submit" class="modal-btn" id="saveEmailConfig">💾 Salvar Configurações</button>
                     </div>
                 </form>
@@ -1775,7 +1777,8 @@
                 pdfFormat: 'PDF (.pdf)',
                 advanced: 'Avançado',
                 configureEmail: 'Configurar Email',
-                setupIni: 'Criar/Configurar config.ini',
+                setupIni: 'Exportar Configurações (.ini)',
+                importIni: 'Importar Configurações (.ini)',
                 footer1: 'Interface Paralela LPT (DB25) | Web Serial API',
                 footer2: 'Requer navegador compatível com Web Serial API (Chrome, Edge, Opera)',
                 contact: 'Contacto:',
@@ -1835,7 +1838,6 @@
                 smtpUser: 'Usuário SMTP:',
                 smtpPassword: 'Senha/App Password:',
                 saveEmailConfig: 'Salvar Configurações',
-                testEmailConfig: 'Testar Configuração',
                 emailConfigSaved: 'Configurações de email salvas com sucesso!',
                 testingEmail: 'Testando configuração de email...',
                 emailTestSuccess: 'Teste bem-sucedido! Verifique sua caixa de entrada.',
@@ -1919,7 +1921,8 @@
                 pdfFormat: 'PDF (.pdf)',
                 advanced: 'Advanced',
                 configureEmail: 'Configure Email',
-                setupIni: 'Create/Configure config.ini',
+                setupIni: 'Export Settings (.ini)',
+                importIni: 'Import Settings (.ini)',
                 footer1: 'Parallel Interface LPT (DB25) | Web Serial API',
                 footer2: 'Requires browser compatible with Web Serial API (Chrome, Edge, Opera)',
                 contact: 'Contact:',
@@ -1979,7 +1982,6 @@
                 smtpUser: 'SMTP User:',
                 smtpPassword: 'Password/App Password:',
                 saveEmailConfig: 'Save Settings',
-                testEmailConfig: 'Test Configuration',
                 emailConfigSaved: 'Email settings saved successfully!',
                 testingEmail: 'Testing email configuration...',
                 emailTestSuccess: 'Test successful! Check your inbox.',
@@ -2063,7 +2065,8 @@
                 pdfFormat: 'PDF (.pdf)',
                 advanced: 'Avanzado',
                 configureEmail: 'Configurar Email',
-                setupIni: 'Crear/Configurar config.ini',
+                setupIni: 'Exportar Configuración (.ini)',
+                importIni: 'Importar Configuración (.ini)',
                 footer1: 'Interfaz Paralela LPT (DB25) | Web Serial API',
                 footer2: 'Requiere navegador compatible con Web Serial API (Chrome, Edge, Opera)',
                 contact: 'Contacto:',
@@ -2123,7 +2126,6 @@
                 smtpUser: 'Usuario SMTP:',
                 smtpPassword: 'Contraseña/App Password:',
                 saveEmailConfig: 'Guardar Configuración',
-                testEmailConfig: 'Probar Configuración',
                 emailConfigSaved: '¡Configuración de email guardada con éxito!',
                 testingEmail: 'Probando configuración de email...',
                 emailTestSuccess: '¡Prueba exitosa! Verifique su bandeja de entrada.',
@@ -2204,11 +2206,8 @@
         // Função: Salvar preferências
         async function savePreferences(prefs) {
             try {
-                // 1. Salvar no localStorage
+                // Salvar no localStorage
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
-                
-                // 2. Salvar em arquivo config.ini (se File System Access API disponível)
-                await saveToIniFile(prefs);
             } catch (e) {
                 console.error('Erro ao salvar preferências:', e);
             }
@@ -2253,63 +2252,7 @@ baudRate=115200
 `;
         }
         
-        // Função: Salvar em arquivo config.ini
-        async function saveToIniFile(prefs) {
-            try {
-                // Verificar se File System Access API está disponível
-                if (!window.showSaveFilePicker) {
-                    console.log('📝 File System Access API não disponível - usando apenas localStorage');
-                    return;
-                }
-                
-                // Verificar se já temos handle do arquivo .ini salvo
-                const savedHandle = localStorage.getItem('lptUnoIniFileHandle');
-                let fileHandle;
-                
-                if (savedHandle) {
-                    try {
-                        // Tentar restaurar o handle salvo
-                        fileHandle = await getIniFileHandle();
-                        if (!fileHandle) {
-                            // Handle inválido, criar novo
-                            return; // Não forçar criação, só salvar se usuário já configurou
-                        }
-                    } catch (e) {
-                        console.log('📝 Handle de .ini não disponível');
-                        return;
-                    }
-                } else {
-                    // Não há handle salvo, não forçar criação
-                    return;
-                }
-                
-                // Salvar no arquivo
-                const iniContent = prefsToIni(prefs);
-                const writable = await fileHandle.createWritable();
-                await writable.write(iniContent);
-                await writable.close();
-                
-                console.log('✅ Configurações salvas em config.ini');
-            } catch (e) {
-                console.log('📝 config.ini não configurado (usando apenas localStorage)');
-            }
-        }
-        
-        // Função: Obter handle do arquivo .ini
-        async function getIniFileHandle() {
-            try {
-                const savedHandle = localStorage.getItem('lptUnoIniFileHandle');
-                if (!savedHandle) return null;
-                
-                // Nota: File System Access API não permite serializar handles
-                // Esta é uma limitação da API - precisaríamos pedir permissão novamente
-                return null; // Por enquanto, retornar null
-            } catch (e) {
-                return null;
-            }
-        }
-        
-        // Função: Criar/Selecionar arquivo config.ini manualmente
+        // Função: Exportar configurações para arquivo .ini
         async function setupIniFile() {
             try {
                 if (!window.showSaveFilePicker) {
@@ -2318,28 +2261,134 @@ baudRate=115200
                 }
                 
                 const handle = await window.showSaveFilePicker({
-                    suggestedName: 'config.ini',
+                    suggestedName: 'lpt-uno-config.ini',
                     types: [{
                         description: 'Configuration File',
                         accept: { 'text/plain': ['.ini'] }
                     }]
                 });
                 
-                // Salvar handle (nota: não pode ser serializado, mas marcar como configurado)
-                localStorage.setItem('lptUnoIniFileHandle', 'configured');
-                
-                // Salvar configurações atuais no arquivo
+                // Obter configurações atuais
                 const prefs = loadPreferences();
                 const iniContent = prefsToIni(prefs);
                 const writable = await handle.createWritable();
                 await writable.write(iniContent);
                 await writable.close();
                 
-                showInfo('✅ Arquivo config.ini criado! As configurações serão salvas automaticamente.');
+                showInfo('✅ Configurações exportadas com sucesso!');
+                console.log('✅ Arquivo .ini exportado com as configurações atuais');
             } catch (e) {
                 if (e.name !== 'AbortError') {
-                    console.error('Erro ao criar config.ini:', e);
+                    console.error('Erro ao exportar .ini:', e);
+                    showError('❌ Erro ao exportar configurações');
                 }
+            }
+        }
+        
+        // Função: Importar configurações de arquivo .ini
+        async function importIniFile() {
+            try {
+                if (!window.showOpenFilePicker) {
+                    showInfo('❌ Seu navegador não suporta abertura de arquivos');
+                    return;
+                }
+                
+                const [handle] = await window.showOpenFilePicker({
+                    types: [{
+                        description: 'Configuration File',
+                        accept: { 'text/plain': ['.ini'] }
+                    }],
+                    multiple: false
+                });
+                
+                const file = await handle.getFile();
+                const content = await file.text();
+                
+                // Parse do arquivo .ini
+                const prefs = parseIniFile(content);
+                
+                if (!prefs) {
+                    showError('❌ Arquivo .ini inválido ou corrompido');
+                    return;
+                }
+                
+                // Salvar preferências importadas
+                savePreferences(prefs);
+                
+                // Aplicar imediatamente
+                location.reload(); // Recarregar página para aplicar todas as configurações
+                
+            } catch (e) {
+                if (e.name !== 'AbortError') {
+                    console.error('Erro ao importar .ini:', e);
+                    showError('❌ Erro ao importar configurações');
+                }
+            }
+        }
+        
+        // Função: Parse de arquivo .ini para objeto de preferências
+        function parseIniFile(content) {
+            try {
+                const prefs = {
+                    autoSave: true,
+                    autoPrint: false,
+                    autoSaveTime: 10,
+                    language: 'en',
+                    saveFormat: 'txt',
+                    notifications: false,
+                    autoConnect: false
+                };
+                
+                const lines = content.split('\n');
+                let currentSection = '';
+                
+                for (const line of lines) {
+                    const trimmed = line.trim();
+                    
+                    // Ignorar comentários e linhas vazias
+                    if (trimmed.startsWith(';') || trimmed.startsWith('#') || trimmed === '') {
+                        continue;
+                    }
+                    
+                    // Detectar seções [Section]
+                    if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+                        currentSection = trimmed.slice(1, -1).toLowerCase();
+                        continue;
+                    }
+                    
+                    // Parse de chave=valor
+                    const match = trimmed.match(/^([^=]+)=(.*)$/);
+                    if (match) {
+                        const key = match[1].trim();
+                        let value = match[2].trim();
+                        
+                        // Converter valores booleanos e numéricos
+                        if (value === 'true') value = true;
+                        else if (value === 'false') value = false;
+                        else if (!isNaN(value) && value !== '') value = Number(value);
+                        
+                        // Mapear chaves do .ini para o objeto de preferências
+                        if (currentSection === 'automation') {
+                            if (key === 'autoSave') prefs.autoSave = value;
+                            else if (key === 'autoPrint') prefs.autoPrint = value;
+                            else if (key === 'autoSaveTime') prefs.autoSaveTime = value;
+                        } else if (currentSection === 'interface') {
+                            if (key === 'language') prefs.language = value;
+                            else if (key === 'notifications') prefs.notifications = value;
+                        } else if (currentSection === 'files') {
+                            if (key === 'saveFormat') prefs.saveFormat = value;
+                        } else if (currentSection === 'connection') {
+                            if (key === 'autoConnect') prefs.autoConnect = value;
+                        }
+                    }
+                }
+                
+                console.log('✅ Configurações importadas do .ini:', prefs);
+                return prefs;
+                
+            } catch (e) {
+                console.error('Erro ao fazer parse do .ini:', e);
+                return null;
             }
         }
         
@@ -2381,14 +2430,14 @@ baudRate=115200
                     autoPrintBtn.style.color = '#00ff00'; // Verde brilhante
                     autoPrintBtn.style.fontWeight = 'bold';
                 } else {
-                    // Verificar se está ativo mas sem kiosk
+                    // Verificar se está ativo
                     if (autoPrintBtn.classList.contains('active')) {
-                        autoPrintBtn.innerHTML = `⚠️ ${t.autoPrint} ${t.manual}`;
-                        autoPrintBtn.title = t.silentModeDisabled + ' - Use o .BAT para modo silencioso!';
-                        autoPrintBtn.style.color = 'yellow'; // Destaque visual de aviso
+                        autoPrintBtn.innerHTML = `🖨️ ${t.autoPrint} ✅`;
+                        autoPrintBtn.title = 'Auto-print ativo - Abrirá diálogo de impressão';
+                        autoPrintBtn.style.color = '#4CAF50'; // Verde
                     } else {
                         autoPrintBtn.innerHTML = `🖨️ ${t.autoPrint}`;
-                        autoPrintBtn.title = t.silentModeDisabled;
+                        autoPrintBtn.title = 'Auto-print desativado';
                         autoPrintBtn.style.color = '';
                     }
                 }
@@ -2470,9 +2519,6 @@ baudRate=115200
             const saveEmailConfig = document.getElementById('saveEmailConfig');
             if (saveEmailConfig) saveEmailConfig.textContent = `💾 ${t.saveEmailConfig}`;
             
-            const testEmailConfig = document.getElementById('testEmailConfig');
-            if (testEmailConfig) testEmailConfig.textContent = `✅ ${t.testEmailConfig}`;
-            
             // Botão destinatários
             const recipientsBtn = document.getElementById('recipientsBtn');
             if (recipientsBtn) recipientsBtn.innerHTML = `📧 ${t.configureRecipients}`;
@@ -2526,7 +2572,10 @@ baudRate=115200
             // Atualizar botão de configurar email
             if (openEmailConfig) openEmailConfig.innerHTML = `📧 ${t.configureEmail}`;
             
-            // Atualizar botão de configurar .ini
+            // Atualizar botões de .ini
+            const importIniBtn = document.getElementById('importIniBtn');
+            if (importIniBtn) importIniBtn.innerHTML = `📥 ${t.importIni}`;
+            
             const setupIniBtn = document.getElementById('setupIniBtn');
             if (setupIniBtn) setupIniBtn.innerHTML = `💾 ${t.setupIni}`;
             
@@ -2629,7 +2678,6 @@ baudRate=115200
         const emailConfigModal = document.getElementById('emailConfigModal');
         const closeEmailModal = document.getElementById('closeEmailModal');
         const emailForm = document.getElementById('emailForm');
-        const testEmailConfig = document.getElementById('testEmailConfig');
         const recipientsBtn = document.getElementById('recipientsBtn');
         const recipientsModal = document.getElementById('recipientsModal');
         const closeRecipientsModal = document.getElementById('closeRecipientsModal');
@@ -2657,6 +2705,9 @@ baudRate=115200
             // Forçar auto-print nas preferências
             preferences.autoPrint = true;
             preferences.autoSave = true; // Auto-print requer auto-save
+            
+            // Salvar imediatamente
+            savePreferences(preferences);
             
             // Remover hash da URL para não interferir
             window.history.replaceState(null, null, window.location.pathname);
@@ -2726,8 +2777,10 @@ baudRate=115200
         
         if (preferences.autoPrint) {
             autoPrintBtn.classList.add('active');
+            autoPrintEnabled = true;
         } else {
             autoPrintBtn.classList.remove('active');
+            autoPrintEnabled = false;
         }
         
         // Aplicar tempo de auto-salvar
@@ -3568,7 +3621,15 @@ baudRate=115200
             });
         }
         
-        // Botão para criar/configurar arquivo .ini
+        // Botão para importar arquivo .ini
+        const importIniBtn = document.getElementById('importIniBtn');
+        if (importIniBtn) {
+            importIniBtn.addEventListener('click', async () => {
+                await importIniFile();
+            });
+        }
+        
+        // Botão para exportar arquivo .ini
         const setupIniBtn = document.getElementById('setupIniBtn');
         if (setupIniBtn) {
             setupIniBtn.addEventListener('click', async () => {
@@ -3823,138 +3884,6 @@ function testEmail() {
             emailForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 saveEmailConfig();
-            });
-        }
-        
-        // Testar configuração de email
-        if (testEmailConfig) {
-            testEmailConfig.addEventListener('click', () => {
-                testEmailConfiguration();
-            });
-        }
-        
-        // Função: Testar configuração de email
-        function testEmailConfiguration() {
-            const t = translations[currentLanguage];
-            
-            // Validar campo obrigatório
-            const appsScriptUrl = document.getElementById('appsScriptUrl').value.trim();
-            const senderName = document.getElementById('senderName').value.trim();
-            
-            if (!appsScriptUrl) {
-                showError(t.fillAllFields || 'Preencha a URL do Google Apps Script!');
-                return;
-            }
-            
-            // Validar formato da URL do Apps Script
-            const appsScriptRegex = /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec/;
-            if (!appsScriptRegex.test(appsScriptUrl)) {
-                showError('❌ URL inválida! Formato esperado: https://script.google.com/macros/s/SEU_ID/exec');
-                return;
-            }
-            
-            showInfo(`📧 ${t.testingEmail || 'Testando configuração de email...'}`);
-            
-            // Enviar email de teste para Session.getActiveUser().getEmail() (você mesmo)
-            // Google Apps Script detecta automaticamente o email do usuário logado
-            const testPayload = {
-                to: 'SELF', // Código especial: o script enviará para o Gmail do usuário logado
-                toName: 'Administrador LPT-UNO',
-                fromName: senderName || 'LPT-UNO',
-                subject: '✅ Teste LPT-UNO - Configuração de Email Funcionando!',
-                body: `🎉 SUCESSO! Sua configuração está correta!\n\n` +
-                      `✅ Google Apps Script: Funcionando\n` +
-                      `✅ Conexão Web Interface: OK\n` +
-                      `✅ Envio de Email: Operacional\n\n` +
-                      `⏰ Teste realizado: ${new Date().toLocaleString('pt-PT')}\n` +
-                      `👤 Remetente: ${senderName || 'LPT-UNO'}\n\n` +
-                      `Agora você pode configurar destinatários e o sistema enviará emails automaticamente quando detectar dados!\n\n` +
-                      `---\n` +
-                      `LPT-UNO Email System v1.1\n` +
-                      `Google Apps Script Integration`,
-                // Campos opcionais (não usado em teste, mas evita erros)
-                attachmentData: null,
-                attachmentName: null
-            };
-            
-            console.log('📧 Enviando teste para Google Apps Script...');
-            console.log('📧 URL:', appsScriptUrl);
-            console.log('📧 Payload:', testPayload);
-            
-            fetch(appsScriptUrl, {
-                method: 'POST',
-                mode: 'no-cors', // Necessário para Apps Script
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(testPayload)
-            })
-            .then(() => {
-                // Com mode: 'no-cors', não conseguimos ler a resposta
-                // Mas se não houver erro, assume-se que funcionou
-                console.log('✅ Requisição enviada com sucesso!');
-                console.log('⏰ Aguarde 5-15 segundos para o email chegar...');
-                
-                showInfo('📤 Email de teste ENVIADO para o Google Apps Script!');
-                showInfo('⏰ Aguarde 5-15 segundos e verifique sua caixa de entrada do Gmail');
-                
-                setTimeout(() => {
-                    showInfo('📬 Email não chegou? Veja as instruções no console (F12)');
-                }, 5000);
-                
-                // Instruções de troubleshooting
-                console.log('');
-                console.log('═══════════════════════════════════════════════════════');
-                console.log('🔍 TROUBLESHOOTING - Se NÃO RECEBER o email de teste:');
-                console.log('═══════════════════════════════════════════════════════');
-                console.log('');
-                console.log('⚠️ IMPORTANTE: Primeira vez? DEVE autorizar o script!');
-                console.log('');
-                console.log('📋 PASSO 1: Executar testEmail() manualmente (OBRIGATÓRIO na 1ª vez)');
-                console.log('1. Abra: https://script.google.com/home/start');
-                console.log('2. Encontre seu projeto "LPT-UNO Email Sender"');
-                console.log('3. No editor, selecione a função "testEmail" no dropdown');
-                console.log('4. Clique em "Executar" (▶️)');
-                console.log('5. AUTORIZE quando aparecer pop-up de permissões do Google');
-                console.log('6. Aguarde... deve receber um email de teste no Gmail');
-                console.log('7. ✅ Email recebido? Agora pode usar o botão de teste na interface!');
-                console.log('');
-                console.log('📋 PASSO 2: Verificar Execuções do Script');
-                console.log('1. Apps Script → Menu lateral → "Execuções" (⏱️)');
-                console.log('2. Veja se há execução RECENTE (últimos 30 segundos)');
-                console.log('');
-                console.log('❌ Se NÃO houver execuções recentes:');
-                console.log('   → O script NÃO está recebendo a requisição');
-                console.log('   → Verifique se fez o DEPLOY como Web App');
-                console.log('   → Verifique se copiou a URL CORRETA');
-                console.log('');
-                console.log('❌ Se houver execução com ERRO:');
-                console.log('   → Clique na execução para ver detalhes');
-                console.log('   → Erro "UnauthorizedEmailRecipient"? Execute testEmail() manualmente PRIMEIRO!');
-                console.log('   → Erro "Exception: No permission"? Autorize o script!');
-                console.log('   → Erro de sintaxe? Copie o código novamente do assistente');
-                console.log('');
-                console.log('✅ Se houver execução com SUCESSO mas sem email:');
-                console.log('   → Verifique Gmail → Spam');
-                console.log('   → Verifique Gmail → Todas as mensagens');
-                console.log('   → Aguarde mais 1-2 minutos (pode demorar)');
-                console.log('');
-                console.log('📋 PASSO 3: Verificar Implantação');
-                console.log('1. Apps Script → Implementar → Gerenciar implantações');
-                console.log('2. Deve ter 1 implantação ativa (Web App)');
-                console.log('3. "Executar como": Eu (seu email)');
-                console.log('4. "Quem tem acesso": Qualquer pessoa');
-                console.log('');
-                console.log('💡 DICA: O erro mais comum é não executar testEmail() manualmente primeiro!');
-                console.log('   O Google exige autorização manual na primeira execução.');
-                console.log('');
-                console.log('═══════════════════════════════════════════════════════');
-            })
-            .catch(error => {
-                console.error('❌ Erro ao enviar:', error);
-                showError(`❌ Erro ao enviar teste: ${error.message}`);
-                showError('💡 Verifique se a URL do Apps Script está correta e se o script foi implantado');
-                showError('🔍 Abra o Console (F12) para mais detalhes');
             });
         }
         
