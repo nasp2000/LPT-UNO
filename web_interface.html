@@ -30,35 +30,35 @@
         header {
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             color: white;
-            padding: 30px;
+            padding: 15px 20px;
             text-align: center;
         }
         
         h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
+            font-size: 1.6em;
+            margin-bottom: 5px;
         }
         
         .subtitle {
             opacity: 0.9;
-            font-size: 1.1em;
+            font-size: 0.9em;
         }
         
         .controls {
-            padding: 20px;
+            padding: 10px 15px;
             background: #f8f9fa;
             border-bottom: 2px solid #e9ecef;
             display: flex;
-            gap: 10px;
+            gap: 8px;
             flex-wrap: wrap;
             align-items: center;
         }
         
         button {
-            padding: 12px 24px;
+            padding: 8px 16px;
             border: none;
             border-radius: 5px;
-            font-size: 1em;
+            font-size: 0.9em;
             cursor: pointer;
             transition: all 0.3s;
             font-weight: 600;
@@ -71,7 +71,7 @@
         
         button.toggle {
             position: relative;
-            padding-left: 50px;
+            padding-left: 42px;
         }
         
         button.toggle::before {
@@ -119,12 +119,13 @@
         }
         
         .controls-secondary {
-            padding: 15px 20px;
+            padding: 10px 15px;
             background: #f1f3f5;
             border-bottom: 2px solid #e9ecef;
             display: flex;
-            gap: 10px;
+            gap: 8px;
             flex-wrap: wrap;
+            align-items: center;
         }
         
         #connectBtn {
@@ -254,11 +255,11 @@
         }
         
         .stats-bar {
-            padding: 15px 20px;
+            padding: 8px 15px;
             background: #e9ecef;
             display: flex;
-            gap: 30px;
-            font-size: 0.9em;
+            gap: 20px;
+            font-size: 0.85em;
             color: #495057;
         }
         
@@ -1322,6 +1323,7 @@
             <div class="status">
                 <div class="status-indicator" id="statusIndicator"></div>
                 <span id="statusText">Desconectado</span>
+                <span id="wakeLockStatus" style="margin-left: 10px; font-size: 0.85em; opacity: 0; transition: opacity 0.3s;">🔒 Sistema ativo</span>
             </div>
         </div>
         
@@ -1334,7 +1336,7 @@
             <div style="flex: 1;"></div>
             <div style="display: flex; align-items: center; gap: 10px;">
                 <div style="display: flex; flex-direction: column; gap: 3px;">
-                    <label for="subfolderNameInput" style="font-size: 0.85em; color: #666; white-space: nowrap;">Nome do ficheiro:</label>
+                    <label for="subfolderNameInput" id="fileNameLabel" style="font-size: 0.85em; color: #666; white-space: nowrap;">Nome do ficheiro:</label>
                     <input type="text" id="subfolderNameInput" placeholder="Ex: Cliente_A" 
                            style="width: 160px; padding: 6px 10px; border: 2px solid #007bff; border-radius: 5px; font-size: 0.9em;" title="Prefixo do arquivo: [nome]_[timestamp].ext">
                 </div>
@@ -1376,34 +1378,16 @@
                 
                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 25px; align-items: start;">
                     
-                    <!-- 📊 COLUNA 1: VISUALIZAÇÃO -->
+                    <!-- ⏱️ COLUNA 1: AUTO-SALVAR -->
                     <div>
-                        <h3 style="color: #007bff; border-bottom: 2px solid #007bff; padding-bottom: 10px; margin-bottom: 15px;">
-                            📊 Visualização
+                        <h3 id="autoSalvarTitle" style="color: #007bff; border-bottom: 2px solid #007bff; padding-bottom: 10px; margin-bottom: 15px;">
+                            ⏱️ Auto-Salvar
                         </h3>
                         
                         <div class="modal-section">
-                            <h4 style="font-size: 0.95em; margin-bottom: 10px;">Modo de Visualização</h4>
-                            <div class="modal-options">
-                                <label class="modal-option selected" data-view="text">
-                                    <input type="radio" name="viewMode" value="text" checked>
-                                    <span>📝 Texto (ASCII)</span>
-                                </label>
-                                <label class="modal-option" data-view="hex">
-                                    <input type="radio" name="viewMode" value="hex">
-                                    <span>🔢 Hexadecimal</span>
-                                </label>
-                                <label class="modal-option" data-view="binary">
-                                    <input type="radio" name="viewMode" value="binary">
-                                    <span>💻 Binário</span>
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <div class="modal-section" style="margin-top: 20px;">
-                            <h4 style="font-size: 0.95em; margin-bottom: 10px;">⏱️ Auto-Salvar</h4>
+                            <h4 id="autoSaveTitle" style="font-size: 0.95em; margin-bottom: 10px;">⏱️ Tempo de Inatividade</h4>
                             <div class="modal-select-group">
-                                <label for="autoSaveTime" style="font-size: 0.9em;">Tempo de Inatividade:</label>
+                                <label for="autoSaveTime" id="inactivityTimeLabel" style="font-size: 0.9em;">Tempo:</label>
                                 <select id="autoSaveTime">
                                     <option value="10">10 segundos</option>
                                     <option value="15">15 segundos</option>
@@ -1418,7 +1402,7 @@
                     
                     <!-- 🎨 COLUNA 2: INTERFACE -->
                     <div>
-                        <h3 style="color: #28a745; border-bottom: 2px solid #28a745; padding-bottom: 10px; margin-bottom: 15px;">
+                        <h3 id="interfaceTitle" style="color: #28a745; border-bottom: 2px solid #28a745; padding-bottom: 10px; margin-bottom: 15px;">
                             🎨 Interface
                         </h3>
                         
@@ -1435,21 +1419,7 @@
                         </div>
                         
                         <div class="modal-section" style="margin-top: 20px;">
-                            <h4 style="font-size: 0.95em; margin-bottom: 10px;">🎨 Tema Visual</h4>
-                            <div class="modal-select-group">
-                                <label for="themeSelect" style="font-size: 0.9em;">Selecione:</label>
-                                <select id="themeSelect">
-                                    <option value="light">☀️ Light</option>
-                                    <option value="dark">🌙 Dark</option>
-                                    <option value="ocean">🌊 Ocean</option>
-                                    <option value="forest">🌲 Forest</option>
-                                    <option value="sunset">🌅 Sunset</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <div class="modal-section" style="margin-top: 20px;">
-                            <h4 style="font-size: 0.95em; margin-bottom: 10px;">🔔 Notificações</h4>
+                            <h4 id="notificationsTitle" style="font-size: 0.95em; margin-bottom: 10px;">🔔 Notificações</h4>
                             <button id="notificationsToggle" class="toggle" style="width: 100%; justify-content: center;">
                                 🔔 Notificações Desktop
                             </button>
@@ -1458,12 +1428,12 @@
                     
                     <!-- 💾 COLUNA 3: ARQUIVOS -->
                     <div>
-                        <h3 style="color: #dc3545; border-bottom: 2px solid #dc3545; padding-bottom: 10px; margin-bottom: 15px;">
+                        <h3 id="filesTitle" style="color: #dc3545; border-bottom: 2px solid #dc3545; padding-bottom: 10px; margin-bottom: 15px;">
                             💾 Arquivos
                         </h3>
                         
                         <div class="modal-section">
-                            <h4 style="font-size: 0.95em; margin-bottom: 10px;">💾 Formato de Gravação</h4>
+                            <h4 id="saveFormatTitle" style="font-size: 0.95em; margin-bottom: 10px;">💾 Formato de Gravação</h4>
                             <div class="modal-options">
                                 <label class="modal-option selected" data-format="txt">
                                     <input type="radio" name="saveFormat" value="txt" checked>
@@ -1481,12 +1451,12 @@
                         </div>
                         
                         <div class="modal-section" style="margin-top: 20px;">
-                            <h4 style="font-size: 0.95em; margin-bottom: 10px;">🔧 Avançado</h4>
+                            <h4 id="advancedTitle" style="font-size: 0.95em; margin-bottom: 10px;">🔧 Avançado</h4>
                             <button class="modal-btn" id="openEmailConfig" style="width: 100%; margin-bottom: 8px;">
                                 📧 Configurar Email
                             </button>
-                            <button class="modal-btn" id="openSessionHistory" style="background: #17a2b8; width: 100%;">
-                                💾 Histórico de Sessões
+                            <button class="modal-btn" id="setupIniBtn" style="width: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                💾 Criar/Configurar config.ini
                             </button>
                         </div>
                     </div>
@@ -1623,77 +1593,6 @@
             </div>
         </div>
         
-        <!-- Modal de Histórico de Sessões e Backups -->
-        <div id="sessionHistoryModal" class="modal">
-            <div class="modal-content" style="max-width: 900px;">
-                <div class="modal-header">
-                    <h2>💾 Histórico de Sessões e Backups</h2>
-                    <button class="modal-close" id="closeSessionHistory">×</button>
-                </div>
-                
-                <!-- Tabs para alternar entre Sessões e Backups -->
-                <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e0e0e0;">
-                    <button id="tabSessions" class="tab-btn active" style="flex: 1; padding: 10px; border: none; background: transparent; cursor: pointer; font-weight: bold; border-bottom: 3px solid #667eea;">
-                        📂 Sessões Salvas
-                    </button>
-                    <button id="tabBackups" class="tab-btn" style="flex: 1; padding: 10px; border: none; background: transparent; cursor: pointer; font-weight: bold; border-bottom: 3px solid transparent;">
-                        🔄 Backups Automáticos
-                    </button>
-                </div>
-                
-                <!-- Conteúdo: Sessões Salvas -->
-                <div id="sessionsContent" style="display: block;">
-                    <div style="max-height: 500px; overflow-y: auto;" id="sessionHistoryList">
-                        <p style="padding: 20px; text-align: center; color: #6c757d;">
-                            Nenhuma sessão salva ainda
-                        </p>
-                    </div>
-                    
-                    <div style="margin-top: 20px; display: flex; gap: 10px;">
-                        <button type="button" class="modal-btn" id="clearSessionHistory" style="background: #dc3545;">
-                            🗑️ Limpar Todas as Sessões
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Conteúdo: Backups Automáticos -->
-                <div id="backupsContent" style="display: none;">
-                    <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 15px; font-size: 0.9em;">
-                        <strong>ℹ️ Sistema de Backup Automático</strong>
-                        <p style="margin: 10px 0 0 0;">
-                            • Backup a cada 30 segundos enquanto houver dados<br>
-                            • Backup automático ao fechar página<br>
-                            • Máximo de 50 backups (mais antigos são removidos)<br>
-                            • Backups salvos no navegador (IndexedDB)<br>
-                            • Arquivos baixados vão para pasta Downloads
-                        </p>
-                    </div>
-                    
-                    <div id="backupStats" style="padding: 10px; background: #f5f5f5; border-radius: 6px; margin-bottom: 15px; font-size: 0.9em;">
-                        <span id="backupCount">Carregando...</span>
-                    </div>
-                    
-                    <div style="max-height: 400px; overflow-y: auto;" id="backupList">
-                        <p style="padding: 20px; text-align: center; color: #6c757d;">
-                            Nenhum backup encontrado
-                        </p>
-                    </div>
-                    
-                    <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
-                        <button type="button" class="modal-btn" id="refreshBackups" style="background: #28a745;">
-                            🔄 Atualizar Lista
-                        </button>
-                        <button type="button" class="modal-btn" id="exportAllBackups" style="background: #17a2b8;">
-                            📦 Exportar Todos os Backups
-                        </button>
-                        <button type="button" class="modal-btn" id="clearAllBackups" style="background: #dc3545;">
-                            🗑️ Limpar Todos os Backups
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
         <footer>
             <p><strong>LPT-UNO</strong> | Interface Paralela LPT (DB25) | Web Serial API</p>
             <p style="margin-top: 10px; font-size: 0.9em;">
@@ -1706,6 +1605,96 @@
     </div>
 
     <script>
+        // ========================================
+        // TABELA DE CONVERSÃO CP-437 (DOS)
+        // ========================================
+        const CP437_TABLE = [
+            '\u0000', '☺', '☻', '♥', '♦', '♣', '♠', '•', '◘', '○', '◙', '♂', '♀', '♪', '♫', '☼',
+            '►', '◄', '↕', '‼', '¶', '§', '▬', '↨', '↑', '↓', '→', '←', '∟', '↔', '▲', '▼',
+            ' ', '!', '"', '#', '$', '%', '&', "'", '(', ')', '*', '+', ',', '-', '.', '/',
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', ';', '<', '=', '>', '?',
+            '@', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O',
+            'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '[', '\\', ']', '^', '_',
+            '`', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
+            'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '{', '|', '}', '~', '⌂',
+            'Ç', 'ü', 'é', 'â', 'ä', 'à', 'å', 'ç', 'ê', 'ë', 'è', 'ï', 'î', 'ì', 'Ä', 'Å',
+            'É', 'æ', 'Æ', 'ô', 'ö', 'ò', 'û', 'ù', 'ÿ', 'Ö', 'Ü', '¢', '£', '¥', '₧', 'ƒ',
+            'á', 'í', 'ó', 'ú', 'ñ', 'Ñ', 'ª', 'º', '¿', '⌐', '¬', '½', '¼', '¡', '«', '»',
+            '░', '▒', '▓', '│', '┤', '╡', '╢', '╖', '╕', '╣', '║', '╗', '╝', '╜', '╛', '┐',
+            '└', '┴', '┬', '├', '─', '┼', '╞', '╟', '╚', '╔', '╩', '╦', '╠', '═', '╬', '╧',
+            '╨', '╤', '╥', '╙', '╘', '╒', '╓', '╫', '╪', '┘', '┌', '█', '▄', '▌', '▐', '▀',
+            'α', 'ß', 'Γ', 'π', 'Σ', 'σ', 'µ', 'τ', 'Φ', 'Θ', 'Ω', 'δ', '∞', 'φ', 'ε', '∩',
+            '≡', '±', '≥', '≤', '⌠', '⌡', '÷', '≈', '°', '∙', '·', '√', 'ⁿ', '²', '■', '\u00A0'
+        ];
+
+        // Função de decodificação CP-437
+        function decodeCP437(uint8Array) {
+            let result = '';
+            let i = 0;
+            
+            while (i < uint8Array.length) {
+                const byte = uint8Array[i];
+                
+                // Preservar caracteres de controle importantes (quebras de linha e tab)
+                if (byte === 0x0A) { // Line Feed (LF)
+                    result += '\n';
+                    i++;
+                    continue;
+                }
+                if (byte === 0x0D) { // Carriage Return (CR)
+                    // Ignorar CR se seguido de LF (CRLF), caso contrário tratar como quebra
+                    if (i + 1 < uint8Array.length && uint8Array[i + 1] === 0x0A) {
+                        // Skip CR, o LF será processado na próxima iteração
+                        i++;
+                        continue;
+                    }
+                    result += '\n';
+                    i++;
+                    continue;
+                }
+                if (byte === 0x09) { // Tab
+                    result += '\t';
+                    i++;
+                    continue;
+                }
+                
+                // Detectar sequências UTF-8 e decodificar corretamente
+                // UTF-8 de 2 bytes: 110xxxxx 10xxxxxx (0xC0-0xDF seguido de 0x80-0xBF)
+                if (byte >= 0xC0 && byte <= 0xDF && i + 1 < uint8Array.length) {
+                    const byte2 = uint8Array[i + 1];
+                    if (byte2 >= 0x80 && byte2 <= 0xBF) {
+                        // Decodificar UTF-8 de 2 bytes
+                        const codePoint = ((byte & 0x1F) << 6) | (byte2 & 0x3F);
+                        result += String.fromCharCode(codePoint);
+                        i += 2;
+                        continue;
+                    }
+                }
+                
+                // UTF-8 de 3 bytes: 1110xxxx 10xxxxxx 10xxxxxx (0xE0-0xEF)
+                if (byte >= 0xE0 && byte <= 0xEF && i + 2 < uint8Array.length) {
+                    const byte2 = uint8Array[i + 1];
+                    const byte3 = uint8Array[i + 2];
+                    if (byte2 >= 0x80 && byte2 <= 0xBF && byte3 >= 0x80 && byte3 <= 0xBF) {
+                        // Decodificar UTF-8 de 3 bytes
+                        const codePoint = ((byte & 0x0F) << 12) | ((byte2 & 0x3F) << 6) | (byte3 & 0x3F);
+                        result += String.fromCharCode(codePoint);
+                        i += 3;
+                        continue;
+                    }
+                }
+                
+                // Byte único: usar tabela CP-437 autêntica
+                result += CP437_TABLE[byte];
+                i++;
+            }
+            
+            return result;
+        }
+
+        // ========================================
+        // VARIÁVEIS GLOBAIS
+        // ========================================
         // Variáveis globais
         let port = null;
         let reader = null;
@@ -1714,18 +1703,23 @@
         let byteCount = 0;
         let startTime = null;
         let lastByteCount = 0;
-        let currentView = 'text';
         let inactivityTimer = null;
         let lastDataTime = null;
         let pendingData = '';
         let firmwareVersion = 'Unknown';
         let firmwareBuild = 'Unknown';
+        let currentEncoding = 'cp437'; // Fixo em CP-437 (DOS) - autêntico anos 80/90
         
         // Novas variáveis para melhorias
         let autoReconnectEnabled = true;
         let reconnectAttempts = 0;
         const MAX_RECONNECT_ATTEMPTS = 5;
         let reconnectTimer = null;
+        
+        // Variáveis para manter conexão ativa
+        let wakeLock = null;
+        let keepAliveTimer = null;
+        const KEEP_ALIVE_INTERVAL = 30000; // 30 segundos
         
         // Elementos do Monitor LPT
         const ledStrobe = document.getElementById('ledStrobe');
@@ -1766,10 +1760,6 @@
                 uptime: 'Tempo ativo:',
                 infoMessage: 'Clique em "Conectar Arduino" e selecione a porta COM do Arduino Uno (115200 baud)',
                 settingsTitle: 'Definições',
-                viewMode: 'Modo de Visualização',
-                textMode: 'Texto (ASCII)',
-                hexMode: 'Hexadecimal',
-                binaryMode: 'Binário',
                 autoSaveTime: 'Tempo de Auto-Salvar',
                 inactivity: 'Inatividade:',
                 seconds: 'segundos',
@@ -1777,6 +1767,15 @@
                 minutes: 'minutos',
                 language: 'Idioma',
                 selectLanguage: 'Selecione o idioma:',
+                notifications: 'Notificações',
+                desktopNotifications: 'Notificações Desktop',
+                saveFormat: 'Formato de Gravação',
+                txtFormat: 'Texto (.txt)',
+                csvFormat: 'CSV (.csv)',
+                pdfFormat: 'PDF (.pdf)',
+                advanced: 'Avançado',
+                configureEmail: 'Configurar Email',
+                setupIni: 'Criar/Configurar config.ini',
                 footer1: 'Interface Paralela LPT (DB25) | Web Serial API',
                 footer2: 'Requer navegador compatível com Web Serial API (Chrome, Edge, Opera)',
                 contact: 'Contacto:',
@@ -1793,6 +1792,36 @@
                 viewModeChanged: 'Modo de visualização:',
                 autoSaveTimeChanged: 'Tempo de auto-salvar:',
                 languageChanged: 'Idioma alterado para:',
+                inactivityTime: 'Tempo de Inatividade:',
+                selectOption: 'Selecione:',
+                fileName: 'Nome do ficheiro:',
+                encoding: 'Encoding:',
+                visualTheme: 'Tema Visual',
+                notifications: 'Notificações',
+                desktopNotifications: 'Notificações Desktop',
+                visualization: 'Visualização',
+                interface: 'Interface',
+                encodingUtf8: 'UTF-8 (Padrão)',
+                encodingLatin: 'ISO-8859-1 (Latin)',
+                encodingDos: 'CP-437 (DOS)',
+                encodingWindows: 'Windows-1252',
+                autoSalvar: 'Auto-Salvar',
+                interface: 'Interface',
+                files: 'Arquivos',
+                time10s: '10 segundos',
+                time15s: '15 segundos',
+                time30s: '30 segundos',
+                time1m: '1 minuto',
+                time2m: '2 minutos',
+                time5m: '5 minutos',
+                themeLight: 'Light',
+                themeDark: 'Dark',
+                themeOcean: 'Ocean',
+                themeForest: 'Forest',
+                themeSunset: 'Sunset',
+                setConfigFolder: 'Definir Pasta de Configuração',
+                configFolderSet: 'Pasta de configuração definida com sucesso!',
+                configRestored: 'Configurações restauradas do arquivo!',
                 configureEmail: 'Configurar Email',
                 emailConfigTitle: 'Configuração de Email',
                 smtpServerNote: '<strong>Gmail:</strong> smtp.gmail.com | <strong>Sapo:</strong> smtp.sapo.pt | <strong>Hotmail/Outlook:</strong> smtp-mail.outlook.com',
@@ -1833,7 +1862,27 @@
                 autoDetectFound: '🔌 Detecção automática: Dispositivo encontrado! Conectando...',
                 connectionLost: '⚠️ Conexão perdida! Tentativa de reconexão',
                 reconnectFailed: '❌ Falha na reconexão automática após 5 tentativas.',
-                bufferCleared: 'Buffer limpo automaticamente (Pós-conexão)'
+                bufferCleared: 'Buffer limpo automaticamente (Pós-conexão)',
+                sessionHistory: 'Histórico de Sessões e Backups',
+                savedSessions: 'Sessões Salvas',
+                automaticBackups: 'Backups Automáticos',
+                noSessionsYet: 'Nenhuma sessão salva ainda',
+                noBackupsFound: 'Nenhum backup encontrado',
+                loading: 'Carregando...',
+                clearAllSessions: 'Limpar Todas as Sessões',
+                refreshList: 'Atualizar Lista',
+                exportAllBackups: 'Exportar Todos os Backups',
+                clearAllBackups: 'Limpar Todos os Backups',
+                backupSystemTitle: 'Sistema de Backup Automático',
+                backupEvery30s: 'Backup a cada 30 segundos enquanto houver dados',
+                backupOnClose: 'Backup automático ao fechar página',
+                maxBackups: 'Máximo de 50 backups (mais antigos são removidos)',
+                backupsSavedInBrowser: 'Backups salvos no navegador (IndexedDB)',
+                filesGoToDownloads: 'Arquivos baixados vão para pasta Downloads',
+                filesGoToConfigFolder: 'Arquivos baixados vão para pasta configurada',
+                advanced: 'Avançado',
+                files: 'Arquivos',
+                saveFormat: 'Formato de Gravação'
             },
             en: {
                 title: 'LPT-UNO - Parallel Printer Emulator',
@@ -1855,10 +1904,6 @@
                 uptime: 'Uptime:',
                 infoMessage: 'Click "Connect Arduino" and select the Arduino Uno COM port (115200 baud)',
                 settingsTitle: 'Settings',
-                viewMode: 'Display Mode',
-                textMode: 'Text (ASCII)',
-                hexMode: 'Hexadecimal',
-                binaryMode: 'Binary',
                 autoSaveTime: 'Auto-Save Time',
                 inactivity: 'Inactivity:',
                 seconds: 'seconds',
@@ -1866,6 +1911,15 @@
                 minutes: 'minutes',
                 language: 'Language',
                 selectLanguage: 'Select language:',
+                notifications: 'Notifications',
+                desktopNotifications: 'Desktop Notifications',
+                saveFormat: 'Save Format',
+                txtFormat: 'Text (.txt)',
+                csvFormat: 'CSV (.csv)',
+                pdfFormat: 'PDF (.pdf)',
+                advanced: 'Advanced',
+                configureEmail: 'Configure Email',
+                setupIni: 'Create/Configure config.ini',
                 footer1: 'Parallel Interface LPT (DB25) | Web Serial API',
                 footer2: 'Requires browser compatible with Web Serial API (Chrome, Edge, Opera)',
                 contact: 'Contact:',
@@ -1882,6 +1936,36 @@
                 viewModeChanged: 'Display mode:',
                 autoSaveTimeChanged: 'Auto-save time:',
                 languageChanged: 'Language changed to:',
+                inactivityTime: 'Inactivity Time:',
+                selectOption: 'Select:',
+                fileName: 'File name:',
+                encoding: 'Encoding:',
+                visualTheme: 'Visual Theme',
+                notifications: 'Notifications',
+                desktopNotifications: 'Desktop Notifications',
+                visualization: 'Visualization',
+                interface: 'Interface',
+                encodingUtf8: 'UTF-8 (Default)',
+                encodingLatin: 'ISO-8859-1 (Latin)',
+                encodingDos: 'CP-437 (DOS)',
+                encodingWindows: 'Windows-1252',
+                autoSalvar: 'Auto-Save',
+                interface: 'Interface',
+                files: 'Files',
+                time10s: '10 seconds',
+                time15s: '15 seconds',
+                time30s: '30 seconds',
+                time1m: '1 minute',
+                time2m: '2 minutes',
+                time5m: '5 minutes',
+                themeLight: 'Light',
+                themeDark: 'Dark',
+                themeOcean: 'Ocean',
+                themeForest: 'Forest',
+                themeSunset: 'Sunset',
+                setConfigFolder: 'Set Configuration Folder',
+                configFolderSet: 'Configuration folder set successfully!',
+                configRestored: 'Settings restored from file!',
                 configureEmail: 'Configure Email',
                 emailConfigTitle: 'Email Configuration',
                 smtpServerNote: '<strong>Gmail:</strong> smtp.gmail.com | <strong>Sapo:</strong> smtp.sapo.pt | <strong>Hotmail/Outlook:</strong> smtp-mail.outlook.com',
@@ -1922,7 +2006,27 @@
                 autoDetectFound: '🔌 Auto-detection: Device found! Connecting...',
                 connectionLost: '⚠️ Connection lost! Reconnection attempt',
                 reconnectFailed: '❌ Auto-reconnection failed after 5 attempts.',
-                bufferCleared: 'Buffer cleared automatically (Post-connection)'
+                bufferCleared: 'Buffer cleared automatically (Post-connection)',
+                sessionHistory: 'Session History and Backups',
+                savedSessions: 'Saved Sessions',
+                automaticBackups: 'Automatic Backups',
+                noSessionsYet: 'No sessions saved yet',
+                noBackupsFound: 'No backups found',
+                loading: 'Loading...',
+                clearAllSessions: 'Clear All Sessions',
+                refreshList: 'Refresh List',
+                exportAllBackups: 'Export All Backups',
+                clearAllBackups: 'Clear All Backups',
+                backupSystemTitle: 'Automatic Backup System',
+                backupEvery30s: 'Backup every 30 seconds when data present',
+                backupOnClose: 'Automatic backup when closing page',
+                maxBackups: 'Maximum 50 backups (oldest removed)',
+                backupsSavedInBrowser: 'Backups saved in browser (IndexedDB)',
+                filesGoToDownloads: 'Downloaded files go to Downloads folder',
+                filesGoToConfigFolder: 'Downloaded files go to configured folder',
+                advanced: 'Advanced',
+                files: 'Files',
+                saveFormat: 'Save Format'
             },
             es: {
                 title: 'LPT-UNO - Emulador Impresora Paralela',
@@ -1944,10 +2048,6 @@
                 uptime: 'Tiempo activo:',
                 infoMessage: 'Haga clic en "Conectar Arduino" y seleccione el puerto COM del Arduino Uno (115200 baud)',
                 settingsTitle: 'Configuración',
-                viewMode: 'Modo de Visualización',
-                textMode: 'Texto (ASCII)',
-                hexMode: 'Hexadecimal',
-                binaryMode: 'Binario',
                 autoSaveTime: 'Tiempo de Auto-Guardado',
                 inactivity: 'Inactividad:',
                 seconds: 'segundos',
@@ -1955,6 +2055,15 @@
                 minutes: 'minutos',
                 language: 'Idioma',
                 selectLanguage: 'Seleccione el idioma:',
+                notifications: 'Notificaciones',
+                desktopNotifications: 'Notificaciones de Escritorio',
+                saveFormat: 'Formato de Guardado',
+                txtFormat: 'Texto (.txt)',
+                csvFormat: 'CSV (.csv)',
+                pdfFormat: 'PDF (.pdf)',
+                advanced: 'Avanzado',
+                configureEmail: 'Configurar Email',
+                setupIni: 'Crear/Configurar config.ini',
                 footer1: 'Interfaz Paralela LPT (DB25) | Web Serial API',
                 footer2: 'Requiere navegador compatible con Web Serial API (Chrome, Edge, Opera)',
                 contact: 'Contacto:',
@@ -1971,6 +2080,36 @@
                 viewModeChanged: 'Modo de visualización:',
                 autoSaveTimeChanged: 'Tiempo de auto-guardado:',
                 languageChanged: 'Idioma cambiado a:',
+                inactivityTime: 'Tiempo de Inactividad:',
+                selectOption: 'Seleccione:',
+                fileName: 'Nombre del archivo:',
+                encoding: 'Codificación:',
+                visualTheme: 'Tema Visual',
+                notifications: 'Notificaciones',
+                desktopNotifications: 'Notificaciones de Escritorio',
+                visualization: 'Visualización',
+                interface: 'Interfaz',
+                encodingUtf8: 'UTF-8 (Predeterminado)',
+                encodingLatin: 'ISO-8859-1 (Latin)',
+                encodingDos: 'CP-437 (DOS)',
+                encodingWindows: 'Windows-1252',
+                autoSalvar: 'Auto-Guardar',
+                interface: 'Interfaz',
+                files: 'Archivos',
+                time10s: '10 segundos',
+                time15s: '15 segundos',
+                time30s: '30 segundos',
+                time1m: '1 minuto',
+                time2m: '2 minutos',
+                time5m: '5 minutos',
+                themeLight: 'Light',
+                themeDark: 'Dark',
+                themeOcean: 'Ocean',
+                themeForest: 'Forest',
+                themeSunset: 'Sunset',
+                setConfigFolder: 'Definir Carpeta de Configuración',
+                configFolderSet: '¡Carpeta de configuración definida con éxito!',
+                configRestored: '¡Configuraciones restauradas del archivo!',
                 configureEmail: 'Configurar Email',
                 emailConfigTitle: 'Configuración de Email',
                 smtpServerNote: '<strong>Gmail:</strong> smtp.gmail.com | <strong>Sapo:</strong> smtp.sapo.pt | <strong>Hotmail/Outlook:</strong> smtp-mail.outlook.com',
@@ -2011,7 +2150,27 @@
                 autoDetectFound: '🔌 Detección automática: ¡Dispositivo encontrado! Conectando...',
                 connectionLost: '⚠️ ¡Conexión perdida! Intento de reconexión',
                 reconnectFailed: '❌ Falló la reconexión automática después de 5 intentos.',
-                bufferCleared: 'Buffer limpiado automáticamente (Post-conexión)'
+                bufferCleared: 'Buffer limpiado automáticamente (Post-conexión)',
+                sessionHistory: 'Historial de Sesiones y Backups',
+                savedSessions: 'Sesiones Guardadas',
+                automaticBackups: 'Backups Automáticos',
+                noSessionsYet: 'Ninguna sesión guardada aún',
+                noBackupsFound: 'Ningún backup encontrado',
+                loading: 'Cargando...',
+                clearAllSessions: 'Limpiar Todas las Sesiones',
+                refreshList: 'Actualizar Lista',
+                exportAllBackups: 'Exportar Todos los Backups',
+                clearAllBackups: 'Limpiar Todos los Backups',
+                backupSystemTitle: 'Sistema de Backup Automático',
+                backupEvery30s: 'Backup cada 30 segundos cuando haya datos',
+                backupOnClose: 'Backup automático al cerrar página',
+                maxBackups: 'Máximo 50 backups (más antiguos se eliminan)',
+                backupsSavedInBrowser: 'Backups guardados en navegador (IndexedDB)',
+                filesGoToDownloads: 'Archivos descargados van a carpeta Downloads',
+                filesGoToConfigFolder: 'Archivos descargados van a carpeta configurada',
+                advanced: 'Avanzado',
+                files: 'Archivos',
+                saveFormat: 'Formato de Guardado'
             }
         };
         
@@ -2019,212 +2178,6 @@
         
         // LocalStorage - Salvar preferências
         const STORAGE_KEY = 'lpt-uno-preferences';
-        
-        // ========================================
-        // SISTEMA DE BACKUP AUTOMÁTICO (IndexedDB)
-        // ========================================
-        const BACKUP_DB_NAME = 'lpt-uno-backups';
-        const BACKUP_DB_VERSION = 1;
-        const BACKUP_STORE = 'sessions';
-        const MAX_BACKUPS = 50; // Máximo de backups mantidos
-        
-        // Função: Abrir banco de dados de backup
-        function openBackupDB() {
-            return new Promise((resolve, reject) => {
-                const request = indexedDB.open(BACKUP_DB_NAME, BACKUP_DB_VERSION);
-                
-                request.onerror = () => reject(request.error);
-                request.onsuccess = () => resolve(request.result);
-                
-                request.onupgradeneeded = (event) => {
-                    const db = event.target.result;
-                    
-                    if (!db.objectStoreNames.contains(BACKUP_STORE)) {
-                        const store = db.createObjectStore(BACKUP_STORE, { keyPath: 'id', autoIncrement: true });
-                        store.createIndex('timestamp', 'timestamp', { unique: false });
-                        store.createIndex('subfolder', 'subfolder', { unique: false });
-                    }
-                };
-            });
-        }
-        
-        // Função: Salvar backup automático
-        async function saveAutoBackup(data) {
-            if (!data || data.trim().length === 0) return;
-            
-            try {
-                const db = await openBackupDB();
-                const transaction = db.transaction([BACKUP_STORE], 'readwrite');
-                const store = transaction.objectStore(BACKUP_STORE);
-                
-                const prefs = loadPreferences();
-                const backup = {
-                    timestamp: new Date().toISOString(),
-                    subfolder: prefs.subfolderName || 'default',
-                    data: data,
-                    size: data.length,
-                    saved: false // Marca se foi salvo em arquivo
-                };
-                
-                store.add(backup);
-                
-                // Limitar número de backups
-                const countRequest = store.count();
-                countRequest.onsuccess = () => {
-                    const count = countRequest.result;
-                    if (count > MAX_BACKUPS) {
-                        const index = store.index('timestamp');
-                        const cursorRequest = index.openCursor();
-                        let deleted = 0;
-                        const toDelete = count - MAX_BACKUPS;
-                        
-                        cursorRequest.onsuccess = (e) => {
-                            const cursor = e.target.result;
-                            if (cursor && deleted < toDelete) {
-                                cursor.delete();
-                                deleted++;
-                                cursor.continue();
-                            }
-                        };
-                    }
-                };
-                
-                console.log(`💾 Backup automático salvo (${backup.size} bytes)`);
-            } catch (e) {
-                console.warn('Erro ao salvar backup:', e);
-            }
-        }
-        
-        // Função: Listar backups
-        async function listBackups() {
-            try {
-                const db = await openBackupDB();
-                const transaction = db.transaction([BACKUP_STORE], 'readonly');
-                const store = transaction.objectStore(BACKUP_STORE);
-                const index = store.index('timestamp');
-                
-                return new Promise((resolve, reject) => {
-                    const backups = [];
-                    const request = index.openCursor(null, 'prev');
-                    
-                    request.onsuccess = (e) => {
-                        const cursor = e.target.result;
-                        if (cursor) {
-                            backups.push({
-                                id: cursor.value.id,
-                                timestamp: cursor.value.timestamp,
-                                subfolder: cursor.value.subfolder,
-                                size: cursor.value.size,
-                                saved: cursor.value.saved || false
-                            });
-                            cursor.continue();
-                        } else {
-                            resolve(backups);
-                        }
-                    };
-                    
-                    request.onerror = () => reject(request.error);
-                });
-            } catch (e) {
-                console.error('Erro ao listar backups:', e);
-                return [];
-            }
-        }
-        
-        // Função: Recuperar backup
-        async function getBackup(id) {
-            try {
-                const db = await openBackupDB();
-                const transaction = db.transaction([BACKUP_STORE], 'readonly');
-                const store = transaction.objectStore(BACKUP_STORE);
-                
-                return new Promise((resolve, reject) => {
-                    const request = store.get(id);
-                    request.onsuccess = () => resolve(request.result);
-                    request.onerror = () => reject(request.error);
-                });
-            } catch (e) {
-                console.error('Erro ao recuperar backup:', e);
-                return null;
-            }
-        }
-        
-        // Função: Marcar backup como salvo
-        async function markBackupAsSaved(id) {
-            try {
-                const db = await openBackupDB();
-                const transaction = db.transaction([BACKUP_STORE], 'readwrite');
-                const store = transaction.objectStore(BACKUP_STORE);
-                
-                const backup = await getBackup(id);
-                if (backup) {
-                    backup.saved = true;
-                    store.put(backup);
-                }
-            } catch (e) {
-                console.warn('Erro ao marcar backup:', e);
-            }
-        }
-        
-        // Função: Exportar todos os backups
-        async function exportAllBackups() {
-            try {
-                const db = await openBackupDB();
-                const transaction = db.transaction([BACKUP_STORE], 'readonly');
-                const store = transaction.objectStore(BACKUP_STORE);
-                
-                return new Promise((resolve, reject) => {
-                    const request = store.getAll();
-                    request.onsuccess = () => {
-                        const backups = request.result;
-                        const exportData = {
-                            version: '1.0',
-                            exported: new Date().toISOString(),
-                            count: backups.length,
-                            backups: backups,
-                            config: loadPreferences()
-                        };
-                        
-                        const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = `LPT-UNO_BACKUP_${new Date().toISOString().slice(0,10)}.json`;
-                        a.click();
-                        URL.revokeObjectURL(url);
-                        
-                        showInfo(`📦 ${backups.length} backups exportados`);
-                        resolve(true);
-                    };
-                    request.onerror = () => reject(request.error);
-                });
-            } catch (e) {
-                console.error('Erro ao exportar:', e);
-                showError('❌ Erro ao exportar backups');
-            }
-        }
-        
-        // Auto-backup periódico
-        let autoBackupTimer = null;
-        function startAutoBackupSystem() {
-            // Backup a cada 30 segundos
-            autoBackupTimer = setInterval(() => {
-                const text = output.textContent;
-                if (text && text.trim().length > 0) {
-                    saveAutoBackup(text);
-                }
-            }, 30000);
-            
-            // Backup antes de fechar página
-            window.addEventListener('beforeunload', () => {
-                const text = output.textContent;
-                if (text && text.trim().length > 0) {
-                    saveAutoBackup(text);
-                }
-            });
-            
-            console.log('🔄 Sistema de backup automático ativado (30s)');
-        }
         
         // Função: Carregar preferências
         function loadPreferences() {
@@ -2240,7 +2193,6 @@
             return {
                 autoSave: true,
                 autoPrint: false,
-                viewMode: 'text',
                 autoSaveTime: 10,
                 language: 'en',
                 saveFormat: 'txt',
@@ -2252,15 +2204,142 @@
         // Função: Salvar preferências
         async function savePreferences(prefs) {
             try {
-                // Salvar no localStorage
+                // 1. Salvar no localStorage
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
                 
-                // Salvar também em arquivo se temos acesso
-                if (rootDirectoryHandle) {
-                    await saveConfigToFile(prefs);
-                }
+                // 2. Salvar em arquivo config.ini (se File System Access API disponível)
+                await saveToIniFile(prefs);
             } catch (e) {
                 console.error('Erro ao salvar preferências:', e);
+            }
+        }
+        
+        // Função: Converter preferências para formato INI
+        function prefsToIni(prefs) {
+            const timestamp = new Date().toISOString();
+            return `; LPT-UNO Configuration File
+; Generated: ${timestamp}
+; Do not edit manually unless you know what you're doing
+
+[General]
+version=1.0
+lastSaved=${timestamp}
+
+[Connection]
+autoConnect=${prefs.autoConnect || false}
+reconnectDelay=1000
+
+[Automation]
+autoSave=${prefs.autoSave || false}
+autoPrint=${prefs.autoPrint || false}
+autoSaveTime=${prefs.autoSaveTime || 10}
+
+[Interface]
+language=${prefs.language || 'en'}
+notifications=${prefs.notifications || false}
+
+[Files]
+saveFormat=${prefs.saveFormat || 'txt'}
+defaultFilename=LPT_Output
+
+[Email]
+; Email configuration is stored separately for security
+emailConfigured=${prefs.emailConfigured || false}
+
+[Advanced]
+; Advanced settings
+bufferSize=256
+baudRate=115200
+`;
+        }
+        
+        // Função: Salvar em arquivo config.ini
+        async function saveToIniFile(prefs) {
+            try {
+                // Verificar se File System Access API está disponível
+                if (!window.showSaveFilePicker) {
+                    console.log('📝 File System Access API não disponível - usando apenas localStorage');
+                    return;
+                }
+                
+                // Verificar se já temos handle do arquivo .ini salvo
+                const savedHandle = localStorage.getItem('lptUnoIniFileHandle');
+                let fileHandle;
+                
+                if (savedHandle) {
+                    try {
+                        // Tentar restaurar o handle salvo
+                        fileHandle = await getIniFileHandle();
+                        if (!fileHandle) {
+                            // Handle inválido, criar novo
+                            return; // Não forçar criação, só salvar se usuário já configurou
+                        }
+                    } catch (e) {
+                        console.log('📝 Handle de .ini não disponível');
+                        return;
+                    }
+                } else {
+                    // Não há handle salvo, não forçar criação
+                    return;
+                }
+                
+                // Salvar no arquivo
+                const iniContent = prefsToIni(prefs);
+                const writable = await fileHandle.createWritable();
+                await writable.write(iniContent);
+                await writable.close();
+                
+                console.log('✅ Configurações salvas em config.ini');
+            } catch (e) {
+                console.log('📝 config.ini não configurado (usando apenas localStorage)');
+            }
+        }
+        
+        // Função: Obter handle do arquivo .ini
+        async function getIniFileHandle() {
+            try {
+                const savedHandle = localStorage.getItem('lptUnoIniFileHandle');
+                if (!savedHandle) return null;
+                
+                // Nota: File System Access API não permite serializar handles
+                // Esta é uma limitação da API - precisaríamos pedir permissão novamente
+                return null; // Por enquanto, retornar null
+            } catch (e) {
+                return null;
+            }
+        }
+        
+        // Função: Criar/Selecionar arquivo config.ini manualmente
+        async function setupIniFile() {
+            try {
+                if (!window.showSaveFilePicker) {
+                    showInfo('❌ Seu navegador não suporta salvamento de arquivos');
+                    return;
+                }
+                
+                const handle = await window.showSaveFilePicker({
+                    suggestedName: 'config.ini',
+                    types: [{
+                        description: 'Configuration File',
+                        accept: { 'text/plain': ['.ini'] }
+                    }]
+                });
+                
+                // Salvar handle (nota: não pode ser serializado, mas marcar como configurado)
+                localStorage.setItem('lptUnoIniFileHandle', 'configured');
+                
+                // Salvar configurações atuais no arquivo
+                const prefs = loadPreferences();
+                const iniContent = prefsToIni(prefs);
+                const writable = await handle.createWritable();
+                await writable.write(iniContent);
+                await writable.close();
+                
+                showInfo('✅ Arquivo config.ini criado! As configurações serão salvas automaticamente.');
+            } catch (e) {
+                if (e.name !== 'AbortError') {
+                    console.error('Erro ao criar config.ini:', e);
+                }
             }
         }
         
@@ -2297,13 +2376,21 @@
                 const isKiosk = urlParams.get('kiosk') === 'true';
                 
                 if (isKiosk) {
-                    autoPrintBtn.innerHTML = `🖨️ ${t.autoPrint}`;
-                    autoPrintBtn.title = t.silentModeActive;
-                    autoPrintBtn.style.color = ''; // Reset
+                    autoPrintBtn.innerHTML = `🖨️ ${t.autoPrint} ✅`;
+                    autoPrintBtn.title = t.silentModeActive + ' (Modo Kiosk ativo via .BAT)';
+                    autoPrintBtn.style.color = '#00ff00'; // Verde brilhante
+                    autoPrintBtn.style.fontWeight = 'bold';
                 } else {
-                    autoPrintBtn.innerHTML = `⚠️ ${t.autoPrint} ${t.manual}`;
-                    autoPrintBtn.title = t.silentModeDisabled;
-                    autoPrintBtn.style.color = 'yellow'; // Destaque visual
+                    // Verificar se está ativo mas sem kiosk
+                    if (autoPrintBtn.classList.contains('active')) {
+                        autoPrintBtn.innerHTML = `⚠️ ${t.autoPrint} ${t.manual}`;
+                        autoPrintBtn.title = t.silentModeDisabled + ' - Use o .BAT para modo silencioso!';
+                        autoPrintBtn.style.color = 'yellow'; // Destaque visual de aviso
+                    } else {
+                        autoPrintBtn.innerHTML = `🖨️ ${t.autoPrint}`;
+                        autoPrintBtn.title = t.silentModeDisabled;
+                        autoPrintBtn.style.color = '';
+                    }
                 }
             }
             
@@ -2327,18 +2414,12 @@
             const modalH2 = document.querySelector('.modal-header h2');
             if (modalH2) modalH2.textContent = `⚙️ ${t.settingsTitle}`;
             
-            const modalSectionH3 = document.querySelectorAll('.modal-section h3');
-            if (modalSectionH3.length >= 3) {
-                modalSectionH3[0].textContent = `📊 ${t.viewMode}`;
-                modalSectionH3[1].textContent = `⏱️ ${t.autoSaveTime}`;
-                modalSectionH3[2].textContent = `🌐 ${t.language}`;
-            }
-            
+            // Atualizar textos dos formatos de arquivo
             const modalOptionSpans = document.querySelectorAll('.modal-option span');
             if (modalOptionSpans.length >= 3) {
-                modalOptionSpans[0].textContent = `📝 ${t.textMode}`;
-                modalOptionSpans[1].textContent = `🔢 ${t.hexMode}`;
-                modalOptionSpans[2].textContent = `💻 ${t.binaryMode}`;
+                modalOptionSpans[0].textContent = `📝 ${t.txtFormat}`;
+                modalOptionSpans[1].textContent = `📊 ${t.csvFormat}`;
+                modalOptionSpans[2].textContent = `📄 ${t.pdfFormat}`;
             }
             
             const autoSaveTimeLabel = document.querySelector('label[for="autoSaveTime"]');
@@ -2350,9 +2431,7 @@
             const langLabel = document.getElementById('langLabel');
             if (langLabel) langLabel.textContent = `🌍 ${t.selectLanguage}`;
             
-            // Botão configurar email
-            const openEmailConfig = document.getElementById('openEmailConfig');
-            if (openEmailConfig) openEmailConfig.textContent = `📧 ${t.configureEmail}`;
+            // Botão configurar email (atualizado mais abaixo)
             
             // Modal de email
             const emailConfigTitle = document.getElementById('emailConfigTitle');
@@ -2412,14 +2491,107 @@
             if (autoSaveTimeSelect) {
                 const timeOptions = autoSaveTimeSelect.querySelectorAll('option');
                 if (timeOptions.length >= 6) {
-                    timeOptions[0].textContent = `10 ${t.seconds}`;
-                    timeOptions[1].textContent = `15 ${t.seconds}`;
-                    timeOptions[2].textContent = `30 ${t.seconds}`;
-                    timeOptions[3].textContent = `1 ${t.minute}`;
-                    timeOptions[4].textContent = `2 ${t.minutes}`;
-                    timeOptions[5].textContent = `5 ${t.minutes}`;
+                    timeOptions[0].textContent = t.time10s;
+                    timeOptions[1].textContent = t.time15s;
+                    timeOptions[2].textContent = t.time30s;
+                    timeOptions[3].textContent = t.time1m;
+                    timeOptions[4].textContent = t.time2m;
+                    timeOptions[5].textContent = t.time5m;
                 }
             }
+            
+            // Atualizar labels e títulos das seções
+            const fileNameLabel = document.getElementById('fileNameLabel');
+            if (fileNameLabel) fileNameLabel.textContent = t.fileName;
+            
+            const inactivityTimeLabel = document.getElementById('inactivityTimeLabel');
+            if (inactivityTimeLabel) inactivityTimeLabel.textContent = t.inactivityTime;
+            
+            const autoSalvarTitle = document.getElementById('autoSalvarTitle');
+            if (autoSalvarTitle) autoSalvarTitle.innerHTML = `⏱️ ${t.autoSalvar}`;
+            
+            const autoSaveTitle = document.getElementById('autoSaveTitle');
+            if (autoSaveTitle) autoSaveTitle.innerHTML = `⏱️ ${t.autoSalvar}`;
+            
+            const interfaceTitle = document.getElementById('interfaceTitle');
+            if (interfaceTitle) interfaceTitle.innerHTML = `🎨 ${t.interface}`;
+            
+            const notificationsTitle = document.getElementById('notificationsTitle');
+            if (notificationsTitle) notificationsTitle.innerHTML = `🔔 ${t.notifications}`;
+            
+            // Atualizar botão de notificações
+            const notificationsToggle = document.getElementById('notificationsToggle');
+            if (notificationsToggle) notificationsToggle.innerHTML = `🔔 ${t.desktopNotifications}`;
+            
+            // Atualizar botão de configurar email
+            if (openEmailConfig) openEmailConfig.innerHTML = `📧 ${t.configureEmail}`;
+            
+            // Atualizar botão de configurar .ini
+            const setupIniBtn = document.getElementById('setupIniBtn');
+            if (setupIniBtn) setupIniBtn.innerHTML = `💾 ${t.setupIni}`;
+            
+            // Histórico de Sessões
+            const sessionHistoryTitle = document.getElementById('sessionHistoryTitle');
+            if (sessionHistoryTitle) sessionHistoryTitle.textContent = `💾 ${t.sessionHistory}`;
+            
+            const tabSessionsText = document.getElementById('tabSessionsText');
+            if (tabSessionsText) tabSessionsText.textContent = `📂 ${t.savedSessions}`;
+            
+            const tabBackupsText = document.getElementById('tabBackupsText');
+            if (tabBackupsText) tabBackupsText.textContent = `🔄 ${t.automaticBackups}`;
+            
+            const noSessionsText = document.getElementById('noSessionsText');
+            if (noSessionsText) noSessionsText.textContent = t.noSessionsYet;
+            
+            const noBackupsText = document.getElementById('noBackupsText');
+            if (noBackupsText) noBackupsText.textContent = t.noBackupsFound;
+            
+            const backupCount = document.getElementById('backupCount');
+            if (backupCount && backupCount.textContent === 'Carregando...' || backupCount.textContent === 'Loading...') {
+                backupCount.textContent = t.loading;
+            }
+            
+            const clearSessionsText = document.getElementById('clearSessionsText');
+            if (clearSessionsText) clearSessionsText.textContent = `🗑️ ${t.clearAllSessions}`;
+            
+            const refreshListText = document.getElementById('refreshListText');
+            if (refreshListText) refreshListText.textContent = `🔄 ${t.refreshList}`;
+            
+            const exportAllBackupsText = document.getElementById('exportAllBackupsText');
+            if (exportAllBackupsText) exportAllBackupsText.textContent = `📦 ${t.exportAllBackups}`;
+            
+            const clearAllBackupsText = document.getElementById('clearAllBackupsText');
+            if (clearAllBackupsText) clearAllBackupsText.textContent = `🗑️ ${t.clearAllBackups}`;
+            
+            const backupSystemTitleText = document.getElementById('backupSystemTitleText');
+            if (backupSystemTitleText) backupSystemTitleText.textContent = `ℹ️ ${t.backupSystemTitle}`;
+            
+            const backupInfo1 = document.getElementById('backupInfo1');
+            if (backupInfo1) backupInfo1.textContent = `• ${t.backupEvery30s}`;
+            
+            const backupInfo2 = document.getElementById('backupInfo2');
+            if (backupInfo2) backupInfo2.textContent = `• ${t.backupOnClose}`;
+            
+            const backupInfo3 = document.getElementById('backupInfo3');
+            if (backupInfo3) backupInfo3.textContent = `• ${t.maxBackups}`;
+            
+            const backupInfo4 = document.getElementById('backupInfo4');
+            if (backupInfo4) backupInfo4.textContent = `• ${t.backupsSavedInBrowser}`;
+            
+            const backupInfo5 = document.getElementById('backupInfo5');
+            if (backupInfo5) {
+                backupInfo5.textContent = `• ${t.filesGoToDownloads}`;
+            }
+            
+            // Títulos das colunas de configurações
+            const filesTitle = document.getElementById('filesTitle');
+            if (filesTitle) filesTitle.innerHTML = `💾 ${t.files}`;
+            
+            const saveFormatTitle = document.getElementById('saveFormatTitle');
+            if (saveFormatTitle) saveFormatTitle.textContent = `💾 ${t.saveFormat}`;
+            
+            const advancedTitle = document.getElementById('advancedTitle');
+            if (advancedTitle) advancedTitle.textContent = `🔧 ${t.advanced}`;
             
             // Footer
             const footerPs = document.querySelectorAll('footer p');
@@ -2451,7 +2623,6 @@
         const settingsBtn = document.getElementById('settingsBtn');
         const settingsModal = document.getElementById('settingsModal');
         const closeModal = document.getElementById('closeModal');
-        const viewOptions = document.querySelectorAll('.modal-option');
         const autoSaveTimeSelect = document.getElementById('autoSaveTime');
         const languageSelect = document.getElementById('languageSelect');
         const openEmailConfig = document.getElementById('openEmailConfig');
@@ -2474,23 +2645,69 @@
         // Carregar preferências salvas
         const preferences = loadPreferences();
         
+        // ⚡ VERIFICAR PARÂMETRO URL #autoprint=true ANTES de aplicar preferências
+        const urlHash = window.location.hash;
+        if (urlHash.includes('autoprint=true')) {
+            console.log('');
+            console.log('═══════════════════════════════════════════');
+            console.log('🖨️ AUTO-PRINT ATIVO (via .BAT)');
+            console.log('═══════════════════════════════════════════');
+            console.log('');
+            
+            // Forçar auto-print nas preferências
+            preferences.autoPrint = true;
+            preferences.autoSave = true; // Auto-print requer auto-save
+            
+            // Remover hash da URL para não interferir
+            window.history.replaceState(null, null, window.location.pathname);
+        }
+        
         // Aplicar idioma salvo (será chamado depois)
         currentLanguage = preferences.language || 'pt';
         if (languageSelect) {
             languageSelect.value = currentLanguage;
         }
         
-        // Tentar conexão automática ao Arduino
+        // Tentar conexão automática ao Arduino (apenas UMA vez)
         setTimeout(async () => {
             const autoConnect = localStorage.getItem('lptUnoAutoConnect');
-            if (autoConnect === 'true') {
+            if (autoConnect === 'true' && !isConnected) {
                 try {
-                    // Obter portas já autorizadas
+                    // Obter informações da porta salva
+                    const savedPortInfo = localStorage.getItem('lptUnoPortInfo');
                     const ports = await navigator.serial.getPorts();
-                    if (ports.length > 0) {
-                        port = ports[0]; // Usar a primeira porta autorizada
+                    
+                    if (ports.length > 0 && !isConnected) {
+                        let targetPort = null;
+                        
+                        // Se temos informações salvas, tentar encontrar a porta específica
+                        if (savedPortInfo) {
+                            try {
+                                const savedInfo = JSON.parse(savedPortInfo);
+                                // Procurar porta com mesmo VID/PID
+                                targetPort = ports.find(p => {
+                                    const info = p.getInfo();
+                                    return info.usbVendorId === savedInfo.usbVendorId && 
+                                           info.usbProductId === savedInfo.usbProductId;
+                                });
+                                
+                                if (targetPort) {
+                                    console.log('🎯 Arduino memorizado encontrado!');
+                                }
+                            } catch (e) {
+                                console.log('Erro ao processar informações salvas:', e);
+                            }
+                        }
+                        
+                        // Se não encontrou a porta específica, usar a primeira disponível
+                        if (!targetPort) {
+                            targetPort = ports[0];
+                            console.log('🔌 Usando primeira porta autorizada');
+                        }
+                        
+                        port = targetPort;
+                        reconnectAttempts = 0;
                         await connect(true);
-                        showInfo('✅ Conectado automaticamente ao Arduino!');
                     }
                 } catch (error) {
                     console.log('Auto-conexão não disponível:', error);
@@ -2513,22 +2730,6 @@
             autoPrintBtn.classList.remove('active');
         }
         
-        // Aplicar modo de visualização salvo
-        currentView = preferences.viewMode;
-        viewOptions.forEach(option => {
-            const radio = option.querySelector('input[type="radio"]');
-            if (option.dataset.view === preferences.viewMode) {
-                option.classList.add('selected');
-                radio.checked = true;
-            } else {
-                option.classList.remove('selected');
-                radio.checked = false;
-            }
-        });
-        if (currentView === 'hex') {
-            output.className = 'hex-view';
-        }
-        
         // Aplicar tempo de auto-salvar
         if (autoSaveTimeSelect && preferences.autoSaveTime) {
             autoSaveTimeSelect.value = preferences.autoSaveTime;
@@ -2541,25 +2742,63 @@
         // Função: Auto-conectar se possível (ao carregar ou reconectar)
         async function tryAutoConnect() {
             if (!('serial' in navigator)) return;
+            if (isConnected) return; // Já está conectado, não fazer nada
+            
             const t = translations[currentLanguage];
             
             try {
-                // Obter portas já autorizadas
+                // Obter informações da porta salva
+                const savedPortInfo = localStorage.getItem('lptUnoPortInfo');
                 const ports = await navigator.serial.getPorts();
-                if (ports.length > 0) {
+                
+                if (ports.length > 0 && !isConnected) {
                     console.log(`🔌 Detecção automática: ${ports.length} porta(s) encontrada(s). Tentando conectar...`);
-                    showInfo(t.autoDetectFound);
                     
-                    // Tentar conectar na primeira porta disponível
-                    // Nota: Idealmente verificaríamos VID/PID, mas getPorts() retorna objetos SerialPort opacos
-                    // que podemos comparar se tivéssemos salvo o info, mas conectar no primeiro é seguro se o usuário só usa um Arduino.
-                    port = ports[0];
+                    let targetPort = null;
+                    
+                    // Se temos informações salvas, tentar encontrar a porta específica
+                    if (savedPortInfo) {
+                        try {
+                            const savedInfo = JSON.parse(savedPortInfo);
+                            // Procurar porta com mesmo VID/PID
+                            targetPort = ports.find(p => {
+                                const info = p.getInfo();
+                                return info.usbVendorId === savedInfo.usbVendorId && 
+                                       info.usbProductId === savedInfo.usbProductId;
+                            });
+                            
+                            if (targetPort) {
+                                console.log('🎯 Arduino memorizado encontrado na reconexão!');
+                            }
+                        } catch (e) {
+                            console.log('Erro ao processar informações salvas:', e);
+                        }
+                    }
+                    
+                    // Se não encontrou a porta específica, usar a primeira disponível
+                    if (!targetPort) {
+                        targetPort = ports[0];
+                        console.log('🔌 Usando primeira porta autorizada');
+                    }
+                    
+                    // Só mostrar mensagem se for uma reconexão (reconnectAttempts > 0)
+                    if (reconnectAttempts > 0) {
+                        showInfo(t.autoDetectFound);
+                    }
+                    
+                    // Tentar conectar na porta selecionada
+                    port = targetPort;
                     await connectToPort(port);
                 } else {
                     console.log('🔌 Detecção automática: Nenhuma porta autorizada encontrada.');
                 }
             } catch (err) {
                 console.error('Erro na detecção automática:', err);
+                
+                // Se estamos em modo de reconexão e falhou, agendar nova tentativa
+                if (reconnectAttempts > 0 && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+                    scheduleReconnect();
+                }
             }
         }
         
@@ -2581,8 +2820,137 @@
             await connect(true);
         }
         
+        // ========================================
+        // WAKE LOCK API - MANTER SISTEMA ACORDADO
+        // ========================================
+        
+        async function requestWakeLock() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    console.log('🔒 Wake Lock ativado - Sistema não adormecerá');
+                    
+                    // Mostrar indicador visual
+                    const wakeLockStatus = document.getElementById('wakeLockStatus');
+                    if (wakeLockStatus) {
+                        wakeLockStatus.style.opacity = '1';
+                    }
+                    
+                    wakeLock.addEventListener('release', () => {
+                        console.log('🔓 Wake Lock liberado');
+                        if (wakeLockStatus) {
+                            wakeLockStatus.style.opacity = '0';
+                        }
+                    });
+                    
+                    return true;
+                }
+            } catch (err) {
+                console.warn('Wake Lock não suportado ou negado:', err);
+                return false;
+            }
+        }
+        
+        async function releaseWakeLock() {
+            if (wakeLock !== null) {
+                try {
+                    await wakeLock.release();
+                    wakeLock = null;
+                    console.log('🔓 Wake Lock desativado');
+                    
+                    // Esconder indicador visual
+                    const wakeLockStatus = document.getElementById('wakeLockStatus');
+                    if (wakeLockStatus) {
+                        wakeLockStatus.style.opacity = '0';
+                    }
+                } catch (err) {
+                    console.error('Erro ao liberar Wake Lock:', err);
+                }
+            }
+        }
+        
+        // ========================================
+        // KEEP ALIVE - PING PERIÓDICO
+        // ========================================
+        
+        function startKeepAlive() {
+            if (keepAliveTimer) {
+                clearInterval(keepAliveTimer);
+            }
+            
+            keepAliveTimer = setInterval(async () => {
+                if (isConnected && writer) {
+                    try {
+                        // Keep-alive silencioso - não envia comandos que geram respostas
+                        // Apenas mantém a conexão ativa verificando o estado
+                        console.log('💓 Keep-alive: Conexão ativa');
+                    } catch (err) {
+                        console.warn('Erro no keep-alive:', err);
+                    }
+                }
+            }, KEEP_ALIVE_INTERVAL);
+            
+            console.log(`💓 Keep-alive iniciado (${KEEP_ALIVE_INTERVAL/1000}s)`);
+        }
+        
+        function stopKeepAlive() {
+            if (keepAliveTimer) {
+                clearInterval(keepAliveTimer);
+                keepAliveTimer = null;
+                console.log('💓 Keep-alive parado');
+            }
+        }
+        
+        // ========================================
+        // PAGE VISIBILITY API - MANTER ATIVO EM BACKGROUND
+        // ========================================
+        
+        document.addEventListener('visibilitychange', async () => {
+            if (document.hidden) {
+                console.log('👁️ Página em background - Mantendo conexão ativa');
+                // Manter conexão ativa mesmo em background
+            } else {
+                console.log('👁️ Página visível novamente');
+                // Reativar Wake Lock se foi liberado
+                if (isConnected && wakeLock === null) {
+                    await requestWakeLock();
+                }
+            }
+        });
+        
+        // Prevenir suspensão quando minimizado
+        window.addEventListener('blur', () => {
+            console.log('🔽 Janela minimizada - Conexão mantida');
+        });
+        
+        window.addEventListener('focus', async () => {
+            console.log('🔼 Janela em foco');
+            if (isConnected && wakeLock === null) {
+                await requestWakeLock();
+            }
+        });
+        
         async function connect(autoConnect = false) {
             const t = translations[currentLanguage];
+            
+            // Proteção contra chamadas múltiplas
+            if (isConnected) {
+                console.log('⚠️ Já conectado. Ignorando nova tentativa de conexão.');
+                return;
+            }
+            
+            // Proteção contra porta já aberta
+            if (port && port.readable) {
+                console.log('⚠️ Porta serial já aberta. Fechando antes de reconectar...');
+                try {
+                    await disconnect();
+                    // Aguardar um pouco antes de tentar abrir novamente
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                } catch (e) {
+                    console.error('Erro ao fechar porta antes de reconectar:', e);
+                }
+            }
+            
             try {
                 // Solicitar porta serial somente se não estamos em auto-connect
                 if (!autoConnect) {
@@ -2601,35 +2969,65 @@
                 // Monitorar sinais: Se houver desconexão, tentar reconectar
                 navigator.serial.addEventListener('disconnect', handleDisconnectEvent);
                 
-                // Configurar leitor com encoding UTF-8 para suportar caracteres portugueses
-                const decoder = new TextDecoderStream('utf-8');
-                const inputDone = port.readable.pipeTo(decoder.writable);
-                const inputStream = decoder.readable;
-                reader = inputStream.getReader();
+                // Configurar leitor com encoding selecionado
+                // CP-437 requer processamento manual, outros usam TextDecoder nativo
+                if (currentEncoding === 'cp437') {
+                    // Para CP-437, lemos bytes brutos
+                    reader = port.readable.getReader();
+                } else {
+                    // Para outros encodings, usamos TextDecoder
+                    const decoder = new TextDecoderStream(currentEncoding);
+                    const inputDone = port.readable.pipeTo(decoder.writable);
+                    const inputStream = decoder.readable;
+                    reader = inputStream.getReader();
+                }
                 
                 // Configurar escritor
                 const encoder = new TextEncoderStream();
                 const outputDone = encoder.readable.pipeTo(port.writable);
                 writer = encoder.writable.getWriter();
                 
-                // Resetar tentativas de reconexão
+                // Resetar tentativas de reconexão (sucesso na conexão)
                 reconnectAttempts = 0;
                 
-                // Solicitar identificação e versão do firmware
-                writer.write('I'); // Comando de identificação
-                setTimeout(() => writer.write('V'), 100);
-                
-                // Salvar que conectámos com sucesso
+                // Salvar informações da porta para reconexão automática
+                const portInfo = port.getInfo();
                 localStorage.setItem('lptUnoAutoConnect', 'true');
+                localStorage.setItem('lptUnoPortInfo', JSON.stringify({
+                    usbVendorId: portInfo.usbVendorId,
+                    usbProductId: portInfo.usbProductId
+                }));
                 
-                // Limpeza inicial do buffer visual após 3 segundos
-                // Isto remove o banner de inicialização sem afetar o buffer interno de parsing
+                console.log('✅ Porta memorizada:', portInfo);
+                
+                // Mostrar mensagem ao usuário apenas se for conexão manual
+                if (!autoConnect) {
+                    showInfo('✅ Arduino conectado e memorizado! Reconexão automática ativada.');
+                }
+                
+                // NÃO solicitar identificação para evitar mensagens no output
+                // O firmware envia banner ao conectar, será filtrado automaticamente
+                
+                // Ativar Wake Lock para manter sistema acordado
+                await requestWakeLock();
+                
+                // Iniciar Keep Alive para manter conexão ativa
+                startKeepAlive();
+                
+                // Iniciar timer de inatividade
+                resetInactivityTimer();
+                console.log('⏱️ Timer de inatividade iniciado');
+                
+                // Deixar banner do firmware aparecer por 3 segundos
+                // Após 3 segundos, limpar output automaticamente
                 setTimeout(() => {
-                    output.textContent = '';
-                    byteCount = 0;
-                    byteCountEl.textContent = '0';
-                    pendingData = ''; // Limpar dados pendentes para que o banner não seja salvo
-                    showInfo(t.bufferCleared);
+                    if (isConnected) {
+                        output.textContent = '';
+                        byteCount = 0;
+                        byteCountEl.textContent = '0';
+                        pendingData = '';
+                        console.log('🧹 Output limpo automaticamente após 3s (banner firmware)');
+                    }
                 }, 3000);
                 
                 // Iniciar leitura de dados
@@ -2663,8 +3061,12 @@
         function scheduleReconnect() {
             const t = translations[currentLanguage];
             if (reconnectTimer) clearTimeout(reconnectTimer);
+            
+            // Só mostrar mensagens se já houve pelo menos uma tentativa de reconexão
             if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
-                showError(t.reconnectFailed);
+                if (reconnectAttempts > 0) {
+                    showError(t.reconnectFailed);
+                }
                 reconnectAttempts = 0;
                 return;
             }
@@ -2672,8 +3074,11 @@
             reconnectAttempts++;
             const delay = 2000; // 2 segundos
             
-            showInfo(`${t.connectionLost} ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS} (2s)...`);
-            console.log(`Tentando reconectar em ${delay}ms...`);
+            // Só mostrar mensagem se for uma reconexão real (não primeira conexão)
+            if (reconnectAttempts > 0) {
+                showInfo(`${t.connectionLost} ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS} (2s)...`);
+                console.log(`Tentando reconectar em ${delay}ms...`);
+            }
             
             reconnectTimer = setTimeout(() => {
                 tryAutoConnect();
@@ -2684,6 +3089,12 @@
             try {
                 // Remover listener de desconexão para não reconectar acidentalmente
                 navigator.serial.removeEventListener('disconnect', handleDisconnectEvent);
+                
+                // Parar Keep Alive
+                stopKeepAlive();
+                
+                // Liberar Wake Lock
+                await releaseWakeLock();
                 
                 if (reader) {
                     await reader.cancel();
@@ -2719,8 +3130,18 @@
                     const { value, done } = await reader.read();
                     if (done) break;
                     
+                    let textValue;
+                    
+                    // Se estamos em modo CP-437, value é Uint8Array
+                    if (currentEncoding === 'cp437') {
+                        textValue = decodeCP437(value);
+                    } else {
+                        // Para outros encodings, value já é string
+                        textValue = value;
+                    }
+                    
                     // Acumular para parsing de versão (robusto contra pacotes fragmentados)
-                    metadataBuffer += value;
+                    metadataBuffer += textValue;
                     // Limitar tamanho do buffer de metadados para não crescer infinitamente
                     if (metadataBuffer.length > 200) {
                          // Manter apenas os últimos 200 chars se não encontrarmos quebras de linha logo
@@ -2747,9 +3168,9 @@
                         updateFirmwareDisplay();
                     }
                     
-                    // Processar dados recebidos (Exibição imediata)
-                    for (let i = 0; i < value.length; i++) {
-                        const byte = value.charCodeAt(i);
+                    // Processar dados recebidos (Exibição imediata - SEM FILTROS)
+                    for (let i = 0; i < textValue.length; i++) {
+                        const byte = textValue.charCodeAt(i);
                         
                         byteCount++;
                         displayByte(byte);
@@ -2762,7 +3183,10 @@
                         }
                     }
                     
-                    // Resetar timer de inatividade
+                    // Resetar timer de inatividade após receber dados
+                    if (isConnected) {
+                        resetInactivityTimer();
+                    }
                     resetInactivityTimer();
                 }
             } catch (error) {
@@ -2773,49 +3197,46 @@
             }
         }
         
-        // Função: Exibir byte conforme modo de visualização
-        function displayByte(byte) {
-            let text = '';
-            
-            switch (currentView) {
-                case 'text':
-                    // Modo texto (ASCII)
-                    if (byte >= 32 && byte <= 126) {
-                        text = String.fromCharCode(byte);
-                    } else if (byte === 10) {
-                        text = '\n';
-                    } else if (byte === 13) {
-                        text = '\r';
-                    } else if (byte === 9) {
-                        text = '\t';
-                    } else {
-                        text = `[${byte.toString(16).padStart(2, '0')}]`;
-                    }
-                    break;
-                    
-                case 'hex':
-                    // Modo hexadecimal
-                    text = byte.toString(16).padStart(2, '0').toUpperCase() + ' ';
-                    if (byteCount % 16 === 0) text += '\n';
-                    break;
-                    
-                case 'binary':
-                    // Modo binário
-                    text = byte.toString(2).padStart(8, '0') + ' ';
-                    if (byteCount % 8 === 0) text += '\n';
-                    break;
-            }
-            
-            output.textContent += text;
-            output.scrollTop = output.scrollHeight;
-        }
-        
         // Função: Atualizar exibição de firmware
         function updateFirmwareDisplay() {
             const firmwareInfo = document.getElementById('firmwareInfo');
             if (firmwareInfo) {
                 firmwareInfo.innerHTML = `Web Interface v1.0 | Build: 2026-01-25<br>Arduino Firmware: v${firmwareVersion} | Build: ${firmwareBuild}`;
             }
+        }
+        
+        // Função: Exibir byte recebido no monitor (modo texto)
+        function displayByte(byte) {
+            const char = String.fromCharCode(byte);
+            
+            // Criar span para o caractere
+            const span = document.createElement('span');
+            span.style.fontFamily = 'Consolas, Monaco, monospace';
+            span.style.fontSize = '14px';
+            span.style.whiteSpace = 'pre';
+            
+            // Exibir caracteres imprimíveis e alguns controles
+            if (byte >= 32 && byte <= 126) {
+                // Caracteres imprimíveis normais
+                span.textContent = char;
+            } else if (byte === 10) {
+                // Line Feed (nova linha)
+                span.textContent = '\n';
+            } else if (byte === 13) {
+                // Carriage Return (ignorar, pois Windows usa \r\n)
+                return; // Não adicionar ao output
+            } else if (byte === 9) {
+                // Tab
+                span.textContent = '\t';
+            } else {
+                // Outros caracteres de controle - exibir como espaço ou ignorar
+                return; // Ignorar caracteres de controle não imprimíveis
+            }
+            
+            output.appendChild(span);
+            
+            // Auto-scroll para o final
+            output.scrollTop = output.scrollHeight;
         }
         
         // Função: Atualizar status
@@ -2878,14 +3299,17 @@
         });
         
         // Função: Salvar arquivo no formato escolhido
-        async function saveToFile(text, timestamp, format) {
+        async function saveToFile(text, timestamp, format, customPrefix) {
             try {
-                // Obter prefixo do arquivo (se configurado)
-                const prefs = loadPreferences();
-                const filePrefix = prefs.subfolderName || 'lpt-uno';
-                
-                // Sanitizar prefixo (remover caracteres inválidos)
-                const sanitizedPrefix = filePrefix.replace(/[<>:"\/\\|?*]/g, '_');
+                // Obter prefixo do arquivo (se configurado ou customizado)
+                let sanitizedPrefix;
+                if (customPrefix) {
+                    sanitizedPrefix = customPrefix.replace(/[<>:"\/\\|?*]/g, '_');
+                } else {
+                    const prefs = loadPreferences();
+                    const filePrefix = prefs.subfolderName || 'lpt-uno';
+                    sanitizedPrefix = filePrefix.replace(/[<>:"\/\\|?*]/g, '_');
+                }
                 
                 let blob, filename, mimeType;
                 const baseFilename = `${sanitizedPrefix}_${timestamp}`;
@@ -2920,22 +3344,28 @@
                         break;
                 }
                 
-                // Download do arquivo
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = filename;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                
-                showInfo(`💾 Arquivo ${filename} salvo na pasta Downloads!`);
+                // Salvar usando download normal (pasta Downloads do navegador)
+                downloadAsBlob(blob, filename);
                 
             } catch (error) {
                 console.error('Erro ao salvar arquivo:', error);
                 showError('❌ Erro ao salvar arquivo');
             }
+        }
+        
+        // Função auxiliar: Download como blob (Downloads padrão)
+        function downloadAsBlob(blob, filename) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showInfo(`💾 Arquivo ${filename} salvo na pasta Downloads!`);
+            console.log(`💾 Arquivo salvo: ${filename} (Downloads)`);
         }
         
         // Função: Gerar PDF simples (básico, sem biblioteca externa)
@@ -2983,6 +3413,11 @@
             const prefs = loadPreferences();
             prefs.autoSave = isActive;
             savePreferences(prefs);
+            
+            // Reiniciar timer de inatividade
+            if (isConnected) {
+                resetInactivityTimer();
+            }
         });
         
         // Função: Toggle Auto-imprimir
@@ -3001,6 +3436,11 @@
             const prefs = loadPreferences();
             prefs.autoPrint = isActive;
             savePreferences(prefs);
+            
+            // Reiniciar timer de inatividade
+            if (isConnected) {
+                resetInactivityTimer();
+            }
         });
         
         // Função: Enviar comando Reset ao Arduino
@@ -3043,35 +3483,6 @@
             }
         });
         
-        // Função: Alternar modo de visualização no modal
-        viewOptions.forEach(option => {
-            option.addEventListener('click', () => {
-                // Remover seleção anterior
-                viewOptions.forEach(opt => opt.classList.remove('selected'));
-                
-                // Adicionar seleção atual
-                option.classList.add('selected');
-                const radio = option.querySelector('input[type="radio"]');
-                radio.checked = true;
-                
-                // Atualizar modo
-                currentView = option.dataset.view;
-                
-                // Atualizar classe CSS do output
-                output.className = currentView === 'hex' ? 'hex-view' : '';
-                
-                // Limpar output ao mudar visualização
-                output.textContent = '';
-                
-                // Salvar preferência
-                const prefs = loadPreferences();
-                prefs.viewMode = currentView;
-                savePreferences(prefs);
-                
-                showInfo(`Modo de visualização: ${currentView === 'text' ? 'Texto' : currentView === 'hex' ? 'Hexadecimal' : 'Binário'}`);
-            });
-        });
-        
         // Função: Alterar tempo de auto-salvar
         autoSaveTimeSelect.addEventListener('change', () => {
             const selectedTime = parseInt(autoSaveTimeSelect.value);
@@ -3083,6 +3494,11 @@
                 `${selectedTime / 60} minuto${selectedTime > 60 ? 's' : ''}` : 
                 `${selectedTime} segundos`;
             showInfo(`⏱️ ${translations[currentLanguage].autoSaveTimeChanged} ${timeText}`);
+            
+            // Reiniciar timer de inatividade com novo tempo
+            if (isConnected) {
+                resetInactivityTimer();
+            }
         });
         
         // Função: Alterar idioma
@@ -3152,6 +3568,14 @@
             });
         }
         
+        // Botão para criar/configurar arquivo .ini
+        const setupIniBtn = document.getElementById('setupIniBtn');
+        if (setupIniBtn) {
+            setupIniBtn.addEventListener('click', async () => {
+                await setupIniFile();
+            });
+        }
+        
         // ========================================
         // ASSISTENTE DE CONFIGURAÇÃO AUTOMÁTICA
         // ========================================
@@ -3169,17 +3593,25 @@
 // Este script permite enviar emails do navegador usando sua conta Gmail
 // GRATUITO e ILIMITADO!
 //
-// Versão: 1.0 | Data: 2026-01-25
+// Versão: 1.1 | Data: 2026-01-31
 // ========================================
 
 function doPost(e) {
   try {
     const data = JSON.parse(e.postData.contents);
-    const to = data.to;
+    let to = data.to;
     const toName = data.toName;
     const fromName = data.fromName;
     const subject = data.subject;
     const body = data.body;
+    const attachmentData = data.attachmentData;
+    const attachmentName = data.attachmentName;
+    
+    // Se 'to' for 'SELF', enviar para o email do usuário logado
+    if (to === 'SELF') {
+      to = Session.getActiveUser().getEmail();
+      Logger.log('📧 Enviando email de teste para: ' + to);
+    }
     
     if (!to || !subject || !body) {
       return ContentService
@@ -3190,10 +3622,20 @@ function doPost(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
     
-    GmailApp.sendEmail(to, subject, body, {
+    // Preparar opções de email
+    const emailOptions = {
       name: fromName || 'LPT-UNO',
       noReply: false
-    });
+    };
+    
+    // Se houver dados de anexo, criar blob e adicionar às opções
+    if (attachmentData && attachmentName) {
+      const blob = Utilities.newBlob(attachmentData, 'text/plain; charset=utf-8', attachmentName);
+      emailOptions.attachments = [blob];
+      Logger.log('📎 Anexo adicionado: ' + attachmentName);
+    }
+    
+    GmailApp.sendEmail(to, subject, body, emailOptions);
     
     Logger.log('✅ Email enviado para: ' + to);
     
@@ -3220,6 +3662,19 @@ function doGet(e) {
   return ContentService
     .createTextOutput('LPT-UNO Email Sender está rodando! ✅')
     .setMimeType(ContentService.MimeType.TEXT);
+}
+
+function testEmail() {
+  const to = Session.getActiveUser().getEmail();
+  const subject = 'LPT-UNO - Email de Teste';
+  const body = 'Este é um email de teste do LPT-UNO.\\n\\nSe recebeu este email, o sistema de envio automático está funcionando!';
+  
+  GmailApp.sendEmail(to, subject, body, {
+    name: 'LPT-UNO'
+  });
+  
+  Logger.log('✅ Email de teste enviado para: ' + to);
+  return 'Email enviado para: ' + to;
 }`;
                 
                 try {
@@ -3297,8 +3752,8 @@ function doGet(e) {
             validateUrlBtn.addEventListener('click', () => {
                 const url = wizardUrlInput.value.trim();
                 
-                // Validar formato da URL
-                const appsScriptRegex = /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/;
+                // Validar formato da URL (aceita URLs longas do Apps Script)
+                const appsScriptRegex = /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec/;
                 
                 if (!url) {
                     showError('❌ Por favor, cole a URL do Google Apps Script!');
@@ -3392,7 +3847,7 @@ function doGet(e) {
             }
             
             // Validar formato da URL do Apps Script
-            const appsScriptRegex = /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/;
+            const appsScriptRegex = /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec/;
             if (!appsScriptRegex.test(appsScriptUrl)) {
                 showError('❌ URL inválida! Formato esperado: https://script.google.com/macros/s/SEU_ID/exec');
                 return;
@@ -3400,14 +3855,31 @@ function doGet(e) {
             
             showInfo(`📧 ${t.testingEmail || 'Testando configuração de email...'}`);
             
-            // Enviar email de teste real via Google Apps Script
+            // Enviar email de teste para Session.getActiveUser().getEmail() (você mesmo)
+            // Google Apps Script detecta automaticamente o email do usuário logado
             const testPayload = {
-                to: 'teste@exemplo.com',
-                toName: 'Destinatário Teste',
+                to: 'SELF', // Código especial: o script enviará para o Gmail do usuário logado
+                toName: 'Administrador LPT-UNO',
                 fromName: senderName || 'LPT-UNO',
-                subject: '🧪 Teste LPT-UNO - Email Automático',
-                body: `Este é um email de teste enviado em ${new Date().toLocaleString('pt-PT')}.\n\nSe você receber esta mensagem, sua configuração está funcionando!\n\n---\nLPT-UNO Email System\nGoogle Apps Script Integration`
+                subject: '✅ Teste LPT-UNO - Configuração de Email Funcionando!',
+                body: `🎉 SUCESSO! Sua configuração está correta!\n\n` +
+                      `✅ Google Apps Script: Funcionando\n` +
+                      `✅ Conexão Web Interface: OK\n` +
+                      `✅ Envio de Email: Operacional\n\n` +
+                      `⏰ Teste realizado: ${new Date().toLocaleString('pt-PT')}\n` +
+                      `👤 Remetente: ${senderName || 'LPT-UNO'}\n\n` +
+                      `Agora você pode configurar destinatários e o sistema enviará emails automaticamente quando detectar dados!\n\n` +
+                      `---\n` +
+                      `LPT-UNO Email System v1.1\n` +
+                      `Google Apps Script Integration`,
+                // Campos opcionais (não usado em teste, mas evita erros)
+                attachmentData: null,
+                attachmentName: null
             };
+            
+            console.log('📧 Enviando teste para Google Apps Script...');
+            console.log('📧 URL:', appsScriptUrl);
+            console.log('📧 Payload:', testPayload);
             
             fetch(appsScriptUrl, {
                 method: 'POST',
@@ -3420,12 +3892,69 @@ function doGet(e) {
             .then(() => {
                 // Com mode: 'no-cors', não conseguimos ler a resposta
                 // Mas se não houver erro, assume-se que funcionou
-                showInfo(`✅ ${t.emailTestSuccess || 'Teste enviado! Verifique sua caixa de entrada (teste@exemplo.com).'}`);
-                showInfo(`⚠️ ${t.emailTestNote || 'Nota: Com Google Apps Script, você verá o email sendo enviado. Verifique seus Enviados no Gmail.'}`);
+                console.log('✅ Requisição enviada com sucesso!');
+                console.log('⏰ Aguarde 5-15 segundos para o email chegar...');
+                
+                showInfo('📤 Email de teste ENVIADO para o Google Apps Script!');
+                showInfo('⏰ Aguarde 5-15 segundos e verifique sua caixa de entrada do Gmail');
+                
+                setTimeout(() => {
+                    showInfo('📬 Email não chegou? Veja as instruções no console (F12)');
+                }, 5000);
+                
+                // Instruções de troubleshooting
+                console.log('');
+                console.log('═══════════════════════════════════════════════════════');
+                console.log('🔍 TROUBLESHOOTING - Se NÃO RECEBER o email de teste:');
+                console.log('═══════════════════════════════════════════════════════');
+                console.log('');
+                console.log('⚠️ IMPORTANTE: Primeira vez? DEVE autorizar o script!');
+                console.log('');
+                console.log('📋 PASSO 1: Executar testEmail() manualmente (OBRIGATÓRIO na 1ª vez)');
+                console.log('1. Abra: https://script.google.com/home/start');
+                console.log('2. Encontre seu projeto "LPT-UNO Email Sender"');
+                console.log('3. No editor, selecione a função "testEmail" no dropdown');
+                console.log('4. Clique em "Executar" (▶️)');
+                console.log('5. AUTORIZE quando aparecer pop-up de permissões do Google');
+                console.log('6. Aguarde... deve receber um email de teste no Gmail');
+                console.log('7. ✅ Email recebido? Agora pode usar o botão de teste na interface!');
+                console.log('');
+                console.log('📋 PASSO 2: Verificar Execuções do Script');
+                console.log('1. Apps Script → Menu lateral → "Execuções" (⏱️)');
+                console.log('2. Veja se há execução RECENTE (últimos 30 segundos)');
+                console.log('');
+                console.log('❌ Se NÃO houver execuções recentes:');
+                console.log('   → O script NÃO está recebendo a requisição');
+                console.log('   → Verifique se fez o DEPLOY como Web App');
+                console.log('   → Verifique se copiou a URL CORRETA');
+                console.log('');
+                console.log('❌ Se houver execução com ERRO:');
+                console.log('   → Clique na execução para ver detalhes');
+                console.log('   → Erro "UnauthorizedEmailRecipient"? Execute testEmail() manualmente PRIMEIRO!');
+                console.log('   → Erro "Exception: No permission"? Autorize o script!');
+                console.log('   → Erro de sintaxe? Copie o código novamente do assistente');
+                console.log('');
+                console.log('✅ Se houver execução com SUCESSO mas sem email:');
+                console.log('   → Verifique Gmail → Spam');
+                console.log('   → Verifique Gmail → Todas as mensagens');
+                console.log('   → Aguarde mais 1-2 minutos (pode demorar)');
+                console.log('');
+                console.log('📋 PASSO 3: Verificar Implantação');
+                console.log('1. Apps Script → Implementar → Gerenciar implantações');
+                console.log('2. Deve ter 1 implantação ativa (Web App)');
+                console.log('3. "Executar como": Eu (seu email)');
+                console.log('4. "Quem tem acesso": Qualquer pessoa');
+                console.log('');
+                console.log('💡 DICA: O erro mais comum é não executar testEmail() manualmente primeiro!');
+                console.log('   O Google exige autorização manual na primeira execução.');
+                console.log('');
+                console.log('═══════════════════════════════════════════════════════');
             })
             .catch(error => {
-                console.error('Erro ao testar email:', error);
-                showError(`❌ ${t.emailTestError || 'Erro ao enviar teste!'} ${error.message}`);
+                console.error('❌ Erro ao enviar:', error);
+                showError(`❌ Erro ao enviar teste: ${error.message}`);
+                showError('💡 Verifique se a URL do Apps Script está correta e se o script foi implantado');
+                showError('🔍 Abra o Console (F12) para mais detalhes');
             });
         }
         
@@ -3480,26 +4009,26 @@ function doGet(e) {
             emailInput.value = email;
             emailInput.className = 'recipient-email';
             
-            // Adicionar evento para criar novas linhas quando todas estiverem preenchidas
+            // Adicionar evento para manter sempre 2 linhas vazias no final
             const checkAndAddRows = () => {
                 const allRows = recipientsContainer.querySelectorAll('.recipient-row');
-                let allFilled = true;
+                let emptyRowsCount = 0;
                 
+                // Contar linhas vazias
                 allRows.forEach(row => {
                     const name = row.querySelector('.recipient-name').value.trim();
                     const email = row.querySelector('.recipient-email').value.trim();
-                    if (!name || !email) {
-                        allFilled = false;
+                    if (!name && !email) {
+                        emptyRowsCount++;
                     }
                 });
                 
-                if (allFilled) {
-                    // Adicionar mais 5 linhas vazias
-                    for (let i = 0; i < 5; i++) {
+                // Se houver menos de 2 linhas vazias, adicionar mais
+                if (emptyRowsCount < 2) {
+                    const rowsToAdd = 2 - emptyRowsCount;
+                    for (let i = 0; i < rowsToAdd; i++) {
                         recipientsContainer.appendChild(createRecipientRow());
                     }
-                    // Scroll para o final
-                    recipientsContainer.scrollTop = recipientsContainer.scrollHeight;
                 }
             };
             
@@ -3529,8 +4058,8 @@ function doGet(e) {
                 recipients.forEach(recipient => {
                     recipientsContainer.appendChild(createRecipientRow(recipient.name, recipient.email));
                 });
-                // Adicionar 5 linhas vazias no final
-                for (let i = 0; i < 5; i++) {
+                // Adicionar 2 linhas vazias no final
+                for (let i = 0; i < 2; i++) {
                     recipientsContainer.appendChild(createRecipientRow());
                 }
             }
@@ -3575,17 +4104,19 @@ function doGet(e) {
         }
         
         // Função: Verificar e enviar emails para destinatários encontrados no buffer
-        function checkAndSendEmails(data, timestamp) {
+        function checkAndSendEmails(data, timestamp, filePrefix, sanitizedPrefix) {
             const prefs = loadPreferences();
             const recipients = prefs.recipients || [];
             const emailConfig = prefs.email || {};
             
             if (recipients.length === 0) {
-                return; // Sem destinatários configurados
+                console.log('📧 Sem destinatários configurados');
+                return []; // Sem destinatários configurados
             }
             
-            if (!emailConfig.senderEmail || !emailConfig.smtpServer) {
-                return; // Configuração de email incompleta
+            if (!emailConfig.appsScriptUrl) {
+                console.log('📧 Google Apps Script não configurado');
+                return []; // Configuração de email incompleta
             }
             
             // Converter dados para minúsculas para busca case-insensitive
@@ -3597,23 +4128,30 @@ function doGet(e) {
                 const nameLower = recipient.name.toLowerCase();
                 if (dataLower.includes(nameLower)) {
                     matchedRecipients.push(recipient);
+                    console.log(`📧 Match encontrado: "${recipient.name}" nos dados recebidos`);
                 }
             });
             
             // Se encontrou correspondências, enviar emails
             if (matchedRecipients.length > 0) {
                 matchedRecipients.forEach(recipient => {
-                    sendEmailToRecipient(recipient, data, timestamp, emailConfig);
+                    // Criar nome de arquivo com destinatário
+                    const fileNameWithRecipient = `${sanitizedPrefix} - ${recipient.name}`;
+                    sendEmailToRecipient(recipient, data, timestamp, emailConfig, fileNameWithRecipient);
                 });
                 
                 const t = translations[currentLanguage];
                 const names = matchedRecipients.map(r => r.name).join(', ');
                 showInfo(`📧 Email enviado para: ${names}`);
+            } else {
+                console.log('📧 Nenhum destinatário correspondente encontrado nos dados');
             }
+            
+            return matchedRecipients; // Retorna destinatários encontrados
         }
         
         // Função: Enviar email para um destinatário
-        async function sendEmailToRecipient(recipient, data, timestamp, emailConfig) {
+        async function sendEmailToRecipient(recipient, data, timestamp, emailConfig, customFileName) {
             // Usando Google Apps Script - 100% gratuíto e ilimitado!
             
             if (!emailConfig.appsScriptUrl) {
@@ -3627,12 +4165,21 @@ function doGet(e) {
                 
                 // Enviar para cada email
                 for (const email of emails) {
+                    // Usar nome customizado se fornecido, senão usar padrão
+                    const fileName = customFileName || (() => {
+                        const prefs = loadPreferences();
+                        const filePrefix = prefs.subfolderName || 'lpt-uno';
+                        return filePrefix.replace(/[<>:"\/\\|?*]/g, '_');
+                    })();
+                    
                     const payload = {
                         to: email,
                         toName: recipient.name,
                         fromName: emailConfig.senderName || 'LPT-UNO',
-                        subject: `LPT-UNO - Dados recebidos - ${timestamp}`,
-                        body: `Olá ${recipient.name},\n\nSegue os dados recebidos pela impressora LPT-UNO:\n\n${data}\n\n---\nEnviado automaticamente em ${new Date().toLocaleString('pt-PT')}`
+                        subject: `LPT-UNO ${fileName}`,
+                        body: `Olá ${recipient.name},\n\nSegue em anexo os dados recebidos pela impressora LPT-UNO.\n\n---\nEnviado automaticamente em ${new Date().toLocaleString('pt-PT')}`,
+                        attachmentData: data,
+                        attachmentName: `${fileName}_${timestamp}.txt`
                     };
                     
                     const response = await fetch(emailConfig.appsScriptUrl, {
@@ -3707,55 +4254,99 @@ function doGet(e) {
                 clearTimeout(inactivityTimer);
             }
             
-            // Obter tempo configurado (em segundos)
+            // Verificar se auto-save, auto-print ou emails automáticos estão ativos
+            const autoSaveActive = autoSaveBtn.classList.contains('active');
+            const autoPrintActive = autoPrintBtn.classList.contains('active');
+            
             const prefs = loadPreferences();
+            const recipients = prefs.recipients || [];
+            const hasRecipients = recipients.length > 0;
+            const emailConfig = prefs.email || {};
+            const emailConfigured = !!emailConfig.appsScriptUrl;
+            const autoEmailActive = hasRecipients && emailConfigured;
+            
+            if (!autoSaveActive && !autoPrintActive && !autoEmailActive) {
+                console.log('⏱️ Timer não iniciado: auto-save, auto-print e auto-email desativados');
+                return; // Não iniciar timer se tudo estiver desativado
+            }
+            
+            // Obter tempo configurado (em segundos)
             const timeInSeconds = prefs.autoSaveTime || 10;
+            
+            if (autoEmailActive) {
+                console.log(`⏱️ Timer reiniciado: ${timeInSeconds}s até auto-save/print/email`);
+            } else {
+                console.log(`⏱️ Timer reiniciado: ${timeInSeconds}s até auto-save/print`);
+            }
             
             // Criar novo timer com tempo configurado
             inactivityTimer = setTimeout(() => {
+                console.log('⏱️ Timer expirado! Executando handleInactivity()');
                 handleInactivity();
             }, timeInSeconds * 1000);
         }
         
-        // Função: Lidar com inatividade (10 segundos sem dados)
+        // Função: Gerar timestamp para nomes de arquivo
+        function generateTimestamp() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            return `${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
+        }
+        
+        // Função: Lidar com inatividade (tempo configurado sem dados)
         function handleInactivity() {
-            if (!pendingData || pendingData.trim().length === 0) {
+            const dataToSave = pendingData || output.textContent;
+            
+            if (!dataToSave || dataToSave.trim().length === 0) {
+                console.log('⏱️ Inatividade detectada, mas sem dados para processar');
                 return; // Nada para processar
             }
             
+            console.log(`⏱️ Inatividade: processando ${dataToSave.length} caracteres`);
             const timestamp = generateTimestamp();
-            const shouldClearMonitor = autoSaveBtn.classList.contains('active') || autoPrintBtn.classList.contains('active');
+            const prefs = loadPreferences();
+            const format = prefs.saveFormat || 'txt';
+            const filePrefix = prefs.subfolderName || 'lpt-uno';
+            const sanitizedPrefix = filePrefix.replace(/[<>:"/\\|?*]/g, '_');
+            
+            // Sempre verificar se há destinatários correspondentes e enviar emails
+            console.log('📧 Verificando destinatários configurados...');
+            const matchedRecipients = checkAndSendEmails(dataToSave, timestamp, filePrefix, sanitizedPrefix);
             
             // Auto-salvar se habilitado
             if (autoSaveBtn.classList.contains('active')) {
-                const blob = new Blob([pendingData], { type: 'text/plain; charset=utf-8' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `LPT-UNO_${timestamp}.txt`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                showInfo('✅ Arquivo salvo automaticamente: LPT-UNO_' + timestamp + '.txt');
-                
-                // Verificar se há destinatários correspondentes no buffer
-                checkAndSendEmails(pendingData, timestamp);
+                console.log('💾 Auto-salvando arquivo...');
+                // Se houver destinatários encontrados, usar nome com destinatário
+                if (matchedRecipients.length > 0) {
+                    const recipientNames = matchedRecipients.map(r => r.name).join(' - ');
+                    const customPrefix = `${sanitizedPrefix} - ${recipientNames}`;
+                    saveToFile(dataToSave, timestamp, format, customPrefix);
+                    showInfo(`💾 Arquivo salvo: ${customPrefix}_${timestamp}.${format}`);
+                } else {
+                    saveToFile(dataToSave, timestamp, format);
+                    showInfo(`💾 Arquivo salvo automaticamente: ${timestamp}.${format}`);
+                }
             }
             
             // Auto-imprimir se habilitado
             if (autoPrintBtn.classList.contains('active')) {
-                printData(pendingData);
+                console.log('🖨️ Auto-imprimindo...');
+                printData(dataToSave);
+                showInfo('🖨️ Enviado para impressora automaticamente');
             }
             
-            // Limpar dados pendentes
-            pendingData = '';
-            
-            // Limpar monitor apenas se auto-salvar ou auto-imprimir estiver ativo
-            if (shouldClearMonitor) {
+            // Limpar dados pendentes apenas se auto-save ou auto-print estiver ativo
+            if (autoSaveBtn.classList.contains('active') || autoPrintBtn.classList.contains('active')) {
+                pendingData = '';
                 output.textContent = '';
                 byteCount = 0;
                 byteCountEl.textContent = '0';
+                console.log('🧹 Buffer limpo após processamento');
             }
         }
         
@@ -3768,82 +4359,53 @@ function doGet(e) {
                 printFrame.style.width = '0';
                 printFrame.style.height = '0';
                 printFrame.style.border = 'none';
+                printFrame.style.visibility = 'hidden';
                 document.body.appendChild(printFrame);
                 
                 // Escrever conteúdo no iframe
                 const doc = printFrame.contentWindow.document;
                 doc.open();
                 doc.write('<html><head><meta charset="UTF-8"><title>LPT-UNO Print</title>');
-                doc.write('<style>body { font-family: "Courier New", monospace; white-space: pre-wrap; }</style>');
+                doc.write('<style>');
+                doc.write('@media print { ');
+                doc.write('  @page { margin: 0.5cm; size: auto; }');
+                doc.write('  body { margin: 0; padding: 0; font-family: "Courier New", monospace; font-size: 10pt; white-space: pre-wrap; }');
+                doc.write('}');
+                doc.write('body { font-family: "Courier New", monospace; white-space: pre-wrap; }');
+                doc.write('</style>');
                 doc.write('</head><body>');
                 doc.write(data.replace(/</g, '&lt;').replace(/>/g, '&gt;'));
                 doc.write('</body></html>');
                 doc.close();
                 
-                // Aguardar carregamento e imprimir
+                // Aguardar carregamento e imprimir automaticamente
                 printFrame.contentWindow.focus();
                 setTimeout(() => {
-                    printFrame.contentWindow.print();
-                    showInfo('🖨️ Enviado para impressora padrão');
+                    try {
+                        // Imprimir diretamente
+                        printFrame.contentWindow.print();
+                        console.log('🖨️ Comando de impressão enviado automaticamente');
+                        showInfo('🖨️ Enviado para impressora automaticamente');
+                    } catch (printError) {
+                        console.error('Erro ao imprimir:', printError);
+                        showError('Erro ao imprimir: ' + printError.message);
+                    }
                     
                     // Remover iframe após impressão
                     setTimeout(() => {
-                        document.body.removeChild(printFrame);
-                    }, 1000);
+                        try {
+                            document.body.removeChild(printFrame);
+                        } catch (e) {
+                            // Iframe já removido
+                        }
+                    }, 2000);
                 }, 500);
                 
             } catch (error) {
-                showError('Erro ao imprimir: ' + error.message);
+                console.error('Erro na função printData:', error);
+                showError('Erro ao preparar impressão: ' + error.message);
             }
         }
-        
-        // ========================================
-        // SISTEMA DE TEMAS
-        // ========================================
-        const themeSelect = document.getElementById('themeSelect');
-        
-        function applyTheme(theme) {
-            // Remover todos os temas
-            document.body.classList.remove('dark-mode', 'ocean-theme', 'forest-theme', 'sunset-theme');
-            
-            // Aplicar novo tema
-            if (theme === 'dark') {
-                document.body.classList.add('dark-mode');
-            } else if (theme === 'ocean') {
-                document.body.classList.add('ocean-theme');
-            } else if (theme === 'forest') {
-                document.body.classList.add('forest-theme');
-            } else if (theme === 'sunset') {
-                document.body.classList.add('sunset-theme');
-            }
-            
-            // Salvar preferência
-            const prefs = loadPreferences();
-            prefs.theme = theme;
-            savePreferences(prefs);
-            
-            const themeNames = {
-                light: '☀️ Light Mode',
-                dark: '🌙 Dark Mode',
-                ocean: '🌊 Ocean Theme',
-                forest: '🌲 Forest Theme',
-                sunset: '🌅 Sunset Theme'
-            };
-            
-            showInfo(themeNames[theme] + ' ativado!');
-        }
-        
-        if (themeSelect) {
-            themeSelect.addEventListener('change', () => {
-                applyTheme(themeSelect.value);
-            });
-        }
-        
-        // Aplicar tema salvo
-        const savedPrefs = loadPreferences();
-        const savedTheme = savedPrefs.theme || 'light';
-        if (themeSelect) themeSelect.value = savedTheme;
-        applyTheme(savedTheme);
         
         // Aplicar idioma salvo
         const savedLang = savedPrefs.language || 'en';
@@ -3858,28 +4420,63 @@ function doGet(e) {
             formatRadio.closest('[data-format]')?.classList.add('selected');
         }
         
-        // Aplicar preferências salvas: Auto-salvar (padrão true)
-        if (savedPrefs.autoSave !== false) { // Default true
+        // ========================================
+        // DETECÇÃO AUTOMÁTICA DO MODO KIOSK (.BAT)
+        // ========================================
+        const urlParams = new URLSearchParams(window.location.search);
+        const isKioskMode = urlParams.get('kiosk') === 'true';
+        
+        if (isKioskMode) {
+            console.log('🚀 Modo Kiosk detectado! Ativando auto-save e auto-print automaticamente...');
+            
+            // Forçar Auto-Save ON
             if (!autoSaveBtn.classList.contains('active')) {
                 autoSaveBtn.classList.add('active');
             }
-        } else {
-            autoSaveBtn.classList.remove('active');
-        }
-
-        // Aplicar preferências salvas: Auto-imprimir (restaurar estado)
-        if (savedPrefs.autoPrint && savedPrefs.autoSave !== false) {
-             if (!autoPrintBtn.classList.contains('active')) {
+            
+            // Forçar Auto-Print ON
+            if (!autoPrintBtn.classList.contains('active')) {
                 autoPrintBtn.classList.add('active');
-                
-                // Aviso de 1ª vez sobre o modo Kiosk
-                if (!sessionStorage.getItem('kioskWarningShown')) {
-                    console.log('Modo Auto-imprimir restaurado. Certifique-se de estar usando o --kiosk-printing.');
-                    sessionStorage.setItem('kioskWarningShown', 'true');
-                }
-             }
+            }
+            
+            // Salvar preferências
+            const prefs = loadPreferences();
+            prefs.autoSave = true;
+            prefs.autoPrint = true;
+            savePreferences(prefs);
+            
+            // Mensagem de confirmação
+            setTimeout(() => {
+                showInfo('🖨️ Modo Auto-Impressão ativado pelo .BAT');
+            }, 1000);
+            console.log('✅ Auto-Save: ON | Auto-Print: ON (--kiosk-printing ativo)');
+            
         } else {
-            autoPrintBtn.classList.remove('active');
+            // Modo normal: aplicar preferências salvas
+            
+            // Aplicar preferências salvas: Auto-salvar (padrão true)
+            if (savedPrefs.autoSave !== false) { // Default true
+                if (!autoSaveBtn.classList.contains('active')) {
+                    autoSaveBtn.classList.add('active');
+                }
+            } else {
+                autoSaveBtn.classList.remove('active');
+            }
+
+            // Aplicar preferências salvas: Auto-imprimir (restaurar estado)
+            if (savedPrefs.autoPrint && savedPrefs.autoSave !== false) {
+                 if (!autoPrintBtn.classList.contains('active')) {
+                    autoPrintBtn.classList.add('active');
+                    
+                    // Aviso de 1ª vez sobre o modo Kiosk
+                    if (!sessionStorage.getItem('kioskWarningShown')) {
+                        console.log('⚠️ Auto-imprimir ativo mas sem --kiosk-printing. Use o .BAT para modo silencioso.');
+                        sessionStorage.setItem('kioskWarningShown', 'true');
+                    }
+                 }
+            } else {
+                autoPrintBtn.classList.remove('active');
+            }
         }
         
         // ========================================
@@ -3939,343 +4536,6 @@ function doGet(e) {
             if (notificationsToggle) notificationsToggle.classList.add('active');
         }
         
-        // ========================================
-        // HISTÓRICO DE SESSÕES
-        // ========================================
-        const openSessionHistory = document.getElementById('openSessionHistory');
-        const sessionHistoryModal = document.getElementById('sessionHistoryModal');
-        const closeSessionHistory = document.getElementById('closeSessionHistory');
-        const clearSessionHistory = document.getElementById('clearSessionHistory');
-        const sessionHistoryList = document.getElementById('sessionHistoryList');
-        
-        function saveSession(data) {
-            if (!data || data.trim().length === 0) return;
-            
-            const sessions = JSON.parse(localStorage.getItem('sessionHistory') || '[]');
-            
-            sessions.unshift({
-                timestamp: new Date().toISOString(),
-                data: data,
-                bytes: data.length
-            });
-            
-            // Manter apenas últimas 10 sessões
-            if (sessions.length > 10) {
-                sessions.pop();
-            }
-            
-            localStorage.setItem('sessionHistory', JSON.stringify(sessions));
-        }
-        
-        function loadSessionHistory() {
-            const sessions = JSON.parse(localStorage.getItem('sessionHistory') || '[]');
-            
-            if (sessions.length === 0) {
-                sessionHistoryList.innerHTML = `
-                    <p style="padding: 20px; text-align: center; color: #6c757d;">
-                        Nenhuma sessão salva ainda
-                    </p>
-                `;
-                return;
-            }
-            
-            sessionHistoryList.innerHTML = sessions.map((session, index) => {
-                const date = new Date(session.timestamp);
-                const preview = session.data.substring(0, 100) + (session.data.length > 100 ? '...' : '');
-                
-                return `
-                    <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px; padding: 15px; margin-bottom: 10px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                            <strong>📅 ${date.toLocaleString('pt-PT')}</strong>
-                            <span style="color: #6c757d;">${session.bytes} bytes</span>
-                        </div>
-                        <pre style="background: #fff; padding: 10px; border-radius: 3px; margin: 10px 0; max-height: 100px; overflow: auto; font-size: 0.85em;">${preview}</pre>
-                        <div style="display: flex; gap: 10px;">
-                            <button onclick="restoreSession(${index})" class="modal-btn" style="flex: 1; padding: 8px; font-size: 0.9em; background: #28a745;">
-                                ♻️ Restaurar
-                            </button>
-                            <button onclick="deleteSession(${index})" class="modal-btn" style="flex: 1; padding: 8px; font-size: 0.9em; background: #dc3545;">
-                                🗑️ Deletar
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-        
-        window.restoreSession = function(index) {
-            const sessions = JSON.parse(localStorage.getItem('sessionHistory') || '[]');
-            if (sessions[index]) {
-                output.textContent = sessions[index].data;
-                sessionHistoryModal.classList.remove('show');
-                showInfo('✅ Sessão restaurada!');
-            }
-        };
-        
-        window.deleteSession = function(index) {
-            const sessions = JSON.parse(localStorage.getItem('sessionHistory') || '[]');
-            sessions.splice(index, 1);
-            localStorage.setItem('sessionHistory', JSON.stringify(sessions));
-            loadSessionHistory();
-            showInfo('🗑️ Sessão deletada!');
-        };
-        
-        if (openSessionHistory) {
-            openSessionHistory.addEventListener('click', () => {
-                sessionHistoryModal.classList.add('show');
-                loadSessionHistory();
-            });
-        }
-        
-        if (closeSessionHistory) {
-            closeSessionHistory.addEventListener('click', () => {
-                sessionHistoryModal.classList.remove('show');
-            });
-        }
-        
-        if (clearSessionHistory) {
-            clearSessionHistory.addEventListener('click', () => {
-                if (confirm('Deseja limpar todas as sessões salvas?')) {
-                    localStorage.removeItem('sessionHistory');
-                    loadSessionHistory();
-                    showInfo('🗑️ Histórico de sessões limpo!');
-                }
-            });
-        }
-        
-        // TABS: Alternar entre Sessões e Backups
-        // ========================================
-        const tabSessions = document.getElementById('tabSessions');
-        const tabBackups = document.getElementById('tabBackups');
-        const sessionsContent = document.getElementById('sessionsContent');
-        const backupsContent = document.getElementById('backupsContent');
-        
-        if (tabSessions) {
-            tabSessions.addEventListener('click', () => {
-                // Ativar tab Sessões
-                tabSessions.classList.add('active');
-                tabSessions.style.borderBottom = '3px solid #667eea';
-                tabBackups.classList.remove('active');
-                tabBackups.style.borderBottom = '3px solid transparent';
-                
-                // Mostrar conteúdo
-                sessionsContent.style.display = 'block';
-                backupsContent.style.display = 'none';
-                
-                loadSessionHistory();
-            });
-        }
-        
-        if (tabBackups) {
-            tabBackups.addEventListener('click', () => {
-                // Ativar tab Backups
-                tabBackups.classList.add('active');
-                tabBackups.style.borderBottom = '3px solid #667eea';
-                tabSessions.classList.remove('active');
-                tabSessions.style.borderBottom = '3px solid transparent';
-                
-                // Mostrar conteúdo
-                backupsContent.style.display = 'block';
-                sessionsContent.style.display = 'none';
-                
-                loadBackupList();
-            });
-        }
-        
-        // INTERFACE DE BACKUPS
-        // ========================================
-        const refreshBackups = document.getElementById('refreshBackups');
-        const exportAllBackupsBtn = document.getElementById('exportAllBackups');
-        const clearAllBackups = document.getElementById('clearAllBackups');
-        const backupList = document.getElementById('backupList');
-        const backupCount = document.getElementById('backupCount');
-        
-        async function loadBackupList() {
-            try {
-                const backups = await listBackups();
-                
-                // Atualizar contador
-                if (backupCount) {
-                    backupCount.innerHTML = `
-                        <strong>📊 Total de backups:</strong> ${backups.length} / ${MAX_BACKUPS}
-                        ${backups.length > 0 ? `| <strong>Último backup:</strong> ${new Date(backups[0].timestamp).toLocaleString('pt-PT')}` : ''}
-                    `;
-                }
-                
-                if (backups.length === 0) {
-                    backupList.innerHTML = `
-                        <p style="padding: 20px; text-align: center; color: #6c757d;">
-                            Nenhum backup encontrado
-                        </p>
-                    `;
-                    return;
-                }
-                
-                backupList.innerHTML = backups.map(backup => {
-                    const date = new Date(backup.timestamp);
-                    const preview = backup.data.substring(0, 80) + (backup.data.length > 80 ? '...' : '');
-                    const savedBadge = backup.saved ? '<span style="background: #28a745; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.8em;">✅ Salvo</span>' : '';
-                    
-                    return `
-                        <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px; padding: 15px; margin-bottom: 10px;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 5px;">
-                                <strong>📅 ${date.toLocaleString('pt-PT')}</strong>
-                                <div style="display: flex; gap: 10px; align-items: center;">
-                                    ${savedBadge}
-                                    <span style="color: #6c757d; font-size: 0.9em;">${backup.size} bytes</span>
-                                    ${backup.subfolder ? `<span style="background: #667eea; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.8em;">📁 ${backup.subfolder}</span>` : ''}
-                                </div>
-                            </div>
-                            <pre style="background: #fff; padding: 10px; border-radius: 3px; margin: 10px 0; max-height: 80px; overflow: auto; font-size: 0.8em;">${preview}</pre>
-                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                                <button onclick="restoreBackup('${backup.id}')" class="modal-btn" style="flex: 1; min-width: 120px; padding: 8px; font-size: 0.9em; background: #28a745;">
-                                    ♻️ Restaurar
-                                </button>
-                                <button onclick="downloadBackup('${backup.id}')" class="modal-btn" style="flex: 1; min-width: 120px; padding: 8px; font-size: 0.9em; background: #17a2b8;">
-                                    💾 Download
-                                </button>
-                                <button onclick="deleteBackup('${backup.id}')" class="modal-btn" style="flex: 1; min-width: 120px; padding: 8px; font-size: 0.9em; background: #dc3545;">
-                                    🗑️ Deletar
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-            } catch (error) {
-                console.error('Erro ao carregar backups:', error);
-                backupList.innerHTML = `
-                    <p style="padding: 20px; text-align: center; color: #dc3545;">
-                        ❌ Erro ao carregar backups: ${error.message}
-                    </p>
-                `;
-            }
-        }
-        
-        // Funções globais para backup
-        window.restoreBackup = async function(id) {
-            try {
-                const backup = await getBackup(id);
-                if (backup && backup.data) {
-                    output.textContent = backup.data;
-                    pendingData = backup.data;
-                    byteCount = backup.data.length;
-                    updateStats();
-                    sessionHistoryModal.classList.remove('show');
-                    showInfo(`✅ Backup restaurado! (${backup.size} bytes)`);
-                }
-            } catch (error) {
-                console.error('Erro ao restaurar backup:', error);
-                showInfo(`❌ Erro ao restaurar backup: ${error.message}`);
-            }
-        };
-        
-        window.downloadBackup = async function(id) {
-            try {
-                const backup = await getBackup(id);
-                if (backup && backup.data) {
-                    const date = new Date(backup.timestamp);
-                    const day = String(date.getDate()).padStart(2, '0');
-                    const month = String(date.getMonth() + 1).padStart(2, '0');
-                    const year = date.getFullYear();
-                    const hours = String(date.getHours()).padStart(2, '0');
-                    const minutes = String(date.getMinutes()).padStart(2, '0');
-                    const seconds = String(date.getSeconds()).padStart(2, '0');
-                    const timestamp = `${day}-${month}-${year}_${hours}h${minutes}m${seconds}s`;
-                    const filename = backup.subfolder ? `${backup.subfolder}_${timestamp}.txt` : `backup_${timestamp}.txt`;
-                    
-                    const blob = new Blob([backup.data], { type: 'text/plain; charset=utf-8' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = filename;
-                    a.click();
-                    URL.revokeObjectURL(url);
-                    
-                    // Marcar como salvo
-                    await markBackupAsSaved(id);
-                    loadBackupList();
-                    
-                    showInfo(`💾 Backup baixado: ${filename}`);
-                }
-            } catch (error) {
-                console.error('Erro ao baixar backup:', error);
-                showInfo(`❌ Erro ao baixar backup: ${error.message}`);
-            }
-        };
-        
-        window.deleteBackup = async function(id) {
-            if (!confirm('Deseja deletar este backup?')) return;
-            
-            try {
-                const db = await openBackupDB();
-                const transaction = db.transaction(BACKUP_STORE, 'readwrite');
-                const store = transaction.objectStore(BACKUP_STORE);
-                
-                await new Promise((resolve, reject) => {
-                    const request = store.delete(id);
-                    request.onsuccess = () => resolve();
-                    request.onerror = () => reject(request.error);
-                });
-                
-                loadBackupList();
-                showInfo('🗑️ Backup deletado!');
-            } catch (error) {
-                console.error('Erro ao deletar backup:', error);
-                showInfo(`❌ Erro ao deletar backup: ${error.message}`);
-            }
-        };
-        
-        if (refreshBackups) {
-            refreshBackups.addEventListener('click', () => {
-                loadBackupList();
-                showInfo('🔄 Lista de backups atualizada!');
-            });
-        }
-        
-        if (exportAllBackupsBtn) {
-            exportAllBackupsBtn.addEventListener('click', async () => {
-                try {
-                    await exportAllBackups();
-                } catch (error) {
-                    console.error('Erro ao exportar backups:', error);
-                    showInfo(`❌ Erro ao exportar: ${error.message}`);
-                }
-            });
-        }
-        
-        if (clearAllBackups) {
-            clearAllBackups.addEventListener('click', async () => {
-                if (!confirm('⚠️ ATENÇÃO: Deseja deletar TODOS os backups? Esta ação não pode ser desfeita!')) return;
-                
-                try {
-                    const db = await openBackupDB();
-                    const transaction = db.transaction(BACKUP_STORE, 'readwrite');
-                    const store = transaction.objectStore(BACKUP_STORE);
-                    
-                    await new Promise((resolve, reject) => {
-                        const request = store.clear();
-                        request.onsuccess = () => resolve();
-                        request.onerror = () => reject(request.error);
-                    });
-                    
-                    loadBackupList();
-                    showInfo('🗑️ Todos os backups foram deletados!');
-                } catch (error) {
-                    console.error('Erro ao limpar backups:', error);
-                    showInfo(`❌ Erro ao limpar backups: ${error.message}`);
-                }
-            });
-        }
-        
-        // Salvar sessão automaticamente ao desconectar
-        const originalDisconnect = disconnect;
-        window.disconnect = async function() {
-            if (output.textContent.trim().length > 0) {
-                saveSession(output.textContent);
-            }
-            await originalDisconnect();
-        };
-        
         // Modificar sendEmailToRecipient para adicionar notificação
         const originalSendEmail = sendEmailToRecipient;
         window.sendEmailToRecipient = async function(recipient, data, timestamp, emailConfig) {
@@ -4291,12 +4551,24 @@ function doGet(e) {
         // INICIALIZAÇÃO AUTOMÁTICA DO SISTEMA
         // ========================================
         (function() {
-            console.log('✅ Sistema LPT-UNO iniciado');
-            console.log('💾 Arquivos serão salvos na pasta Downloads');
-            console.log('🔄 Sistema de backup automático via IndexedDB');
+            const urlParams = new URLSearchParams(window.location.search);
+            const isKioskMode = urlParams.get('kiosk') === 'true';
             
-            // Iniciar sistema de backup automático
-            startAutoBackupSystem();
+            console.log('✅ Sistema LPT-UNO iniciado');
+            
+            if (isKioskMode) {
+                console.log('');
+                console.log('═══════════════════════════════════════════');
+                console.log('🚀 MODO KIOSK ATIVO (via .BAT)');
+                console.log('═══════════════════════════════════════════');
+                console.log('✅ Auto-Save: ATIVO');
+                console.log('✅ Auto-Print: ATIVO');
+                console.log('✅ Impressão Silenciosa: --kiosk-printing');
+                console.log('═══════════════════════════════════════════');
+                console.log('');
+            }
+            
+            console.log('💾 Arquivos serão salvos na pasta Downloads');
             
             // Detecção automática de dispositivo (Auto-Connect)
             setTimeout(tryAutoConnect, 1000); // 1s de delay para garantir renderização correta

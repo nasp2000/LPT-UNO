@@ -5,9 +5,10 @@
 [![License](https://img.shields.io/badge/License-MIT-green)]()
 [![Web Serial API](https://img.shields.io/badge/Web%20Serial%20API-Chrome%2FEdge-orange)]()
 
-Transform your Arduino Uno into a **parallel port printer emulator (LPT/DB25)** that receives data through the parallel interface and forwards it via USB Serial to your PC for visualization and printing in a modern web browser.
+Transform your Arduino Uno into a **parallel port printer emulator (LPT/DB25)** that receives data through the parallel interface and forwards it via USB Serial to your PC for visualization and printing in a modern web browser with modern and advanced features.
+With this, you no longer need to keep your parallel printer running!!
 
-Perfect for reviving old DOS applications, legacy software testing, or educational purposes!
+And perfect for reviving old DOS applications, legacy software testing, or educational purposes!
 
 ---
 
@@ -58,34 +59,55 @@ Perfect for reviving old DOS applications, legacy software testing, or education
 
 | Function | DB25 Pin | Arduino Pin | Type | Description |
 |----------|----------|-------------|------|-------------|
-| **D0** | 2 | Digital 2 | INPUT | Data bit 0 (LSB) |
-| **D1** | 3 | Digital 3 | INPUT | Data bit 1 |
-| **D2** | 4 | Digital 4 | INPUT | Data bit 2 |
-| **D3** | 5 | Digital 5 | INPUT | Data bit 3 |
-| **D4** | 6 | Digital 6 | INPUT | Data bit 4 |
-| **D5** | 7 | Digital 7 | INPUT | Data bit 5 |
-| **D6** | 8 | Digital 8 | INPUT | Data bit 6 |
-| **D7** | 9 | Digital 9 | INPUT | Data bit 7 (MSB) |
-| **STROBE** | 1 | Digital 10 | INPUT | Data ready (active low, interrupt) |
+| **STROBE** | 1 | Digital 2 | INPUT | Data ready (active low, INT0 interrupt) ⚡ |
+| **D0** | 2 | Digital 3 | INPUT | Data bit 0 (LSB) |
+| **D1** | 3 | Digital 4 | INPUT | Data bit 1 |
+| **D2** | 4 | Digital 5 | INPUT | Data bit 2 |
+| **D3** | 5 | Digital 6 | INPUT | Data bit 3 |
+| **D4** | 6 | Digital 7 | INPUT | Data bit 4 |
+| **D5** | 7 | Digital 8 | INPUT | Data bit 5 |
+| **D6** | 8 | Digital 9 | INPUT | Data bit 6 |
+| **D7** | 9 | Digital 10 | INPUT | Data bit 7 (MSB) |
 | **ACK** | 10 | Digital 11 | OUTPUT | Acknowledge (active low pulse) |
 | **BUSY** | 11 | Digital 12 | OUTPUT | Printer busy (active high) |
 | **SELECT** | 13 | Digital 13 | OUTPUT | Printer selected (active high + LED) |
 | **GND** | 18-25 | GND | - | Common ground (**connect all**) |
+
+### DB25 Male Connector Pinout (Front View)
+
+```
+╔═══════════════════════════════════════╗
+║  ●  ●  ●  ●  ●  ●  ●  ●  ●  ●  ●  ●  ● ║  ← Row 1 (top)
+║   13 12 11 10  9  8  7  6  5  4  3  2  1║
+║                                         ║
+║    ●  ●  ●  ●  ●  ●  ●  ●  ●  ●  ●  ●   ║  ← Row 2 (bottom)
+║   25 24 23 22 21 20 19 18 17 16 15 14  ║
+╚═══════════════════════════════════════╝
+    (Looking at the male connector pins)
+```
+
+**Pin Functions:**
+- **Pin 1**: STROBE (interrupt signal)
+- **Pins 2-9**: D0-D7 (data bits)
+- **Pin 10**: ACK (acknowledge)
+- **Pin 11**: BUSY (printer busy)
+- **Pin 13**: SELECT (printer selected)
+- **Pins 18-25**: GND (ground - connect all to Arduino GND)
 
 ### Wiring Diagram
 
 ```
 DB25 Connector          Arduino Uno
 ══════════════          ═══════════
-Pin 1  (STROBE)   -->   Digital 10 (INT0)
-Pin 2  (D0)       -->   Digital 2
-Pin 3  (D1)       -->   Digital 3
-Pin 4  (D2)       -->   Digital 4
-Pin 5  (D3)       -->   Digital 5
-Pin 6  (D4)       -->   Digital 6
-Pin 7  (D5)       -->   Digital 7
-Pin 8  (D6)       -->   Digital 8
-Pin 9  (D7)       -->   Digital 9
+Pin 1  (STROBE)   -->   Digital 2  (INT0) ⚡ INTERRUPT
+Pin 2  (D0)       -->   Digital 3
+Pin 3  (D1)       -->   Digital 4
+Pin 4  (D2)       -->   Digital 5
+Pin 5  (D3)       -->   Digital 6
+Pin 6  (D4)       -->   Digital 7
+Pin 7  (D5)       -->   Digital 8
+Pin 8  (D6)       -->   Digital 9
+Pin 9  (D7)       -->   Digital 10
 Pin 10 (ACK)      <--   Digital 11
 Pin 11 (BUSY)     <--   Digital 12
 Pin 13 (SELECT)   <--   Digital 13 (LED indicator)
@@ -94,6 +116,7 @@ Pin 18-25 (GND)   ---   GND (all grounds together)
 
 ### ⚠️ Important Notes
 
+- **STROBE must be on Pin 2**: Arduino Uno only has hardware interrupts on pins 2 and 3 (INT0/INT1). The STROBE signal MUST be connected to pin 2 (INT0) for the emulator to work!
 - **Voltage levels**: LPT uses 5V TTL logic (compatible with Arduino Uno)
 - **Do NOT use** 3.3V Arduinos without level shifters
 - **Cable length**: Keep cables < 2 meters to avoid noise
@@ -143,6 +166,16 @@ Open the Serial Monitor in Arduino IDE (Tools → Serial Monitor):
 | **Clear** | Clears the output buffer (keeps connection active) |
 | **Save as TXT** | Downloads received data as a text file |
 | **Auto-imprimir** | Toggles automatic printing mode |
+
+### Encoding Support
+
+Choose the correct encoding for your data source:
+- **UTF-8 (Padrão)** - Default, works with modern systems and Arduino UTF-8 strings
+- **ISO-8859-1 (Latin)** - For legacy systems and DOS/Windows Latin characters
+- **CP-437 (DOS)** - For DOS applications and old PCs with extended ASCII
+- **Windows-1252** - For Windows legacy applications
+
+The encoding selector is located in the top control bar. The web interface automatically reconnects when you change the encoding.
 
 ### Themes
 

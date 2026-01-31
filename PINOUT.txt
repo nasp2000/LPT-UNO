@@ -16,15 +16,15 @@
 ╠════════╦═══════════╦═════════════╦═══════╦═════════════════════╣
 ║ DB25   ║  SIGNAL   ║  ARDUINO    ║ TYPE  ║  DESCRIPTION        ║
 ╠════════╬═══════════╬═════════════╬═══════╬═════════════════════╣
-║   1    ║  STROBE   ║  Digital 10 ║  IN   ║ Data ready          ║
-║   2    ║  D0       ║  Digital 2  ║  IN   ║ Data bit 0          ║
-║   3    ║  D1       ║  Digital 3  ║  IN   ║ Data bit 1          ║
-║   4    ║  D2       ║  Digital 4  ║  IN   ║ Data bit 2          ║
-║   5    ║  D3       ║  Digital 5  ║  IN   ║ Data bit 3          ║
-║   6    ║  D4       ║  Digital 6  ║  IN   ║ Data bit 4          ║
-║   7    ║  D5       ║  Digital 7  ║  IN   ║ Data bit 5          ║
-║   8    ║  D6       ║  Digital 8  ║  IN   ║ Data bit 6          ║
-║   9    ║  D7       ║  Digital 9  ║  IN   ║ Data bit 7          ║
+║   1    ║  STROBE   ║  Digital 2  ║  IN   ║ Data ready (INT0) ⚡║
+║   2    ║  D0       ║  Digital 3  ║  IN   ║ Data bit 0          ║
+║   3    ║  D1       ║  Digital 4  ║  IN   ║ Data bit 1          ║
+║   4    ║  D2       ║  Digital 5  ║  IN   ║ Data bit 2          ║
+║   5    ║  D3       ║  Digital 6  ║  IN   ║ Data bit 3          ║
+║   6    ║  D4       ║  Digital 7  ║  IN   ║ Data bit 4          ║
+║   7    ║  D5       ║  Digital 8  ║  IN   ║ Data bit 5          ║
+║   8    ║  D6       ║  Digital 9  ║  IN   ║ Data bit 6          ║
+║   9    ║  D7       ║  Digital 10 ║  IN   ║ Data bit 7          ║
 ║  10    ║  ACK      ║  Digital 11 ║  OUT  ║ Acknowledge         ║
 ║  11    ║  BUSY     ║  Digital 12 ║  OUT  ║ Busy                ║
 ║  12    ║  PAPER    ║  (not used) ║   -   ║ Paper out           ║
@@ -40,21 +40,33 @@
 ║                 ARDUINO WIRING DIAGRAM                         ║
 ╠════════════════════════════════════════════════════════════════╣
 ║                                                                ║
-║   DB25 Pin 1  (STROBE) ──────────► Arduino D10 (INT0)         ║
-║   DB25 Pin 2  (D0)     ──────────► Arduino D2                 ║
-║   DB25 Pin 3  (D1)     ──────────► Arduino D3                 ║
-║   DB25 Pin 4  (D2)     ──────────► Arduino D4                 ║
-║   DB25 Pin 5  (D3)     ──────────► Arduino D5                 ║
-║   DB25 Pin 6  (D4)     ──────────► Arduino D6                 ║
-║   DB25 Pin 7  (D5)     ──────────► Arduino D7                 ║
-║   DB25 Pin 8  (D6)     ──────────► Arduino D8                 ║
-║   DB25 Pin 9  (D7)     ──────────► Arduino D9                 ║
+║   DB25 Pin 1  (STROBE) ──────────► Arduino D2  (INT0) ⚡       ║
+║   DB25 Pin 2  (D0)     ──────────► Arduino D3                 ║
+║   DB25 Pin 3  (D1)     ──────────► Arduino D4                 ║
+║   DB25 Pin 4  (D2)     ──────────► Arduino D5                 ║
+║   DB25 Pin 5  (D3)     ──────────► Arduino D6                 ║
+║   DB25 Pin 6  (D4)     ──────────► Arduino D7                 ║
+║   DB25 Pin 7  (D5)     ──────────► Arduino D8                 ║
+║   DB25 Pin 8  (D6)     ──────────► Arduino D9                 ║
+║   DB25 Pin 9  (D7)     ──────────► Arduino D10                ║
 ║   DB25 Pin 10 (ACK)    ◄────────── Arduino D11                ║
 ║   DB25 Pin 11 (BUSY)   ◄────────── Arduino D12                ║
 ║   DB25 Pin 13 (SELECT) ◄────────── Arduino D13 (LED)          ║
 ║   DB25 Pin 18-25 (GND) ──────────► Arduino GND                ║
 ║                                                                ║
 ║   Arduino USB ───────────────────► PC (Serial 115200 baud)    ║
+╚════════════════════════════════════════════════════════════════╝
+
+╔════════════════════════════════════════════════════════════════╗
+║                  ⚠️  CRITICAL WARNING ⚠️                        ║
+╠════════════════════════════════════════════════════════════════╣
+║  STROBE MUST BE CONNECTED TO PIN 2 (INT0)!                    ║
+║                                                                ║
+║  Arduino Uno only has hardware interrupts on:                 ║
+║  - Pin 2 (INT0)  ← Use this for STROBE                        ║
+║  - Pin 3 (INT1)                                               ║
+║                                                                ║
+║  The emulator will NOT work if STROBE is on any other pin!    ║
 ╚════════════════════════════════════════════════════════════════╝
 
 ╔════════════════════════════════════════════════════════════════╗

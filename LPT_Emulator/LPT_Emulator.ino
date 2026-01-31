@@ -7,21 +7,21 @@
  * 
  * PINAGEM DO ARDUINO UNO:
  * ========================
- * Dados Paralelos (8 bits):
- *   D0 (DB25 pino 2)  -> Arduino Digital 2
- *   D1 (DB25 pino 3)  -> Arduino Digital 3
- *   D2 (DB25 pino 4)  -> Arduino Digital 4
- *   D3 (DB25 pino 5)  -> Arduino Digital 5
- *   D4 (DB25 pino 6)  -> Arduino Digital 6
- *   D5 (DB25 pino 7)  -> Arduino Digital 7
- *   D6 (DB25 pino 8)  -> Arduino Digital 8
- *   D7 (DB25 pino 9)  -> Arduino Digital 9
- * 
  * Sinais de Controle:
- *   STROBE (DB25 pino 1)   -> Arduino Digital 10 (Interrupt)
+ *   STROBE (DB25 pino 1)   -> Arduino Digital 2 (INT0 - Interrupt)
  *   ACK    (DB25 pino 10)  -> Arduino Digital 11 (Output)
  *   BUSY   (DB25 pino 11)  -> Arduino Digital 12 (Output)
- *   SELECT (DB25 pino 13)  -> Arduino Digital 13 (Output)
+ *   SELECT (DB25 pino 13)  -> Arduino Digital 13 (Output + LED)
+ * 
+ * Dados Paralelos (8 bits):
+ *   D0 (DB25 pino 2)  -> Arduino Digital 3
+ *   D1 (DB25 pino 3)  -> Arduino Digital 4
+ *   D2 (DB25 pino 4)  -> Arduino Digital 5
+ *   D3 (DB25 pino 5)  -> Arduino Digital 6
+ *   D4 (DB25 pino 6)  -> Arduino Digital 7
+ *   D5 (DB25 pino 7)  -> Arduino Digital 8
+ *   D6 (DB25 pino 8)  -> Arduino Digital 9
+ *   D7 (DB25 pino 9)  -> Arduino Digital 10
  * 
  * GND: DB25 pinos 18-25 -> Arduino GND
  * 
@@ -46,12 +46,12 @@
 // DEFINIÇÃO DE PINOS
 // ===========================
 
-// Pinos de dados (D0-D7)
-const int DATA_PINS[] = {2, 3, 4, 5, 6, 7, 8, 9};
-const int DATA_PIN_COUNT = 8;
-
 // Pinos de controle (Input do PC)
-const int PIN_STROBE = 10;  // Sinal de dados prontos (active low)
+const int PIN_STROBE = 2;   // Sinal de dados prontos (active low) - INT0
+
+// Pinos de dados (D0-D7)
+const int DATA_PINS[] = {3, 4, 5, 6, 7, 8, 9, 10};
+const int DATA_PIN_COUNT = 8;
 
 // Pinos de status (Output para o PC)
 const int PIN_ACK = 11;     // Acknowledge (active low pulse)
@@ -78,6 +78,7 @@ volatile bool dataAvailable = false;
 // ===========================
 volatile unsigned long lastStrobeTime = 0;
 const unsigned long DEBOUNCE_MICROS = 2;  // Debounce de 2µs
+volatile unsigned long strobeCounter = 0;  // Contador de interrupções (debug)
 
 // ===========================
 // SETUP
@@ -145,6 +146,9 @@ void loop() {
 // INTERRUPÇÃO - STROBE
 // ===========================
 void handleStrobe() {
+  // Incrementar contador (debug)
+  strobeCounter++;
+  
   // Debounce simples
   unsigned long currentTime = micros();
   if (currentTime - lastStrobeTime < DEBOUNCE_MICROS) {
@@ -188,6 +192,7 @@ void resetBuffer() {
   noInterrupts();
   bufferWriteIndex = 0;
   bufferReadIndex = 0;
+  strobeCounter = 0;  // Resetar contador também
   interrupts();
 }
 
@@ -198,6 +203,8 @@ void printStats() {
   Serial.print(bufferUsed);
   Serial.print("/");
   Serial.println(BUFFER_SIZE);
+  Serial.print("STROBE interrupts: ");
+  Serial.println(strobeCounter);
 }
 
 // Função para exibir informações de versão
@@ -249,6 +256,7 @@ void serialEvent() {
         break;
       case '?':
         Serial.println("Commands: R=Reset, S=Stats, V=Version, I=Identify, ?=Help");
+        Serial.println("Stats (S) shows: buffer usage + STROBE interrupt count");
         break;
     }
   }

@@ -6,6 +6,10 @@
 *~
 .DS_Store
 *.code-workspace
+LPT-UNO.code-workspace
+
+# Temporary Documentation
+AUTO-PRINT-GUIDE.md
 
 # Arduino IDE
 *.hex
