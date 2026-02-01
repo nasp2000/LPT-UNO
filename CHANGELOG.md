@@ -5,7 +5,7 @@ All notable changes to the LPT-UNO project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0] - 2026-01-25
+## [1.0] - 2026-01-31
 
 
 ### Added
@@ -30,7 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Full pinout for DB25 to Arduino Uno
 - Support for 8-bit parallel data (D0-D7)
 - Control signals: STROBE, ACK, BUSY, SELECT
-- Interrupt-driven STROBE detection on pin 10
+- Interrupt-driven STROBE detection on pin 2 (INT0)
 - LED indicator on pin 13 (SELECT signal)
 
 ### Documentation

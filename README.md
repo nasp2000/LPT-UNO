@@ -7,11 +7,13 @@
 
 Transform your Arduino Uno into a **parallel port printer emulator (LPT/DB25)** that receives data through the parallel interface and forwards it via USB Serial to your PC for visualization and printing in a modern web browser with advanced features.
 
-[![Technical details](https://img.shields.io/badge/Docs-Technical%20Details-blue?logo=book)](docs/TECHNICAL.md)  → See full technical reference (timings, wiring, commands): [docs/TECHNICAL.md](docs/TECHNICAL.md)
-
 You no longer need to keep your parallel printer running!!
 
 Perfect for reviving old DOS applications, legacy software testing, or educational purposes!
+
+
+[![Technical details](https://img.shields.io/badge/Docs-Technical%20Details-blue?logo=book)](docs/TECHNICAL.md)  → See full technical reference (timings, wiring, commands): [docs/TECHNICAL.md](docs/TECHNICAL.md)
+
 
 ---
 

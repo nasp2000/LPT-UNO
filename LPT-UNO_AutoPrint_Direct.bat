@@ -42,14 +42,33 @@ start "" "%FILE_URL%#autoprint=false"
 
 timeout /t 3 /nobreak >nul
 
-echo [4] Aguardando novos arquivos na pasta DATA...
-echo     (Pressione Ctrl+C para cancelar)
+REM Verificar modo de impressao
+if exist "%DATA_FOLDER%\.autoprint_enabled" (
+    echo ========================================
+    echo   MODO: AUTO-PRINT ATIVADO
+    echo ========================================
+    echo [4] Aguardando novos arquivos na pasta DATA...
+    echo     (Arquivos serao impressos automaticamente)
+    echo     (Pressione Ctrl+C para cancelar)
+) else (
+    echo ========================================
+    echo   MODO: AUTO-PRINT DESATIVADO
+    echo ========================================
+    echo [4] Interface aberta - arquivos NAO serao impressos automaticamente
+    echo     (Para ativar auto-print, execute Ativar_AutoPrint.bat)
+)
 echo.
 
 REM Loop infinito monitorando pasta DATA
 :LOOP
     REM Aguardar 2 segundos
     timeout /t 2 /nobreak >nul
+    
+    REM Verificar se auto-print esta ativado
+    if not exist "%DATA_FOLDER%\.autoprint_enabled" (
+        REM Auto-print desativado - nao verificar arquivos, apenas manter interface aberta
+        goto :LOOP
+    )
     
     REM Procurar arquivos recentes (excluindo IMPRESSO_*)
     for /f "delims=" %%f in ('dir /b /o-d /tc "%DATA_FOLDER%\*_????-??-??_??-??-??.*" 2^>nul ^| findstr /v /i "^IMPRESSO_"') do (

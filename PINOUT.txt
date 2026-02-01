@@ -106,7 +106,7 @@
 ║  • Use short cables (< 2 meters) to avoid noise              ║
 ║  • Connect ALL GND pins (18-25) to Arduino GND               ║
 ║  • Arduino Uno uses 5V TTL levels (compatible with LPT)      ║
-║  • Pin D10 has external interrupt (essential for STROBE)     ║
+║  • Pin D2 has hardware interrupt (INT0) (essential for STROBE)  ║
 ║  • Pin D13 has onboard LED (useful for debugging)            ║
 ║  • Serial rate: 115200 baud (maximum speed)                  ║
 ║  • Buffer: 256 bytes circular                                 ║
