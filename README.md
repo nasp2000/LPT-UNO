@@ -5,8 +5,9 @@
 [![License](https://img.shields.io/badge/License-MIT-green)]()
 [![Web Serial API](https://img.shields.io/badge/Web%20Serial%20API-Chrome%2FEdge-orange)]()
 
-Transform your Arduino Uno into a **parallel port printer emulator (LPT/DB25)** that receives data through the parallel interface and forwards it via USB Serial to your PC for visualization and printing in a modern web browser with modern and advanced features.
-With this, you no longer need to keep your parallel printer running!!
+Transform your Arduino Uno into a **parallel port printer emulator (LPT/DB25)** that receives data through the parallel interface and forwards it via USB Serial to your PC for visualization and printing in a modern web browser with advanced features.
+
+You no longer need to keep your parallel printer running!!
 
 Perfect for reviving old DOS applications, legacy software testing, or educational purposes!
 
@@ -42,9 +43,7 @@ Perfect for reviving old DOS applications, legacy software testing, or education
 
 1. To enable auto-print: **Run `Ativar_AutoPrint.bat`**
 2. To disable auto-print: **Run `Desativar_AutoPrint.bat`**
-3. Both scripts open the web interface and monitor the `DATA` folder for automatic printing.
-4. The browser saves files to Downloads; the PowerShell script moves them to `DATA` and prints automatically when auto-print is enabled.
-5. You no longer need to toggle auto-print from the web interface.
+3. Both scripts open the web interface and enable automatic printing (see the **Auto-Print** section for details).
 
 ### Manual Mode (advanced)
 1. Open **`web_interface.html`** in Chrome, Edge, or Opera
@@ -64,61 +63,15 @@ Perfect for reviving old DOS applications, legacy software testing, or education
 - **Breadboard** (optional)
 - **USB cable** (Type A to Type B for Arduino)
 
-### Pinout - DB25 to Arduino Uno
+### Pinout
 
-| Function | DB25 Pin | Arduino Pin | Type | Description |
-|----------|----------|-------------|------|-------------|
-| **STROBE** | 1 | Digital 2 | INPUT | Data ready (active low, INT0 interrupt) ⚡ |
-| **D0** | 2 | Digital 3 | INPUT | Data bit 0 (LSB) |
-| **D1** | 3 | Digital 4 | INPUT | Data bit 1 |
-| **D2** | 4 | Digital 5 | INPUT | Data bit 2 |
-| **D3** | 5 | Digital 6 | INPUT | Data bit 3 |
-| **D4** | 6 | Digital 7 | INPUT | Data bit 4 |
-| **D5** | 7 | Digital 8 | INPUT | Data bit 5 |
-| **D6** | 8 | Digital 9 | INPUT | Data bit 6 |
-| **D7** | 9 | Digital 10 | INPUT | Data bit 7 (MSB) |
-| **ACK** | 10 | Digital 11 | OUTPUT | Acknowledge (active low pulse) |
-| **BUSY** | 11 | Digital 12 | OUTPUT | Printer busy (active high) |
-| **SELECT** | 13 | Digital 13 | OUTPUT | Printer selected (active high + LED) |
-| **GND** | 18-25 | GND | - | Common ground (**connect all**) |
+See `PINOUT.txt` for full DB25 diagrams and wiring.
 
-### DB25 Male Connector Pinout (Front View)
-
-```
-╔═══════════════════════════════════════╗
-║  ●  ●  ●  ●  ●  ●  ●  ●  ●  ●  ●  ●  ● ║  ← Row 1 (top)
-║   13 12 11 10  9  8  7  6  5  4  3  2  1║
-║                                         ║
-║    ●  ●  ●  ●  ●  ●  ●  ●  ●  ●  ●  ●   ║  ← Row 2 (bottom)
-║   25 24 23 22 21 20 19 18 17 16 15 14  ║
-╚═══════════════════════════════════════╝
-    (Looking at the male connector pins)
-```
-
-**Pin Functions:**
-- **Pin 1**: STROBE (interrupt signal)
-- **Pins 2-9**: D0-D7 (data bits)
-- **Pin 10**: ACK (acknowledge)
-- **Pin 11**: BUSY (printer busy)
-- **Pin 13**: SELECT (printer selected)
-- **Pins 18-25**: GND (ground - connect all to Arduino GND)
-
-### Wiring Diagram
-
-```
-DB25 Connector          Arduino Uno
-══════════════          ═══════════
-Pin 1  (STROBE)   -->   Digital 2  (INT0) ⚡ INTERRUPT
-Pin 2  (D0)       -->   Digital 3
-Pin 3  (D1)       -->   Digital 4
-Pin 4  (D2)       -->   Digital 5
-Pin 5  (D3)       -->   Digital 6
-Pin 6  (D4)       -->   Digital 7
-Pin 7  (D5)       -->   Digital 8
-Pin 8  (D6)       -->   Digital 9
-Pin 9  (D7)       -->   Digital 10
-Pin 10 (ACK)      <--   Digital 11
-Pin 11 (BUSY)     <--   Digital 12
+Key points:
+- **STROBE**: DB25 Pin 1 → Arduino Digital 2 (INT0) — must use hardware interrupt on pin 2.
+- **Data pins**: DB25 Pins 2–9 → Arduino Digital 3–10 (D0 → D7)
+- **Control pins**: ACK → D11, BUSY → D12, SELECT → D13
+- **Ground**: DB25 Pins 18–25 → Arduino GND (connect all)
 Pin 13 (SELECT)   <--   Digital 13 (LED indicator)
 Pin 18-25 (GND)   ---   GND (all grounds together)
 ```
@@ -270,11 +223,7 @@ Buffer reset
 
 ### Silent Printing (Windows)
 
-Recommended flow:
-1. Run `Ativar_AutoPrint.bat` to enable automatic printing
-2. The browser saves files to Downloads
-3. The monitor script moves them to `DATA` and prints automatically
-4. To stop automatic printing, run `Desativar_AutoPrint.bat`
+Use the auto-print scripts (`Ativar_AutoPrint.bat` / `Desativar_AutoPrint.bat`) to enable/disable automatic printing; see the **Auto-Print** section for details.
 
 ### Custom Printer Selection
 
@@ -363,7 +312,6 @@ LPT-UNO/
 - **Build date**: 2026-01-25
 - **Serial speed**: 115200 baud
 - **Encoding**: UTF-8
-- **Auto-print control**: via Ativar_AutoPrint.bat / Desativar_AutoPrint.bat
 - **Monitoring and printing**: via LPT-UNO_MoveToData.ps1
 
 ### Compatibility
@@ -391,9 +339,8 @@ LPT-UNO/
 <p id="firmwareInfo">Web Interface v1.0 | Build: 2026-01-25</p>
 ```
 
-### Encoding
-- **Always use UTF-8** for proper character support
-- Test with Portuguese/Spanish characters: `ç, á, é, í, ó, ú, ã, õ`
+### Encoding (development)
+- Prefer **UTF-8** for all source files and user-facing text. The web UI supports selectable encodings (UTF-8 default; CP‑437 is available for DOS-era content).
 
 ### Code Style
 - **Comments**: Portuguese (for this project)

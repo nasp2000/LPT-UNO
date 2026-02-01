@@ -1410,6 +1410,16 @@
                                     <option value="es">🇪🇸 Español</option>
                                 </select>
                             </div>
+
+                            <div class="modal-select-group" style="margin-top:10px;">
+                                <label for="encodingSelect" id="encodingLabel" style="font-size: 0.9em;">Encoding:</label>
+                                <select id="encodingSelect">
+                                    <option value="utf-8">UTF-8</option>
+                                    <option value="iso-8859-1">ISO-8859-1 (Latin)</option>
+                                    <option value="cp437">CP-437 (DOS)</option>
+                                    <option value="windows-1252">Windows-1252</option>
+                                </select>
+                            </div>
                         </div>
                         
                         <div class="modal-section" style="margin-top: 20px;">
@@ -1704,7 +1714,7 @@
         let pendingData = '';
         let firmwareVersion = 'Unknown';
         let firmwareBuild = 'Unknown';
-        let currentEncoding = 'cp437'; // Fixo em CP-437 (DOS) - autêntico anos 80/90
+        let currentEncoding = 'utf-8'; // Default to UTF-8 for modern systems
         
         // Novas variáveis para melhorias
         let autoReconnectEnabled = true;
@@ -2192,6 +2202,7 @@
                 autoPrint: false,
                 autoSaveTime: 10,
                 language: 'en',
+                encoding: 'utf-8',
                 saveFormat: 'txt',
                 dataFolder: null,
                 subfolderName: 'default'
@@ -2230,6 +2241,7 @@ autoSaveTime=${prefs.autoSaveTime || 10}
 
 [Interface]
 language=${prefs.language || 'en'}
+encoding=${prefs.encoding || 'utf-8'}
 notifications=${prefs.notifications || false}
 
 [Files]
@@ -2370,6 +2382,7 @@ baudRate=115200
                         } else if (currentSection === 'interface') {
                             if (key === 'language') prefs.language = value;
                             else if (key === 'notifications') prefs.notifications = value;
+                            else if (key === 'encoding') prefs.encoding = value;
                         } else if (currentSection === 'files') {
                             if (key === 'saveFormat') prefs.saveFormat = value;
                         } else if (currentSection === 'connection') {
@@ -2453,6 +2466,20 @@ baudRate=115200
             
             const langLabel = document.getElementById('langLabel');
             if (langLabel) langLabel.textContent = `🌍 ${t.selectLanguage}`;
+
+            // Encoding selector labels
+            const encodingLabel = document.getElementById('encodingLabel');
+            if (encodingLabel) encodingLabel.textContent = `🔤 ${t.encoding}`;
+            const encodingSelectEl = document.getElementById('encodingSelect');
+            if (encodingSelectEl) {
+                const opts = encodingSelectEl.querySelectorAll('option');
+                if (opts.length >= 4) {
+                    opts[0].textContent = t.encodingUtf8;
+                    opts[1].textContent = t.encodingLatin;
+                    opts[2].textContent = t.encodingDos;
+                    opts[3].textContent = t.encodingWindows;
+                }
+            }
             
             // Botão configurar email (atualizado mais abaixo)
             
@@ -2710,10 +2737,17 @@ baudRate=115200
             window.history.replaceState(null, null, window.location.pathname);
         }
         
-        // Aplicar idioma salvo (será chamado depois)
-        currentLanguage = preferences.language || 'pt';
+        // Apply saved language preference (called afterwards)
+        // Default to English for fresh installations
+        currentLanguage = preferences.language || 'en';
         if (languageSelect) {
             languageSelect.value = currentLanguage;
+        }
+        // Apply saved encoding preference (default to UTF-8)
+        currentEncoding = preferences.encoding || 'utf-8';
+        const encodingSelectEl = document.getElementById('encodingSelect');
+        if (encodingSelectEl) {
+            encodingSelectEl.value = currentEncoding;
         }
         
         // Tentar conexão automática ao Arduino (apenas UMA vez)
@@ -3553,6 +3587,19 @@ baudRate=115200
                 
                 const langNames = { pt: 'Português', en: 'English', es: 'Español' };
                 showInfo(`🌐 ${translations[selectedLang].languageChanged} ${langNames[selectedLang]}`);
+            });
+        }
+
+        // Função: Alterar encoding
+        const encodingSelect2 = document.getElementById('encodingSelect');
+        if (encodingSelect2) {
+            encodingSelect2.addEventListener('change', () => {
+                const selectedEnc = encodingSelect2.value;
+                const prefs = loadPreferences();
+                prefs.encoding = selectedEnc;
+                savePreferences(prefs);
+                currentEncoding = selectedEnc;
+                showInfo(`🔤 Encoding changed to: ${selectedEnc}. Reconnect to apply.`);
             });
         }
         
