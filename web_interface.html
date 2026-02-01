@@ -1584,10 +1584,10 @@
                 
                 <div style="padding: 15px 20px; background: #e3f2fd; border-left: 4px solid #2196f3; margin-bottom: 20px; border-radius: 5px;">
                     <p style="margin: 0; font-size: 0.95em; line-height: 1.6;">
-                        <strong>ℹ️ Como funciona:</strong><br>
-                        O sistema procura <strong>automaticamente</strong> os nomes configurados nos dados recebidos (ex: "João Silva").<br>
-                        Quando encontra uma correspondência (ignora maiúsculas/minúsculas), envia o email automaticamente para o destinatário.<br>
-                        <em>Exemplo: Se configurar "Maria Santos", qualquer dado contendo "maria santos" ou "MARIA SANTOS" ativa o envio.</em>
+                        <strong id="howItWorksTitle"></strong><br>
+                        <span id="howItWorksLine1"></span><br>
+                        <span id="howItWorksLine2"></span><br>
+                        <em id="howItWorksExample"></em>
                     </p>
                 </div>
                 
@@ -1854,6 +1854,10 @@
                 recipientEmail: 'Email(s) - separe vários com vírgula',
                 saveRecipients: 'Salvar Destinatários',
                 recipientsSaved: 'Destinatários salvos com sucesso!',
+                howItWorksTitle: 'ℹ️ Como funciona:',
+                howItWorksLine1: 'O sistema procura <strong>automaticamente</strong> os nomes configurados nos dados recebidos (ex: "João Silva").',
+                howItWorksLine2: 'Quando encontra uma correspondência (ignora maiúsculas/minúsculas), envia o email automaticamente para o destinatário.',
+                howItWorksExample: '<em>Exemplo: Se configurar "Maria Santos", qualquer dado contendo "maria santos" ou "MARIA SANTOS" ativa o envio.</em>',
                 errorConnect: 'Erro ao conectar:',
                 errorDisconnect: 'Erro ao desconectar:',
                 errorRead: 'Erro na leitura:',
@@ -1998,6 +2002,10 @@
                 recipientEmail: 'Email(s) - separate multiple with comma',
                 saveRecipients: 'Save Recipients',
                 recipientsSaved: 'Recipients saved successfully!',
+                howItWorksTitle: 'ℹ️ How it works:',
+                howItWorksLine1: 'The system automatically searches for the configured recipient names in received data (e.g., "João Silva").',
+                howItWorksLine2: 'When a match is found (case-insensitive), it automatically sends the email to that recipient.',
+                howItWorksExample: '<em>Example: If you configure "Maria Santos", any data containing "maria santos" or "MARIA SANTOS" will trigger sending.</em>',
                 errorConnect: 'Connection error:',
                 errorDisconnect: 'Disconnection error:',
                 errorRead: 'Read error:',
@@ -2142,6 +2150,10 @@
                 recipientEmail: 'Email(s) - separe varios con coma',
                 saveRecipients: 'Guardar Destinatarios',
                 recipientsSaved: '¡Destinatarios guardados con éxito!',
+                howItWorksTitle: 'ℹ️ Cómo funciona:',
+                howItWorksLine1: 'El sistema busca automáticamente los nombres configurados en los datos recibidos (p. ej., "João Silva").',
+                howItWorksLine2: 'Cuando encuentra una coincidencia (ignora mayúsculas/minúsculas), envía el correo automáticamente al destinatario.',
+                howItWorksExample: '<em>Ejemplo: Si configura "Maria Santos", cualquier dato que contenga "maria santos" o "MARIA SANTOS" activará el envío.</em>',
                 errorConnect: 'Error al conectar:',
                 errorDisconnect: 'Error al desconectar:',
                 errorRead: 'Error de lectura:',
@@ -2530,6 +2542,16 @@ baudRate=115200
             
             const saveRecipients = document.getElementById('saveRecipients');
             if (saveRecipients) saveRecipients.textContent = `💾 ${t.saveRecipients}`;
+            
+            // Update the "How it works" text in recipients modal
+            const howTitleEl = document.getElementById('howItWorksTitle');
+            if (howTitleEl) howTitleEl.textContent = t.howItWorksTitle;
+            const howLine1El = document.getElementById('howItWorksLine1');
+            if (howLine1El) howLine1El.innerHTML = t.howItWorksLine1;
+            const howLine2El = document.getElementById('howItWorksLine2');
+            if (howLine2El) howLine2El.textContent = t.howItWorksLine2;
+            const howExampleEl = document.getElementById('howItWorksExample');
+            if (howExampleEl) howExampleEl.innerHTML = t.howItWorksExample;
             
             // Atualizar placeholders dos destinatários
             updateRecipientPlaceholders();

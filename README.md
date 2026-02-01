@@ -218,82 +218,48 @@ Buffer reset
 
 ---
 
-## 🚀 Advanced Usage
+<details>
+<summary>Advanced Usage (click to expand)</summary>
 
+- **Silent Printing (Windows):** Use `Ativar_AutoPrint.bat` / `Desativar_AutoPrint.bat` to enable/disable automatic printing (see **Auto-Print** for details).
+- **Custom Printer:** Set your desired printer as the system default before launching the app.
+- **Testing Without Hardware:** Open `web_interface.html` and use the developer 'Simulate Test Data' feature.
 
-### Silent Printing (Windows)
-
-Use the auto-print scripts (`Ativar_AutoPrint.bat` / `Desativar_AutoPrint.bat`) to enable/disable automatic printing; see the **Auto-Print** section for details.
-
-### Custom Printer Selection
-
-To print to a specific printer (not default):
-1. Open browser settings
-2. Set your desired printer as default
-3. Launch the application with the `.bat` file
-
-### Testing Without Hardware
-
-You can test the web interface without Arduino:
-1. Open `web_interface.html` directly in browser
-2. Use the "Simulate Test Data" feature (developer mode)
-3. Or modify the HTML to add test data injection
+</details>
 
 ---
 
 ## 📁 Project Structure
 
-```
+<details>
+<summary>Project structure (click to expand)</summary>
+
+```text
 LPT-UNO/
-│
-├── LPT_Emulator/
-│   └── LPT_Emulator.ino          # Arduino firmware (v1.0)
-│
-├── web_interface.html             # Web-based monitor (v1.0)
-├── Ativar_AutoPrint.bat           # Enables auto-print and opens the interface
-├── Desativar_AutoPrint.bat        # Disables auto-print and opens the interface
-├── LPT-UNO_AutoPrint_Direct.bat   # Main launcher (opens interface and monitor)
-├── LPT-UNO_MoveToData.ps1         # PowerShell script: moves and prints files
-├── PINOUT.txt                     # Detailed pinout diagram (ASCII art)
-├── README.md                      # This file
-├── .gitignore                     # Git ignore rules
-└── .github/
-    └── copilot-instructions.md    # Project coding guidelines
+├── LPT_Emulator/LPT_Emulator.ino
+├── web_interface.html
+├── Ativar_AutoPrint.bat
+├── Desativar_AutoPrint.bat
+├── LPT-UNO_AutoPrint_Direct.bat
+├── LPT-UNO_MoveToData.ps1
+├── PINOUT.txt
+└── README.md
 ```
+
+</details>
 
 ---
 
-## 🐛 Troubleshooting
+<details>
+<summary>Troubleshooting (click to expand)</summary>
 
-### Arduino doesn't respond
-- ✅ Check USB cable connection
-- ✅ Verify correct COM port in Arduino IDE
-- ✅ Press Arduino reset button
-- ✅ Re-upload the firmware
+- **Arduino doesn't respond:** check USB cable, COM port, reset the board, re-upload firmware.
+- **Web interface can't connect:** use Chrome/Edge/Opera, close other apps using the serial port, refresh, check the console (F12).
+- **No data received:** verify wiring and confirm STROBE is on pin 2; test with Arduino Serial Monitor.
+- **Auto-print issues:** ensure `.autoprint_enabled` exists in `DATA` and a default printer is configured.
+- **Characters garbled:** try different encoding (CP‑437 for DOS), check cables and grounding.
 
-### Web interface can't connect
-- ✅ Use **Chrome, Edge, or Opera** (Web Serial API required)
-- ✅ Close other applications using the serial port
-- ✅ Refresh the page and try again
-- ✅ Check browser console for error messages (F12)
-
-### No data received
-- ✅ Verify all wiring connections (especially GND)
-- ✅ Check STROBE is connected to pin 2 (interrupt)
-- ✅ Ensure data pins D0-D7 are in correct order
-- ✅ Test with Arduino Serial Monitor first
-
-### Troubleshooting: Auto-print not working
-- ✅ Always use the `.bat` files to enable/disable auto-print
-- ✅ Check that the `.autoprint_enabled` file exists in the `DATA` folder
-- ✅ Ensure a default printer is configured in Windows
-- ✅ Make sure the printer is online and has paper
-
-### Characters are garbled
-- ✅ Check for loose wire connections
-- ✅ Reduce cable length (<2 meters)
-- ✅ Verify correct pinout (D0 = LSB, D7 = MSB)
-- ✅ Ensure all GND pins (18-25) are connected
+</details>
 
 ---
 
@@ -329,15 +295,10 @@ LPT-UNO/
 **Always update** when modifying code:
 
 #### Arduino Firmware
-```cpp
-#define FIRMWARE_VERSION "X.Y"  // Increment on changes
-#define BUILD_DATE __DATE__     // Auto-updated on compile
-```
+Define version constants in the firmware (example): `#define FIRMWARE_VERSION "X.Y"` and `#define BUILD_DATE __DATE__`.
 
 #### Web Interface
-```html
-<p id="firmwareInfo">Web Interface v1.0 | Build: 2026-01-25</p>
-```
+The web interface displays its build info in the footer (example: `<p id="firmwareInfo">Web Interface v1.0 | Build: 2026-01-25</p>`).
 
 ### Encoding (development)
 - Prefer **UTF-8** for all source files and user-facing text. The web UI supports selectable encodings (UTF-8 default; CP‑437 is available for DOS-era content).
