@@ -2570,7 +2570,7 @@ baudRate=115200
             if (noBackupsText) noBackupsText.textContent = t.noBackupsFound;
             
             const backupCount = document.getElementById('backupCount');
-            if (backupCount && backupCount.textContent === 'Carregando...' || backupCount.textContent === 'Loading...') {
+            if (backupCount && (backupCount.textContent === 'Carregando...' || backupCount.textContent === 'Loading...')) {
                 backupCount.textContent = t.loading;
             }
             

@@ -8,7 +8,7 @@
 Transform your Arduino Uno into a **parallel port printer emulator (LPT/DB25)** that receives data through the parallel interface and forwards it via USB Serial to your PC for visualization and printing in a modern web browser with modern and advanced features.
 With this, you no longer need to keep your parallel printer running!!
 
-And perfect for reviving old DOS applications, legacy software testing, or educational purposes!
+Perfect for reviving old DOS applications, legacy software testing, or educational purposes!
 
 ---
 
@@ -38,19 +38,19 @@ And perfect for reviving old DOS applications, legacy software testing, or educa
 ## 🎯 Quick Start
 
 
-### Recomendado: Fluxo Automático (Windows)
+### Recommended: Automatic Flow (Windows)
 
-1. Para ativar auto-print: **Execute `Ativar_AutoPrint.bat`**
-2. Para desativar auto-print: **Execute `Desativar_AutoPrint.bat`**
-3. Both will open the web interface and monitor the `DATA` folder for automatic printing
-4. O navegador salva arquivos em Downloads, que são movidos para DATA e impressos automaticamente se o auto-print estiver ativado
-5. Não é mais necessário ativar/desativar auto-print pela interface web
+1. To enable auto-print: **Run `Ativar_AutoPrint.bat`**
+2. To disable auto-print: **Run `Desativar_AutoPrint.bat`**
+3. Both scripts open the web interface and monitor the `DATA` folder for automatic printing.
+4. The browser saves files to Downloads; the PowerShell script moves them to `DATA` and prints automatically when auto-print is enabled.
+5. You no longer need to toggle auto-print from the web interface.
 
-### Modo Manual (avançado)
-1. Abra **`web_interface.html`** em Chrome, Edge ou Opera
+### Manual Mode (advanced)
+1. Open **`web_interface.html`** in Chrome, Edge, or Opera
 2. Click "Connect to Arduino"
-3. Selecione a porta COM
-4. Salve manualmente e mova arquivos para DATA se desejar imprimir
+3. Select the COM port
+4. Save files manually and move them to `DATA` to print if desired
 
 ---
 
@@ -178,7 +178,7 @@ Open the Serial Monitor in Arduino IDE (Tools → Serial Monitor):
 ### Encoding Support
 
 Choose the correct encoding for your data source:
-- **UTF-8 (Padrão)** - Default, works with modern systems and Arduino UTF-8 strings
+- **UTF-8 (Default)** - Default, works with modern systems and Arduino UTF-8 strings
 - **ISO-8859-1 (Latin)** - For legacy systems and DOS/Windows Latin characters
 - **CP-437 (DOS)** - For DOS applications and old PCs with extended ASCII
 - **Windows-1252** - For Windows legacy applications
@@ -186,7 +186,7 @@ Choose the correct encoding for your data source:
 The encoding selector is located in the top control bar. The web interface automatically reconnects when you change the encoding.
 
 
-### Idiomas
+### Languages
 
 Switch between:
 - 🇬🇧 English
@@ -301,10 +301,10 @@ LPT-UNO/
 │   └── LPT_Emulator.ino          # Arduino firmware (v1.0)
 │
 ├── web_interface.html             # Web-based monitor (v1.0)
-├── Ativar_AutoPrint.bat           # Ativa auto-print e abre interface
-├── Desativar_AutoPrint.bat        # Desativa auto-print e abre interface
-├── LPT-UNO_AutoPrint_Direct.bat   # Launcher principal (abre interface e monitor)
-├── LPT-UNO_MoveToData.ps1         # Script PowerShell: move e imprime arquivos
+├── Ativar_AutoPrint.bat           # Enables auto-print and opens the interface
+├── Desativar_AutoPrint.bat        # Disables auto-print and opens the interface
+├── LPT-UNO_AutoPrint_Direct.bat   # Main launcher (opens interface and monitor)
+├── LPT-UNO_MoveToData.ps1         # PowerShell script: moves and prints files
 ├── PINOUT.txt                     # Detailed pinout diagram (ASCII art)
 ├── README.md                      # This file
 ├── .gitignore                     # Git ignore rules
@@ -330,7 +330,7 @@ LPT-UNO/
 
 ### No data received
 - ✅ Verify all wiring connections (especially GND)
-- ✅ Check STROBE is connected to pin 10 (interrupt)
+- ✅ Check STROBE is connected to pin 2 (interrupt)
 - ✅ Ensure data pins D0-D7 are in correct order
 - ✅ Test with Arduino Serial Monitor first
 
@@ -363,7 +363,7 @@ LPT-UNO/
 - **Build date**: 2026-01-25
 - **Serial speed**: 115200 baud
 - **Encoding**: UTF-8
-- **Controle de auto-print**: via Ativar_AutoPrint.bat / Desativar_AutoPrint.bat
+- **Auto-print control**: via Ativar_AutoPrint.bat / Desativar_AutoPrint.bat
 - **Monitoring and printing**: via LPT-UNO_MoveToData.ps1
 
 ### Compatibility
