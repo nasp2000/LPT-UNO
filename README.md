@@ -7,6 +7,8 @@
 
 Transform your Arduino Uno into a **parallel port printer emulator (LPT/DB25)** that receives data through the parallel interface and forwards it via USB Serial to your PC for visualization and printing in a modern web browser with advanced features.
 
+[![Technical details](https://img.shields.io/badge/Docs-Technical%20Details-blue?logo=book)](docs/TECHNICAL.md)  `→` See full technical reference (timings, wiring, commands) in `docs/TECHNICAL.md`
+
 You no longer need to keep your parallel printer running!!
 
 Perfect for reviving old DOS applications, legacy software testing, or educational purposes!
@@ -23,186 +25,43 @@ Perfect for reviving old DOS applications, legacy software testing, or education
   <img src="images/image4.png" alt="Screenshot 4" width="45%" />
 </p>
 
-## 📸 Features Overview
+## Features
 
-- ✅ **Full IEEE 1284 compatibility** (parallel port standard)
-- ✅ **Web-based interface** with real-time data visualization
-- ✅ **Auto-print control via .bat files** (Ativar_AutoPrint.bat / Desativar_AutoPrint.bat)
-- ✅ **Multi-language support** (English, Portuguese, Spanish)
-- ✅ **Auto-save functionality** (saves every 10 seconds)
-- ✅ **One-click launcher** (.bat file for Windows)
-- ✅ **Hardware interrupts** (<2µs response time)
-- ✅ **256-byte circular buffer** for reliable data handling
+- Full IEEE 1284 compatibility (Parallel LPT/DB25)
+- Web UI with real-time visualization and selectable encodings (UTF‑8 default)
+- Auto-save and optional auto-print via provided scripts
+- 256‑byte circular buffer, interrupt-driven (low-latency)
 
 ---
 
-## 🎯 Quick Start
+## Quick Start (3 steps)
 
+1. Upload firmware: open `LPT_Emulator/LPT_Emulator.ino` in Arduino IDE and upload (115200 baud).
+2. Launch the web UI: run `LPT-UNO_AutoPrint_Direct.bat` (Windows launcher) or open `web_interface.html` in Chrome/Edge/Opera.
+3. Auto-print (optional): enable with `Ativar_AutoPrint.bat` (creates `.autoprint_enabled` in `DATA`); `Desativar_AutoPrint.bat` disables it.
 
-### Recommended: Automatic Flow (Windows)
-
-1. To enable auto-print: **Run `Ativar_AutoPrint.bat`**
-2. To disable auto-print: **Run `Desativar_AutoPrint.bat`**
-3. Both scripts open the web interface and enable automatic printing (see the **Auto-Print** section for details).
-
-### Manual Mode (advanced)
-1. Open **`web_interface.html`** in Chrome, Edge, or Opera
-2. Click "Connect to Arduino"
-3. Select the COM port
-4. Save files manually and move them to `DATA` to print if desired
+> Connect to the Arduino from the web UI to start receiving data.
 
 ---
 
 ## 🔌 Hardware Setup
 
-### Components Needed
+### Hardware
 
-- **1x Arduino Uno R3** (ATmega328P)
-- **1x DB25 Female Connector**
-- **Jumper wires** (male-to-male or male-to-female)
-- **Breadboard** (optional)
-- **USB cable** (Type A to Type B for Arduino)
-
-### Pinout
-
-See `PINOUT.txt` for full DB25 diagrams and wiring.
-
-Key points:
-- **STROBE**: DB25 Pin 1 → Arduino Digital 2 (INT0) — must use hardware interrupt on pin 2.
-- **Data pins**: DB25 Pins 2–9 → Arduino Digital 3–10 (D0 → D7)
-- **Control pins**: ACK → D11, BUSY → D12, SELECT → D13
-- **Ground**: DB25 Pins 18–25 → Arduino GND (connect all)
-Pin 13 (SELECT)   <--   Digital 13 (LED indicator)
-Pin 18-25 (GND)   ---   GND (all grounds together)
+- **Arduino**: Uno R3 (ATmega328P) recommended
+- **DB25 connector**: use 5V TTL signalling
+- See `PINOUT.txt` for a full wiring diagram (STROBE → D2, D0..D7 → D3..D10, ACK → D11, BUSY → D12, SELECT → D13, GND pins 18–25 → GND)
 ```
 
-### ⚠️ Important Notes
+## Important (short)
 
-- **STROBE must be on Pin 2**: Arduino Uno only has hardware interrupts on pins 2 and 3 (INT0/INT1). The STROBE signal MUST be connected to pin 2 (INT0) for the emulator to work!
-- **Voltage levels**: LPT uses 5V TTL logic (compatible with Arduino Uno)
-- **Do NOT use** 3.3V Arduinos without level shifters
-- **Cable length**: Keep cables < 2 meters to avoid noise
-- **Ground connection**: Connect **ALL** ground pins (18-25) to Arduino GND
+- **STROBE → Arduino D2 (INT0)** — critical.
+- Use **5V TTL** levels; avoid 3.3V boards without level shifting.
+- Ground DB25 pins **18–25** to Arduino GND.
+- Firmware: upload `LPT_Emulator/LPT_Emulator.ino` at **115200** baud.
+- Web UI: `web_interface.html` (Chrome/Edge/Opera) or run `LPT-UNO_AutoPrint_Direct.bat` on Windows.
 
----
-
-## 💻 Software Installation
-
-### Step 1: Upload Arduino Firmware
-
-1. Download or clone this repository
-2. Open **`LPT_Emulator/LPT_Emulator.ino`** in Arduino IDE
-3. Select **Tools → Board → Arduino Uno**
-4. Select **Tools → Port → [Your COM Port]**
-5. Click **Upload** (or press Ctrl+U)
-6. Wait for "Done uploading" message
-
-### Step 2: Test the Connection
-
-Open the Serial Monitor in Arduino IDE (Tools → Serial Monitor):
-- Set baud rate to **115200**
-- Type `V` and press Enter to see firmware version
-- Type `?` for help and available commands
-
-### Step 3: Launch Web Interface
-
-#### Windows Users (Recommended)
-- Double-click **`LPT-UNO.bat`** for instant startup with auto-print mode
-
-#### Manual Method
-- Open **`web_interface.html`** in Chrome, Edge, or Opera
-- Click "Connect to Arduino" button
-- Select the Arduino COM port from the list
-- Start receiving data!
-
----
-
-## 🎨 Web Interface Features
-
-### Main Controls
-
-| Button | Function |
-|--------|----------|
-| **Connect to Arduino** | Opens Web Serial connection dialog |
-| **Disconnect** | Closes serial connection |
-| **Clear** | Clears the output buffer (keeps connection active) |
-| **Save Now** | Downloads received data as a text file |
-
-### Encoding Support
-
-Choose the correct encoding for your data source:
-- **UTF-8 (Default)** - Default, works with modern systems and Arduino UTF-8 strings
-- **ISO-8859-1 (Latin)** - For legacy systems and DOS/Windows Latin characters
-- **CP-437 (DOS)** - For DOS applications and old PCs with extended ASCII
-- **Windows-1252** - For Windows legacy applications
-
-The encoding selector is located in the top control bar. The web interface automatically reconnects when you change the encoding.
-
-
-### Languages
-
-Switch between:
-- 🇬🇧 English
-- 🇵🇹 Português (Portuguese)
-- 🇪🇸 Español (Spanish)
-
-### Auto-Save Feature
-
-- Automatically saves received data every **10 seconds** of inactivity
-- Files are named: `LPT_Output_YYYY-MM-DD_HH-MM-SS.txt`
-- Prevents data loss if browser crashes
-
-
-### Auto-Print (Automatic Printing)
-
-Auto-print is now controlled externally:
-- **Enable auto-print:** Run `Ativar_AutoPrint.bat` (creates the `.autoprint_enabled` file in the `DATA` folder)
-- **Disable auto-print:** Run `Desativar_AutoPrint.bat` (removes the `.autoprint_enabled` file)
-- The PowerShell script `LPT-UNO_MoveToData.ps1` moves files from the Downloads folder to `DATA` and only prints if `.autoprint_enabled` exists
-- The browser no longer controls automatic printing
-
----
-
-## 📡 Communication Protocol
-
-### IEEE 1284 Compatibility Mode
-
-The emulator implements the standard parallel port protocol:
-
-1. **PC places data** on D0-D7 pins
-2. **PC activates STROBE** (HIGH → LOW transition)
-3. **Arduino detects STROBE** via hardware interrupt
-4. **Arduino activates BUSY** (indicates processing)
-5. **Arduino reads data** from all 8 pins
-6. **Arduino stores data** in 256-byte circular buffer
-7. **Arduino sends ACK** (~5µs LOW pulse)
-8. **Arduino deactivates BUSY** (ready for next byte)
-9. **Arduino forwards data** via USB Serial in main loop
-
-### Timing Specifications
-
-| Parameter | Value | Notes |
-|-----------|-------|-------|
-| **STROBE detection** | < 2 µs | Hardware interrupt response |
-| **BUSY activation** | ~10 µs | Processing time |
-| **ACK pulse width** | ~5 µs | Standard LPT timing |
-| **Maximum throughput** | ~100 kB/s | Theoretical limit |
-| **Serial baud rate** | 115200 | Maximum for Arduino Uno |
-
----
-
-## 🛠️ Arduino Serial Commands
-
-Type these commands in the Serial Monitor (115200 baud):
-
-| Command | Action | Response |
-|---------|--------|----------|
-| **`V`** or **`v`** | Show version info | Firmware version + build date |
-| **`S`** or **`s`** | Show statistics | Buffer usage (X/256 bytes) |
-| **`R`** or **`r`** | Reset buffer | Clears internal buffer |
-| **`?`** | Help | Lists all available commands |
-
-### Example Session
+**More details:** see [docs/TECHNICAL.md](docs/TECHNICAL.md) (timings, wiring, troubleshooting).
 
 ```
 > V
@@ -234,17 +93,14 @@ Buffer reset
 <details>
 <summary>Project structure (click to expand)</summary>
 
-```text
-LPT-UNO/
-├── LPT_Emulator/LPT_Emulator.ino
-├── web_interface.html
-├── Ativar_AutoPrint.bat
-├── Desativar_AutoPrint.bat
-├── LPT-UNO_AutoPrint_Direct.bat
-├── LPT-UNO_MoveToData.ps1
-├── PINOUT.txt
-└── README.md
-```
+- `LPT_Emulator/LPT_Emulator.ino`
+- `web_interface.html`
+- `Ativar_AutoPrint.bat`
+- `Desativar_AutoPrint.bat`
+- `LPT-UNO_AutoPrint_Direct.bat`
+- `LPT-UNO_MoveToData.ps1`
+- `PINOUT.txt`
+- `README.md`
 
 </details>
 
