@@ -15,29 +15,35 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+
             padding: 20px;
         }
         
         .container {
             max-width: 1200px;
             margin: 0 auto;
+
             background: white;
             border-radius: 10px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.2);
             overflow: hidden;
         }
         
+
         header {
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             color: white;
             padding: 15px 20px;
             text-align: center;
         }
+
         
+
         h1 {
             font-size: 1.6em;
             margin-bottom: 5px;
         }
+
         
         .subtitle {
             opacity: 0.9;
@@ -45,16 +51,20 @@
         }
         
         .controls {
+
             padding: 10px 15px;
             background: #f8f9fa;
             border-bottom: 2px solid #e9ecef;
+
             display: flex;
             gap: 8px;
             flex-wrap: wrap;
+
             align-items: center;
         }
         
         button {
+
             padding: 8px 16px;
             border: none;
             border-radius: 5px;
@@ -68,6 +78,7 @@
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
+
         
         button.toggle {
             position: relative;
@@ -75,25 +86,33 @@
         }
         
         button.toggle::before {
+
             content: '';
             position: absolute;
             left: 12px;
             top: 50%;
             transform: translateY(-50%);
+
             width: 30px;
             height: 16px;
             background: #e74c3c;
             border-radius: 10px;
             transition: background 0.3s;
+
         }
+
         
+
         button.toggle::after {
+
             content: '';
             position: absolute;
             left: 14px;
+
             top: 50%;
             transform: translateY(-50%);
             width: 12px;
+
             height: 12px;
             background: white;
             border-radius: 50%;
@@ -199,14 +218,7 @@
             background: #0097a7;
         }
         
-        #autoPrintBtn {
-            background: #9c27b0;
-            color: white;
-        }
-        
-        #autoPrintBtn:hover {
-            background: #7b1fa2;
-        }
+
         
         #recipientsBtn {
             background: #ff4081;
@@ -932,13 +944,7 @@
             background: #00838f;
         }
         
-        body.ocean-theme #autoPrintBtn {
-            background: #5e35b1;
-        }
-        
-        body.ocean-theme #autoPrintBtn:hover {
-            background: #4527a0;
-        }
+
         
         body.ocean-theme #recipientsBtn {
             background: #ec407a;
@@ -1092,13 +1098,7 @@
             background: #388e3c;
         }
         
-        body.forest-theme #autoPrintBtn {
-            background: #7cb342;
-        }
-        
-        body.forest-theme #autoPrintBtn:hover {
-            background: #689f38;
-        }
+
         
         body.forest-theme #recipientsBtn {
             background: #8d6e63;
@@ -1261,13 +1261,7 @@
             background: #00897b;
         }
         
-        body.sunset-theme #autoPrintBtn {
-            background: #ab47bc;
-        }
-        
-        body.sunset-theme #autoPrintBtn:hover {
-            background: #9c27b0;
-        }
+
         
         body.sunset-theme #recipientsBtn {
             background: #f06292;
@@ -1332,7 +1326,7 @@
             <button id="printBtn">🖨️ Imprimir Agora</button>
             
             <button id="autoSaveBtn" class="toggle active">💾 Auto-salvar</button>
-            <button id="autoPrintBtn" class="toggle" title="Para impressão direta sem diálogo, consulte o guia GUIA_IMPRESSAO_SILENCIOSA.md">🖨️ Auto-imprimir</button>
+                <!-- Botão de auto print removido conforme solicitado -->
             <div style="flex: 1;"></div>
             <div style="display: flex; align-items: center; gap: 10px;">
                 <div style="display: flex; flex-direction: column; gap: 3px;">
@@ -2177,6 +2171,7 @@
         };
         
         let currentLanguage = 'en';
+        let autoConfirmPrint = false; // Flag para auto-confirmar impressão com Enter
         
         // LocalStorage - Salvar preferências
         const STORAGE_KEY = 'lpt-uno-preferences';
@@ -2260,23 +2255,23 @@ baudRate=115200
                     return;
                 }
                 
+                // Tentar salvar na pasta DATA se disponível
                 const handle = await window.showSaveFilePicker({
                     suggestedName: 'lpt-uno-config.ini',
+                    startIn: 'documents', // Começar em Documentos
                     types: [{
                         description: 'Configuration File',
                         accept: { 'text/plain': ['.ini'] }
                     }]
                 });
-                
-                // Obter configurações atuais
-                const prefs = loadPreferences();
-                const iniContent = prefsToIni(prefs);
-                const writable = await handle.createWritable();
-                await writable.write(iniContent);
-                await writable.close();
-                
-                showInfo('✅ Configurações exportadas com sucesso!');
-                console.log('✅ Arquivo .ini exportado com as configurações atuais');
+                                // Auto-imprimir agora só ativa/desativa cópia para DATA
+                                // Impressão automática é feita pelo monitor externo (PowerShell/.bat)
+                                const prefs = loadPreferences();
+                                if (prefs.autoPrint) {
+                                    console.log('🖨️ Auto-imprimir ATIVO: arquivos copiados para DATA serão impressos automaticamente pelo sistema externo.');
+                                } else {
+                                    console.log('🖨️ Auto-imprimir DESATIVADO: arquivos copiados para DATA, mas NÃO serão impressos automaticamente.');
+                                }
             } catch (e) {
                 if (e.name !== 'AbortError') {
                     console.error('Erro ao exportar .ini:', e);
@@ -2420,28 +2415,7 @@ baudRate=115200
             if (printBtn) printBtn.innerHTML = `🖨️ ${t.printNow}`;
             if (autoSaveBtn) autoSaveBtn.innerHTML = `💾 ${t.autoSave}`;
             
-            if (autoPrintBtn) {
-                const urlParams = new URLSearchParams(window.location.search);
-                const isKiosk = urlParams.get('kiosk') === 'true';
-                
-                if (isKiosk) {
-                    autoPrintBtn.innerHTML = `🖨️ ${t.autoPrint} ✅`;
-                    autoPrintBtn.title = t.silentModeActive + ' (Modo Kiosk ativo via .BAT)';
-                    autoPrintBtn.style.color = '#00ff00'; // Verde brilhante
-                    autoPrintBtn.style.fontWeight = 'bold';
-                } else {
-                    // Verificar se está ativo
-                    if (autoPrintBtn.classList.contains('active')) {
-                        autoPrintBtn.innerHTML = `🖨️ ${t.autoPrint} ✅`;
-                        autoPrintBtn.title = 'Auto-print ativo - Abrirá diálogo de impressão';
-                        autoPrintBtn.style.color = '#4CAF50'; // Verde
-                    } else {
-                        autoPrintBtn.innerHTML = `🖨️ ${t.autoPrint}`;
-                        autoPrintBtn.title = 'Auto-print desativado';
-                        autoPrintBtn.style.color = '';
-                    }
-                }
-            }
+
             
             // Estatísticas
             const statLabels = document.querySelectorAll('.stat-label');
@@ -2667,7 +2641,7 @@ baudRate=115200
         const errorMsg = document.getElementById('errorMsg');
         const infoMsg = document.getElementById('infoMsg');
         const autoSaveBtn = document.getElementById('autoSaveBtn');
-        const autoPrintBtn = document.getElementById('autoPrintBtn');
+        // const autoPrintBtn = document.getElementById('autoPrintBtn');
         const printBtn = document.getElementById('printBtn');
         const settingsBtn = document.getElementById('settingsBtn');
         const settingsModal = document.getElementById('settingsModal');
@@ -2693,8 +2667,9 @@ baudRate=115200
         // Carregar preferências salvas
         const preferences = loadPreferences();
         
-        // ⚡ VERIFICAR PARÂMETRO URL #autoprint=true ANTES de aplicar preferências
+        // ⚡ VERIFICAR PARÂMETRO URL #autoprint ANTES de aplicar preferências
         const urlHash = window.location.hash;
+        
         if (urlHash.includes('autoprint=true')) {
             console.log('');
             console.log('═══════════════════════════════════════════');
@@ -2702,9 +2677,31 @@ baudRate=115200
             console.log('═══════════════════════════════════════════');
             console.log('');
             
+            // Ativar auto-confirmação de impressão (simular Enter após delay)
+            autoConfirmPrint = true;
+            
             // Forçar auto-print nas preferências
             preferences.autoPrint = true;
             preferences.autoSave = true; // Auto-print requer auto-save
+            
+            // Salvar imediatamente
+            savePreferences(preferences);
+            
+            // Remover hash da URL para não interferir
+            window.history.replaceState(null, null, window.location.pathname);
+        }
+        
+        if (urlHash.includes('autoprint=false')) {
+            console.log('');
+            console.log('═══════════════════════════════════════════');
+            console.log('🚫 AUTO-PRINT DESATIVADO (via .BAT)');
+            console.log('═══════════════════════════════════════════');
+            console.log('   Impressão será feita via linha de comando');
+            console.log('');
+            
+            // Desativar auto-print mas manter auto-save
+            preferences.autoPrint = false;
+            preferences.autoSave = true;
             
             // Salvar imediatamente
             savePreferences(preferences);
@@ -2769,19 +2766,20 @@ baudRate=115200
         // Aplicar preferências salvas
         if (preferences.autoSave) {
             autoSaveBtn.classList.add('active');
-            autoPrintBtn.disabled = false;
+            // autoPrintBtn.disabled = false;
         } else {
             autoSaveBtn.classList.remove('active');
-            autoPrintBtn.disabled = true;
+            // autoPrintBtn.disabled = true;
         }
         
-        if (preferences.autoPrint) {
-            autoPrintBtn.classList.add('active');
-            autoPrintEnabled = true;
-        } else {
-            autoPrintBtn.classList.remove('active');
-            autoPrintEnabled = false;
-        }
+        // if (preferences.autoPrint) {
+        //     autoPrintBtn.classList.add('active');
+        //     autoPrintEnabled = true;
+        // } else {
+        //     autoPrintBtn.classList.remove('active');
+        //     autoPrintEnabled = false;
+        // }
+        
         
         // Aplicar tempo de auto-salvar
         if (autoSaveTimeSelect && preferences.autoSaveTime) {
@@ -2853,6 +2851,28 @@ baudRate=115200
                     scheduleReconnect();
                 }
             }
+        }
+        
+        // ========================================
+        // AUTO-PRINT VIA .BAT
+        // ========================================
+        
+        // Nota: Diálogos de impressão nativos não podem ser controlados via JavaScript
+        // Use LPT-UNO_AutoPrint_WithConfirm.bat para confirmação automática via PowerShell
+        if (autoConfirmPrint) {
+            console.log('');
+            console.log('═══════════════════════════════════════════');
+            console.log('⚠️ AUTO-CONFIRMAÇÃO DE IMPRESSÃO');
+            console.log('═══════════════════════════════════════════');
+            console.log('');
+            console.log('⚠️ AVISO: JavaScript não pode controlar diálogos nativos!');
+            console.log('');
+            console.log('📌 Para confirmação automática, use:');
+            console.log('   LPT-UNO_AutoPrint_WithConfirm.bat');
+            console.log('');
+            console.log('   Este .bat usa PowerShell para pressionar Enter');
+            console.log('   automaticamente no diálogo de impressão.');
+            console.log('');
         }
         
         // Função: Conectar/Desconectar Arduino
@@ -3397,8 +3417,10 @@ baudRate=115200
                         break;
                 }
                 
-                // Salvar usando download normal (pasta Downloads do navegador)
+                // 📁 SALVAR em Downloads (será movido para DATA pelo .bat monitor)
                 downloadAsBlob(blob, filename);
+                console.log(`💾 Arquivo salvo em Downloads: ${filename}`);
+                console.log(`📦 Será movido para pasta DATA automaticamente pelo monitor`);
                 
             } catch (error) {
                 console.error('Erro ao salvar arquivo:', error);
@@ -3450,51 +3472,16 @@ baudRate=115200
             autoSaveBtn.classList.toggle('active');
             const isActive = autoSaveBtn.classList.contains('active');
             showInfo(isActive ? '✅ Auto-salvar ativado' : '⛔ Auto-salvar desativado');
-            
-            // Se auto-salvar for desativado, desativar também auto-imprimir
-            if (!isActive && autoPrintBtn.classList.contains('active')) {
-                autoPrintBtn.classList.remove('active');
-                autoPrintBtn.disabled = true;
-                const prefs = loadPreferences();
-                prefs.autoPrint = false;
-                savePreferences(prefs);
-            } else {
-                autoPrintBtn.disabled = !isActive;
-            }
-            
             // Salvar preferência
             const prefs = loadPreferences();
             prefs.autoSave = isActive;
             savePreferences(prefs);
-            
             // Reiniciar timer de inatividade
             if (isConnected) {
                 resetInactivityTimer();
             }
         });
-        
-        // Função: Toggle Auto-imprimir
-        autoPrintBtn.addEventListener('click', () => {
-            // Só permitir ativar se auto-salvar estiver ativo
-            if (!autoSaveBtn.classList.contains('active')) {
-                showError('⚠️ Auto-imprimir requer Auto-salvar ativado!');
-                return;
-            }
-            
-            autoPrintBtn.classList.toggle('active');
-            const isActive = autoPrintBtn.classList.contains('active');
-            showInfo(isActive ? '✅ Auto-imprimir ativado' : '⛔ Auto-imprimir desativado');
-            
-            // Salvar preferência
-            const prefs = loadPreferences();
-            prefs.autoPrint = isActive;
-            savePreferences(prefs);
-            
-            // Reiniciar timer de inatividade
-            if (isConnected) {
-                resetInactivityTimer();
-            }
-        });
+
         
         // Função: Enviar comando Reset ao Arduino
         resetBtn.addEventListener('click', async () => {
@@ -4184,10 +4171,9 @@ function testEmail() {
             }
             
             // Verificar se auto-save, auto-print ou emails automáticos estão ativos
-            const autoSaveActive = autoSaveBtn.classList.contains('active');
-            const autoPrintActive = autoPrintBtn.classList.contains('active');
-            
             const prefs = loadPreferences();
+            const autoSaveActive = prefs.autoSave || autoSaveBtn.classList.contains('active');
+            const autoPrintActive = prefs.autoPrint || false;
             const recipients = prefs.recipients || [];
             const hasRecipients = recipients.length > 0;
             const emailConfig = prefs.email || {};
@@ -4262,15 +4248,16 @@ function testEmail() {
                 }
             }
             
-            // Auto-imprimir se habilitado
-            if (autoPrintBtn.classList.contains('active')) {
-                console.log('🖨️ Auto-imprimindo...');
-                printData(dataToSave);
-                showInfo('🖨️ Enviado para impressora automaticamente');
+            // Auto-imprimir se habilitado (com delay de 3 segundos após save)
+            if (prefs.autoPrint) {
+                console.log('🖨️ Auto-print ativo: arquivo salvo será impresso em background pelo monitor externo (.bat / PowerShell).');
+                showInfo('🖨️ Arquivo salvo: impressão em background pelo sistema externo (se ativado)');
+                // Não chamar printData() aqui para evitar abrir o diálogo de impressão do navegador.
             }
             
             // Limpar dados pendentes apenas se auto-save ou auto-print estiver ativo
-            if (autoSaveBtn.classList.contains('active') || autoPrintBtn.classList.contains('active')) {
+            // NOTA: Limpeza ocorre imediatamente, mas dados já foram copiados para print
+            if (autoSaveBtn.classList.contains('active') || prefs.autoPrint) {
                 pendingData = '';
                 output.textContent = '';
                 byteCount = 0;
@@ -4363,15 +4350,10 @@ function testEmail() {
                 autoSaveBtn.classList.add('active');
             }
             
-            // Forçar Auto-Print ON
-            if (!autoPrintBtn.classList.contains('active')) {
-                autoPrintBtn.classList.add('active');
-            }
-            
-            // Salvar preferências
+            // Salvar preferências (auto-print controlado externamente via .bat)
             const prefs = loadPreferences();
             prefs.autoSave = true;
-            prefs.autoPrint = true;
+            prefs.autoPrint = true; // marca que o sistema externo deve imprimir
             savePreferences(prefs);
             
             // Mensagem de confirmação
@@ -4392,19 +4374,15 @@ function testEmail() {
                 autoSaveBtn.classList.remove('active');
             }
 
-            // Aplicar preferências salvas: Auto-imprimir (restaurar estado)
+            // Aplicar preferências salvas: Auto-imprimir (restaurar estado lógico)
             if (savedPrefs.autoPrint && savedPrefs.autoSave !== false) {
-                 if (!autoPrintBtn.classList.contains('active')) {
-                    autoPrintBtn.classList.add('active');
-                    
-                    // Aviso de 1ª vez sobre o modo Kiosk
-                    if (!sessionStorage.getItem('kioskWarningShown')) {
-                        console.log('⚠️ Auto-imprimir ativo mas sem --kiosk-printing. Use o .BAT para modo silencioso.');
-                        sessionStorage.setItem('kioskWarningShown', 'true');
-                    }
-                 }
+                // autoPrint é tratado externamente; apenas registrar estado
+                if (!sessionStorage.getItem('kioskWarningShown')) {
+                    console.log('⚠️ Auto-imprimir ativo mas sem --kiosk-printing. Use o .BAT para modo silencioso.');
+                    sessionStorage.setItem('kioskWarningShown', 'true');
+                }
             } else {
-                autoPrintBtn.classList.remove('active');
+                // autoPrint desativado logicamente
             }
         }
         

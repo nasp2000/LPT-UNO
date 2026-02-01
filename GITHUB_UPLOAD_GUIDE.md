@@ -2,10 +2,14 @@
 
 ## ✅ Pre-Upload Checklist
 
+
 ### 1. Files to Include
 - ✅ `LPT_Emulator/LPT_Emulator.ino` - Arduino firmware
 - ✅ `web_interface.html` - Web interface
-- ✅ `LPT-UNO.bat` - Windows launcher
+- ✅ `Ativar_AutoPrint.bat` - Ativa auto-print e abre interface
+- ✅ `Desativar_AutoPrint.bat` - Desativa auto-print e abre interface
+- ✅ `LPT-UNO_AutoPrint_Direct.bat` - Launcher principal (abre interface e monitor)
+- ✅ `LPT-UNO_MoveToData.ps1` - PowerShell: move e imprime arquivos
 - ✅ `README.md` - Complete documentation (English)
 - ✅ `CHANGELOG.md` - Version history
 - ✅ `LICENSE` - MIT License
@@ -35,11 +39,14 @@ grep "Web Interface v" web_interface.html
 - All files must be UTF-8 encoded
 - Test Portuguese characters: ç, á, é, í, ó, ú, ã, õ
 
+
 #### Test Functionality
 - [ ] Arduino code compiles without errors
 - [ ] Web interface opens in browser
-- [ ] .bat launcher works correctly
-- [ ] Auto-print mode activates when launched via .bat
+- [ ] Ativar_AutoPrint.bat ativa auto-print e abre interface
+- [ ] Desativar_AutoPrint.bat desativa auto-print e abre interface
+- [ ] Impressão automática só ocorre se `.autoprint_enabled` existir na pasta DATA
+- [ ] LPT-UNO_MoveToData.ps1 move arquivos de Downloads para DATA e imprime
 
 ---
 

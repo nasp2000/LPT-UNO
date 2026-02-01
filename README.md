@@ -12,12 +12,21 @@ And perfect for reviving old DOS applications, legacy software testing, or educa
 
 ---
 
+<p align="center">
+  <img src="images/image1.svg" alt="Screenshot 1" width="45%" />
+  <img src="images/image2.svg" alt="Screenshot 2" width="45%" />
+</p>
+
+<p align="center">
+  <img src="images/image3.svg" alt="Screenshot 3" width="45%" />
+  <img src="images/image4.svg" alt="Screenshot 4" width="45%" />
+</p>
+
 ## 📸 Features Overview
 
 - ✅ **Full IEEE 1284 compatibility** (parallel port standard)
 - ✅ **Web-based interface** with real-time data visualization
-- ✅ **Auto-print mode** with silent printing (no dialogs)
-- ✅ **4 beautiful themes** (Cyber Blue, Ocean, Forest, Sunset)
+- ✅ **Auto-print control via .bat files** (Ativar_AutoPrint.bat / Desativar_AutoPrint.bat)
 - ✅ **Multi-language support** (English, Portuguese, Spanish)
 - ✅ **Auto-save functionality** (saves every 10 seconds)
 - ✅ **One-click launcher** (.bat file for Windows)
@@ -28,20 +37,20 @@ And perfect for reviving old DOS applications, legacy software testing, or educa
 
 ## 🎯 Quick Start
 
-### Option 1: One-Click Launch (Windows)
 
-1. Double-click **`LPT-UNO.bat`** in the project folder
-2. The web interface opens automatically with auto-print mode enabled
-3. Connect your Arduino via USB
-4. Click "Connect to Arduino" in the web interface
-5. Done! Data from the parallel port will print automatically
+### Recomendado: Fluxo Automático (Windows)
 
-### Option 2: Manual Launch
+1. Para ativar auto-print: **Execute `Ativar_AutoPrint.bat`**
+2. Para desativar auto-print: **Execute `Desativar_AutoPrint.bat`**
+3. Ambos abrem a interface web e monitoram a pasta DATA para impressão automática
+4. O navegador salva arquivos em Downloads, que são movidos para DATA e impressos automaticamente se o auto-print estiver ativado
+5. Não é mais necessário ativar/desativar auto-print pela interface web
 
-1. Open **`web_interface.html`** in Chrome, Edge, or Opera
-2. Click "Connect to Arduino"
-3. Select the correct COM port
-4. Toggle "Auto-print" if you want automatic printing
+### Modo Manual (avançado)
+1. Abra **`web_interface.html`** em Chrome, Edge ou Opera
+2. Clique em "Conectar Arduino"
+3. Selecione a porta COM
+4. Salve manualmente e mova arquivos para DATA se desejar imprimir
 
 ---
 
@@ -164,8 +173,7 @@ Open the Serial Monitor in Arduino IDE (Tools → Serial Monitor):
 | **Connect to Arduino** | Opens Web Serial connection dialog |
 | **Disconnect** | Closes serial connection |
 | **Clear** | Clears the output buffer (keeps connection active) |
-| **Save as TXT** | Downloads received data as a text file |
-| **Auto-imprimir** | Toggles automatic printing mode |
+| **Salvar Agora** | Downloads received data as a text file |
 
 ### Encoding Support
 
@@ -177,15 +185,8 @@ Choose the correct encoding for your data source:
 
 The encoding selector is located in the top control bar. The web interface automatically reconnects when you change the encoding.
 
-### Themes
 
-Choose from 4 beautiful color schemes:
-- 🌐 **Cyber Blue** (default) - Modern tech aesthetic
-- 🌊 **Ocean Wave** - Calm blue gradient
-- 🌲 **Forest Green** - Natural green tones
-- 🌅 **Sunset Orange** - Warm orange/pink gradient
-
-### Languages
+### Idiomas
 
 Switch between:
 - 🇬🇧 English
@@ -198,12 +199,14 @@ Switch between:
 - Files are named: `LPT_Output_YYYY-MM-DD_HH-MM-SS.txt`
 - Prevents data loss if browser crashes
 
-### Auto-Print Mode
 
-When enabled (via `.bat` launcher or manual toggle):
-- Sends data directly to the system's default printer
-- **No confirmation dialogs** (requires `--kiosk-printing` browser flag)
-- Perfect for legacy applications that expect immediate printing
+### Auto-Print (Impressão Automática)
+
+O auto-print agora é controlado externamente:
+- **Ativar auto-print:** Execute `Ativar_AutoPrint.bat` (cria o arquivo `.autoprint_enabled` na pasta DATA)
+- **Desativar auto-print:** Execute `Desativar_AutoPrint.bat` (remove o arquivo `.autoprint_enabled`)
+- O script PowerShell `LPT-UNO_MoveToData.ps1` move arquivos da pasta Downloads para DATA e só imprime se `.autoprint_enabled` existir
+- O navegador não controla mais a impressão automática
 
 ---
 
@@ -264,17 +267,14 @@ Buffer reset
 
 ## 🚀 Advanced Usage
 
-### Silent Printing Setup (Windows)
 
-For **completely silent printing** without any dialogs:
+### Impressão Silenciosa (Windows)
 
-1. **Use the `.bat` launcher** - it automatically configures Chrome/Edge with `--kiosk-printing` flag
-2. **Or manually** launch browser with:
-   ```batch
-   chrome.exe --kiosk-printing "path\to\web_interface.html?kiosk=true"
-   ```
-3. Enable **Auto-imprimir** in the web interface
-4. Data will print directly to your default printer without prompts
+O fluxo recomendado é:
+1. Execute `Ativar_AutoPrint.bat` para ativar impressão automática
+2. O navegador salva arquivos em Downloads
+3. O script move para DATA e imprime automaticamente
+4. Para parar a impressão automática, execute `Desativar_AutoPrint.bat`
 
 ### Custom Printer Selection
 
@@ -301,7 +301,10 @@ LPT-UNO/
 │   └── LPT_Emulator.ino          # Arduino firmware (v1.0)
 │
 ├── web_interface.html             # Web-based monitor (v1.0)
-├── LPT-UNO.bat                    # Windows launcher with auto-print
+├── Ativar_AutoPrint.bat           # Ativa auto-print e abre interface
+├── Desativar_AutoPrint.bat        # Desativa auto-print e abre interface
+├── LPT-UNO_AutoPrint_Direct.bat   # Launcher principal (abre interface e monitor)
+├── LPT-UNO_MoveToData.ps1         # Script PowerShell: move e imprime arquivos
 ├── PINOUT.txt                     # Detailed pinout diagram (ASCII art)
 ├── README.md                      # This file
 ├── .gitignore                     # Git ignore rules
@@ -331,11 +334,11 @@ LPT-UNO/
 - ✅ Ensure data pins D0-D7 are in correct order
 - ✅ Test with Arduino Serial Monitor first
 
-### Auto-print doesn't work
-- ✅ Use the **`.bat` launcher** (configures browser correctly)
-- ✅ Close other browser windows before launching
-- ✅ Ensure a default printer is configured in Windows
-- ✅ Check printer is online and has paper
+### Impressão automática não funciona
+- ✅ Use sempre os arquivos `.bat` para ativar/desativar auto-print
+- ✅ Verifique se o arquivo `.autoprint_enabled` está presente na pasta DATA
+- ✅ Certifique-se de que há uma impressora padrão configurada no Windows
+- ✅ Verifique se a impressora está online e com papel
 
 ### Characters are garbled
 - ✅ Check for loose wire connections
@@ -360,6 +363,8 @@ LPT-UNO/
 - **Build date**: 2026-01-25
 - **Serial speed**: 115200 baud
 - **Encoding**: UTF-8
+- **Controle de auto-print**: via Ativar_AutoPrint.bat / Desativar_AutoPrint.bat
+- **Monitoramento e impressão**: via LPT-UNO_MoveToData.ps1
 
 ### Compatibility
 - **Arduino boards**: Uno R3, Uno R4 (5V variants)

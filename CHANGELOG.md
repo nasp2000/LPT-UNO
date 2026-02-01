@@ -7,15 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0] - 2026-01-25
 
+
 ### Added
 - Initial release of LPT-UNO Parallel Port Printer Emulator
 - Arduino Uno firmware with IEEE 1284 compatibility mode
 - Web-based interface with Web Serial API support
-- Auto-print functionality with silent printing mode
-- 4 color themes (Cyber Blue, Ocean Wave, Forest Green, Sunset Orange)
-- Multi-language support (English, Portuguese, Spanish)
 - Auto-save feature (saves data every 10 seconds)
-- One-click Windows launcher (.bat file)
+- Multi-language support (English, Portuguese, Spanish)
 - Serial commands for monitoring and debugging (V, S, R, ?)
 - 256-byte circular buffer for reliable data handling
 - Hardware interrupt support for fast response (<2µs)
@@ -24,6 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Connection status indicators
 - Firmware version display
 - Buffer statistics monitoring
+- **Controle de auto-print via Ativar_AutoPrint.bat e Desativar_AutoPrint.bat**
+- **Impressão automática via LPT-UNO_MoveToData.ps1 (PowerShell)**
+- **Launcher LPT-UNO_AutoPrint_Direct.bat para fluxo completo**
 
 ### Hardware
 - Full pinout for DB25 to Arduino Uno
@@ -40,10 +41,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Technical specifications
 - Development guidelines
 
+
 ### Files
 - `LPT_Emulator/LPT_Emulator.ino` - Arduino firmware v1.0
 - `web_interface.html` - Web interface v1.0
-- `LPT-UNO.bat` - Windows launcher with auto-print
+- `Ativar_AutoPrint.bat` - Ativa auto-print e abre interface
+- `Desativar_AutoPrint.bat` - Desativa auto-print e abre interface
+- `LPT-UNO_AutoPrint_Direct.bat` - Launcher principal (abre interface e monitor)
+- `LPT-UNO_MoveToData.ps1` - Script PowerShell: move e imprime arquivos
 - `PINOUT.txt` - ASCII art pinout diagram
 - `README.md` - Complete documentation
 - `LICENSE` - MIT License
