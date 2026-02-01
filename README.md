@@ -7,7 +7,7 @@
 
 Transform your Arduino Uno into a **parallel port printer emulator (LPT/DB25)** that receives data through the parallel interface and forwards it via USB Serial to your PC for visualization and printing in a modern web browser with advanced features.
 
-[![Technical details](https://img.shields.io/badge/Docs-Technical%20Details-blue?logo=book)](docs/TECHNICAL.md)  `→` See full technical reference (timings, wiring, commands) in `docs/TECHNICAL.md`
+[![Technical details](https://img.shields.io/badge/Docs-Technical%20Details-blue?logo=book)](docs/TECHNICAL.md)  → See full technical reference (timings, wiring, commands): [docs/TECHNICAL.md](docs/TECHNICAL.md)
 
 You no longer need to keep your parallel printer running!!
 
@@ -36,9 +36,9 @@ Perfect for reviving old DOS applications, legacy software testing, or education
 
 ## Quick Start (3 steps)
 
-1. Upload firmware: open `LPT_Emulator/LPT_Emulator.ino` in Arduino IDE and upload (115200 baud).
-2. Launch the web UI: run `LPT-UNO_AutoPrint_Direct.bat` (Windows launcher) or open `web_interface.html` in Chrome/Edge/Opera.
-3. Auto-print (optional): enable with `Ativar_AutoPrint.bat` (creates `.autoprint_enabled` in `DATA`); `Desativar_AutoPrint.bat` disables it.
+1. Upload firmware: open **LPT_Emulator/LPT_Emulator.ino** in Arduino IDE and upload at 115200 baud.
+2. Launch the web UI: run **LPT-UNO_AutoPrint_Direct.bat** (Windows launcher) or open **web_interface.html** in Chrome/Edge/Opera.
+3. Auto-print (optional): enable with **Ativar_AutoPrint.bat** (creates **.autoprint_enabled** in DATA); **Desativar_AutoPrint.bat** disables it.
 
 > Connect to the Arduino from the web UI to start receiving data.
 
@@ -50,39 +50,31 @@ Perfect for reviving old DOS applications, legacy software testing, or education
 
 - **Arduino**: Uno R3 (ATmega328P) recommended
 - **DB25 connector**: use 5V TTL signalling
-- See `PINOUT.txt` for a full wiring diagram (STROBE → D2, D0..D7 → D3..D10, ACK → D11, BUSY → D12, SELECT → D13, GND pins 18–25 → GND)
-```
+- See **PINOUT.txt** for a full wiring diagram (STROBE → D2, D0..D7 → D3..D10, ACK → D11, BUSY → D12, SELECT → D13, GND pins 18–25 → GND) 
 
 ## Important (short)
 
 - **STROBE → Arduino D2 (INT0)** — critical.
 - Use **5V TTL** levels; avoid 3.3V boards without level shifting.
 - Ground DB25 pins **18–25** to Arduino GND.
-- Firmware: upload `LPT_Emulator/LPT_Emulator.ino` at **115200** baud.
-- Web UI: `web_interface.html` (Chrome/Edge/Opera) or run `LPT-UNO_AutoPrint_Direct.bat` on Windows.
+- **Firmware:** upload **LPT_Emulator/LPT_Emulator.ino** at **115200** baud.
+- **Web UI:** open **web_interface.html** (Chrome/Edge/Opera) or run **LPT-UNO_AutoPrint_Direct.bat** on Windows.
 
 **More details:** see [docs/TECHNICAL.md](docs/TECHNICAL.md) (timings, wiring, troubleshooting).
 
-```
-> V
-Firmware Version: 1.0
-Build Date: Jan 25 2026 14:30:00
-
-> S
-Buffer usage: 42/256 bytes
-
-> R
-Buffer reset
-```
+Example session:
+- **V** → Firmware Version: 1.0 (Build Date: Jan 25 2026 14:30:00)
+- **S** → Buffer usage: 42/256 bytes
+- **R** → Buffer reset
 
 ---
 
 <details>
 <summary>Advanced Usage (click to expand)</summary>
 
-- **Silent Printing (Windows):** Use `Ativar_AutoPrint.bat` / `Desativar_AutoPrint.bat` to enable/disable automatic printing (see **Auto-Print** for details).
+- **Silent Printing (Windows):** Use **Ativar_AutoPrint.bat** / **Desativar_AutoPrint.bat** to enable/disable automatic printing (see **Auto-Print** for details).
 - **Custom Printer:** Set your desired printer as the system default before launching the app.
-- **Testing Without Hardware:** Open `web_interface.html` and use the developer 'Simulate Test Data' feature.
+- **Testing Without Hardware:** Open **web_interface.html** and use the developer 'Simulate Test Data' feature.
 
 </details>
 
@@ -93,14 +85,14 @@ Buffer reset
 <details>
 <summary>Project structure (click to expand)</summary>
 
-- `LPT_Emulator/LPT_Emulator.ino`
-- `web_interface.html`
-- `Ativar_AutoPrint.bat`
-- `Desativar_AutoPrint.bat`
-- `LPT-UNO_AutoPrint_Direct.bat`
-- `LPT-UNO_MoveToData.ps1`
-- `PINOUT.txt`
-- `README.md`
+- **LPT_Emulator/LPT_Emulator.ino**
+- **web_interface.html**
+- **Ativar_AutoPrint.bat**
+- **Desativar_AutoPrint.bat**
+- **LPT-UNO_AutoPrint_Direct.bat**
+- **LPT-UNO_MoveToData.ps1**
+- **PINOUT.txt**
+- **README.md**
 
 </details>
 
@@ -112,7 +104,7 @@ Buffer reset
 - **Arduino doesn't respond:** check USB cable, COM port, reset the board, re-upload firmware.
 - **Web interface can't connect:** use Chrome/Edge/Opera, close other apps using the serial port, refresh, check the console (F12).
 - **No data received:** verify wiring and confirm STROBE is on pin 2; test with Arduino Serial Monitor.
-- **Auto-print issues:** ensure `.autoprint_enabled` exists in `DATA` and a default printer is configured.
+- **Auto-print issues:** ensure **.autoprint_enabled** exists in DATA and a default printer is configured.
 - **Characters garbled:** try different encoding (CP‑437 for DOS), check cables and grounding.
 
 </details>
@@ -151,10 +143,10 @@ Buffer reset
 **Always update** when modifying code:
 
 #### Arduino Firmware
-Define version constants in the firmware (example): `#define FIRMWARE_VERSION "X.Y"` and `#define BUILD_DATE __DATE__`.
+Define version constants in the firmware (example): **#define FIRMWARE_VERSION "X.Y"** and **#define BUILD_DATE __DATE__**.
 
 #### Web Interface
-The web interface displays its build info in the footer (example: `<p id="firmwareInfo">Web Interface v1.0 | Build: 2026-01-25</p>`).
+The web interface displays its build info in the footer (example: <strong>&lt;p id="firmwareInfo"&gt;Web Interface v1.0 | Build: 2026-01-25&lt;/p&gt;</strong>).
 
 ### Encoding (development)
 - Prefer **UTF-8** for all source files and user-facing text. The web UI supports selectable encodings (UTF-8 default; CP‑437 is available for DOS-era content).
@@ -171,9 +163,9 @@ The web interface displays its build info in the footer (example: `<p id="firmwa
 Contributions are welcome! Please:
 
 1. Fork this repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
+2. Create a feature branch (**git checkout -b feature/AmazingFeature**)
+3. Commit your changes (**git commit -m 'Add AmazingFeature'**)
+4. Push to the branch (**git push origin feature/AmazingFeature**)
 5. Open a Pull Request
 
 ### Ideas for Contributions
@@ -190,7 +182,7 @@ Contributions are welcome! Please:
 
 This project is licensed under the **MIT License** - see below for details:
 
-```
+
 MIT License
 
 Copyright (c) 2026 LPT-UNO Project
@@ -212,7 +204,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-```
+
 
 ---
 
@@ -229,7 +221,7 @@ SOFTWARE.
 
 - **Issues**: [GitHub Issues](https://github.com/nasp2000/lpt-uno/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/nasp2000/lpt-uno/discussions)
-- **Documentation**: See `PINOUT.txt` for detailed wiring diagrams
+- **Documentation**: See **PINOUT.txt** for detailed wiring diagrams
 
 ---
 
