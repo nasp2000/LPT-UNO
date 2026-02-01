@@ -13,13 +13,13 @@ And perfect for reviving old DOS applications, legacy software testing, or educa
 ---
 
 <p align="center">
-  <img src="images/image1.svg" alt="Screenshot 1" width="45%" />
-  <img src="images/image2.svg" alt="Screenshot 2" width="45%" />
+  <img src="images/image1.png" alt="Screenshot 1" width="45%" />
+  <img src="images/image2.png" alt="Screenshot 2" width="45%" />
 </p>
 
 <p align="center">
-  <img src="images/image3.svg" alt="Screenshot 3" width="45%" />
-  <img src="images/image4.svg" alt="Screenshot 4" width="45%" />
+  <img src="images/image3.png" alt="Screenshot 3" width="45%" />
+  <img src="images/image4.png" alt="Screenshot 4" width="45%" />
 </p>
 
 ## 📸 Features Overview
