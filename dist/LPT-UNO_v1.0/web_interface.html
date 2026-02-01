@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LPT-UNO - Emulador Impressora Paralela</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+        }
+
+        
+
+        h1 {
+            font-size: 1.6em;
+            margin-bottom: 5px;
+        }
+
+        
+        .subtitle {
+            opacity: 0.9;
+            font-size: 0.9em;
+        }
+        
+        .controls {
+
+            padding: 10px 15px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+
+            align-items: center;
+        }
+        
+        button {
+
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        
+        button.toggle {
+            position: relative;
+            padding-left: 42px;
+        }
+        
+        button.toggle::before {
+
+            content: '';
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+
+            width: 30px;
+            height: 16px;
+            background: #e74c3c;
+            border-radius: 10px;
+            transition: background 0.3s;
+
+        }
+        
+
+        button.toggle::after {
+
+            content: '';
+            position: absolute;
+            left: 14px;
+
+            top: 50%;
+            transform: translateY(-50%);
+            width: 12px;
+
+            height: 12px;
+            background: white;
+            border-radius: 50%;
+            transition: left 0.3s;
+        }
+        
+        button.toggle.active::before {
+            background: #28a745;
+        }
+        
+        button.toggle.active::after {
+            left: 28px;
+        }
+        
+        button.toggle:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        button.toggle:disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .controls-secondary {
+            padding: 10px 15px;
+            background: #f1f3f5;
+            border-bottom: 2px solid #e9ecef;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        #connectBtn {
+            background: #28a745;
+            color: white;
+        }
+        
+        #connectBtn:hover {
+            background: #218838;
+        }
+        
+        #connectBtn.connected {
+            background: #dc3545;
+        }
+        
+        #connectBtn.connected:hover {
+            background: #c82333;
+        }
+        
+        #clearBtn {
+            background: #ffc107;
+            color: #333;
+        }
+        
+        #clearBtn:hover {
+            background: #e0a800;
+        }
+        
+        #saveBtn {
+            background: #17a2b8;
+            color: white;
+        }
+        
+        #saveBtn:hover {
+            background: #138496;
+        }
+        
+        #resetBtn {
+            background: #ff6b6b;
+            color: white;
+        }
+        
+        #resetBtn:hover {
+            background: #ee5a52;
+        }
+        
+        #statsBtn {
+            background: #6f42c1;
+            color: white;
+        }
+        
+        #statsBtn:hover {
+            background: #5a32a3;
+        }
+        
+        #printBtn {
+            background: #ff6f00;
+            color: white;
+        }
+        
+        #printBtn:hover {
+            background: #e65100;
+        }
+        
+        #autoSaveBtn {
+            background: #00bcd4;
+            color: white;
+        }
+        
+        #autoSaveBtn:hover {
+            background: #0097a7;
+        }
+        
+        
+
+        
+        #recipientsBtn {
+            background: #ff4081;
+            color: white;
+        }
+        
+        #recipientsBtn:hover {
+            background: #f50057;
+        }
+        
+        #settingsBtn {
+            background: #607d8b;
+            color: white;
+        }
+        
+        #settingsBtn:hover {
+            background: #455a64;
+        }
+        
+        .status {
+            margin-left: auto;
+            padding: 12px 24px;
+            background: white;
+            border-radius: 5px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #dc3545;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-indicator.connected {
+            background: #28a745;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .stats-bar {
+            padding: 8px 15px;
+            background: #e9ecef;
+            display: flex;
+            gap: 20px;
+            font-size: 0.85em;
+            color: #495057;
+        }
+        
+        .stat-item {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .stat-label {
+            font-weight: 600;
+        }
+        
+        .output-container {
+            padding: 20px;
+        }
+        
+        .view-options {
+            display: none !important;
+        }
+        
+        .view-btn {
+            display: none !important;
+        }
+        
+        .view-btn[data-view="hex"],
+        .view-btn[data-view="binary"] {
+            display: none !important;
+        }
+        
+        .view-btn.active {
+            display: none !important;
+        }
+        
+        /* Modal de Definições */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s;
+        }
+        
+        .modal.show {
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 90%;
+            animation: slideDown 0.3s;
+        }
+        
+        #emailConfigModal .modal-content {
+            max-width: 800px;
+        }
+        
+        #recipientsModal .modal-content {
+            max-width: 900px;
+        }
+        
+        @keyframes slideDown {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .modal-header h2 {
+            margin: 0;
+            color: #1e3c72;
+            font-size: 1.5em;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #6c757d;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+        ... (truncated for brevity) ...
+</style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🖨️ LPT-UNO</h1>
+            <p class="subtitle">Emulador de Impressora Paralela</p>
+            <p id="firmwareInfo" style="margin-top: 10px; opacity: 0.8; font-size: 0.9em;">Web Interface v1.0 | Build: 2026-01-25</p>
+        </header>
+        
+        <div class="controls">
+            <button id="connectBtn">🔌 Conectar Arduino</button>
+            <button id="resetBtn">🔄 Reset Buffer</button>
+            <button id="clearBtn">🗑️ Limpar</button>
+            
+            <div style="flex: 1;"></div>
+            
+            <button id="recipientsBtn">📧 Configurar Destinatários</button>
+            <button id="settingsBtn">⚙️ Definições</button>
+            
+            <div class="status">
+                <div class="status-indicator" id="statusIndicator"></div>
+                <span id="statusText">Desconectado</span>
+                <span id="wakeLockStatus" style="margin-left: 10px; font-size: 0.85em; opacity: 0; transition: opacity 0.3s;">🔒 Sistema ativo</span>
+            </div>
+        </div>
+
+
