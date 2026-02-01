@@ -45,7 +45,7 @@ grep "Web Interface v" web_interface.html
 - [ ] Web interface opens in browser
 - [ ] Ativar_AutoPrint.bat ativa auto-print e abre interface
 - [ ] Desativar_AutoPrint.bat desativa auto-print e abre interface
-- [ ] Impressão automática só ocorre se `.autoprint_enabled` existir na pasta DATA
+- [ ] Automatic printing only occurs if `.autoprint_enabled` exists in the `DATA` folder
 - [ ] LPT-UNO_MoveToData.ps1 move arquivos de Downloads para DATA e imprime
 
 ---

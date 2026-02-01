@@ -42,13 +42,13 @@ And perfect for reviving old DOS applications, legacy software testing, or educa
 
 1. Para ativar auto-print: **Execute `Ativar_AutoPrint.bat`**
 2. Para desativar auto-print: **Execute `Desativar_AutoPrint.bat`**
-3. Ambos abrem a interface web e monitoram a pasta DATA para impressão automática
+3. Both will open the web interface and monitor the `DATA` folder for automatic printing
 4. O navegador salva arquivos em Downloads, que são movidos para DATA e impressos automaticamente se o auto-print estiver ativado
 5. Não é mais necessário ativar/desativar auto-print pela interface web
 
 ### Modo Manual (avançado)
 1. Abra **`web_interface.html`** em Chrome, Edge ou Opera
-2. Clique em "Conectar Arduino"
+2. Click "Connect to Arduino"
 3. Selecione a porta COM
 4. Salve manualmente e mova arquivos para DATA se desejar imprimir
 
@@ -173,7 +173,7 @@ Open the Serial Monitor in Arduino IDE (Tools → Serial Monitor):
 | **Connect to Arduino** | Opens Web Serial connection dialog |
 | **Disconnect** | Closes serial connection |
 | **Clear** | Clears the output buffer (keeps connection active) |
-| **Salvar Agora** | Downloads received data as a text file |
+| **Save Now** | Downloads received data as a text file |
 
 ### Encoding Support
 
@@ -200,13 +200,13 @@ Switch between:
 - Prevents data loss if browser crashes
 
 
-### Auto-Print (Impressão Automática)
+### Auto-Print (Automatic Printing)
 
-O auto-print agora é controlado externamente:
-- **Ativar auto-print:** Execute `Ativar_AutoPrint.bat` (cria o arquivo `.autoprint_enabled` na pasta DATA)
-- **Desativar auto-print:** Execute `Desativar_AutoPrint.bat` (remove o arquivo `.autoprint_enabled`)
-- O script PowerShell `LPT-UNO_MoveToData.ps1` move arquivos da pasta Downloads para DATA e só imprime se `.autoprint_enabled` existir
-- O navegador não controla mais a impressão automática
+Auto-print is now controlled externally:
+- **Enable auto-print:** Run `Ativar_AutoPrint.bat` (creates the `.autoprint_enabled` file in the `DATA` folder)
+- **Disable auto-print:** Run `Desativar_AutoPrint.bat` (removes the `.autoprint_enabled` file)
+- The PowerShell script `LPT-UNO_MoveToData.ps1` moves files from the Downloads folder to `DATA` and only prints if `.autoprint_enabled` exists
+- The browser no longer controls automatic printing
 
 ---
 
@@ -268,13 +268,13 @@ Buffer reset
 ## 🚀 Advanced Usage
 
 
-### Impressão Silenciosa (Windows)
+### Silent Printing (Windows)
 
-O fluxo recomendado é:
-1. Execute `Ativar_AutoPrint.bat` para ativar impressão automática
-2. O navegador salva arquivos em Downloads
-3. O script move para DATA e imprime automaticamente
-4. Para parar a impressão automática, execute `Desativar_AutoPrint.bat`
+Recommended flow:
+1. Run `Ativar_AutoPrint.bat` to enable automatic printing
+2. The browser saves files to Downloads
+3. The monitor script moves them to `DATA` and prints automatically
+4. To stop automatic printing, run `Desativar_AutoPrint.bat`
 
 ### Custom Printer Selection
 
@@ -334,11 +334,11 @@ LPT-UNO/
 - ✅ Ensure data pins D0-D7 are in correct order
 - ✅ Test with Arduino Serial Monitor first
 
-### Impressão automática não funciona
-- ✅ Use sempre os arquivos `.bat` para ativar/desativar auto-print
-- ✅ Verifique se o arquivo `.autoprint_enabled` está presente na pasta DATA
-- ✅ Certifique-se de que há uma impressora padrão configurada no Windows
-- ✅ Verifique se a impressora está online e com papel
+### Troubleshooting: Auto-print not working
+- ✅ Always use the `.bat` files to enable/disable auto-print
+- ✅ Check that the `.autoprint_enabled` file exists in the `DATA` folder
+- ✅ Ensure a default printer is configured in Windows
+- ✅ Make sure the printer is online and has paper
 
 ### Characters are garbled
 - ✅ Check for loose wire connections
@@ -364,7 +364,7 @@ LPT-UNO/
 - **Serial speed**: 115200 baud
 - **Encoding**: UTF-8
 - **Controle de auto-print**: via Ativar_AutoPrint.bat / Desativar_AutoPrint.bat
-- **Monitoramento e impressão**: via LPT-UNO_MoveToData.ps1
+- **Monitoring and printing**: via LPT-UNO_MoveToData.ps1
 
 ### Compatibility
 - **Arduino boards**: Uno R3, Uno R4 (5V variants)

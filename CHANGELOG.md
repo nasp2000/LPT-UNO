@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Firmware version display
 - Buffer statistics monitoring
 - **Controle de auto-print via Ativar_AutoPrint.bat e Desativar_AutoPrint.bat**
-- **Impressão automática via LPT-UNO_MoveToData.ps1 (PowerShell)**
+- **Automatic printing via LPT-UNO_MoveToData.ps1 (PowerShell)**
 - **Launcher LPT-UNO_AutoPrint_Direct.bat para fluxo completo**
 
 ### Hardware
