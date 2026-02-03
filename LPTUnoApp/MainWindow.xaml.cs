@@ -12,12 +12,15 @@ namespace LPTUnoApp
         private NotifyIcon _notifyIcon;
         private bool _autoPrintEnabled = false;
         private readonly string _configPath;
+        private readonly SerialManager _serialManager = new SerialManager();
 
         public MainWindow()
         {
             InitializeComponent();
             _configPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "LPT-UNO", "config.json");
             InitializeTray();
+            _serialManager.DataReceived += OnSerialDataReceived;
+            RefreshPorts();
             LoadConfig();
             StatusText.Text = "Pronto";
         }
@@ -54,6 +57,7 @@ namespace LPTUnoApp
             {
                 _notifyIcon.Visible = false;
                 _notifyIcon.Dispose();
+                _serialManager.Dispose();
             };
         }
 
@@ -68,6 +72,7 @@ namespace LPTUnoApp
         {
             _notifyIcon.Visible = false;
             _notifyIcon.Dispose();
+            _serialManager.Dispose();
             Application.Current.Shutdown();
         }
 
@@ -76,6 +81,7 @@ namespace LPTUnoApp
             var dataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "LPT-UNO", "DATA");
             Directory.CreateDirectory(dataFolder);
             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo() { FileName = dataFolder, UseShellExecute = true });
+            AppendLog($"Opened DATA folder: {dataFolder}");
         }
 
         private void BtnToggleAutoPrint_Click(object sender, RoutedEventArgs e)
@@ -84,6 +90,82 @@ namespace LPTUnoApp
             BtnToggleAutoPrint.Content = _autoPrintEnabled ? "AutoPrint: ON" : "AutoPrint: OFF";
             StatusText.Text = $"AutoPrint: {(_autoPrintEnabled ? "Ligado" : "Desligado")}";
             SaveConfig();
+            AppendLog($"AutoPrint set to {_autoPrintEnabled}");
+        }
+
+        private void BtnRefreshPorts_Click(object sender, RoutedEventArgs e)
+        {
+            RefreshPorts();
+        }
+
+        private void BtnConnectPort_Click(object sender, RoutedEventArgs e)
+        {
+            if (_serialManager.IsOpen)
+            {
+                _serialManager.Close();
+                BtnConnectPort.Content = "Conectar";
+                AppendLog("Serial: desconectado");
+                SaveConfig();
+                return;
+            }
+
+            if (PortCombo.SelectedItem is string port)
+            {
+                try
+                {
+                    _serialManager.Open(port);
+                    BtnConnectPort.Content = "Desconectar";
+                    AppendLog($"Serial: conectado {port}");
+                    SaveConfig();
+                }
+                catch (Exception ex)
+                {
+                    AppendLog($"Serial: falha ao conectar {ex.Message}");
+                    MessageBox.Show($"Falha ao conectar: {ex.Message}", "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private void RefreshPorts()
+        {
+            try
+            {
+                PortCombo.Items.Clear();
+                foreach (var p in _serialManager.GetPorts())
+                    PortCombo.Items.Add(p);
+                AppendLog("Ports refreshed");
+            }
+            catch { }
+        }
+
+        private void OnSerialDataReceived(string data)
+        {
+            AppendLog($"[RX] {data}");
+
+            if (_autoPrintEnabled)
+            {
+                try
+                {
+                    var dataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "LPT-UNO", "DATA");
+                    Directory.CreateDirectory(dataFolder);
+                    var fileName = Path.Combine(dataFolder, $"auto_{DateTime.Now:yyyyMMdd_HHmmss_fff}.txt");
+                    File.AppendAllText(fileName, data);
+                    AppendLog($"Saved incoming data to {fileName}");
+                }
+                catch (Exception ex)
+                {
+                    AppendLog($"Error saving data: {ex.Message}");
+                }
+            }
+        }
+
+        private void AppendLog(string text)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                LogTextBox.AppendText($"{DateTime.Now:HH:mm:ss} {text}\n");
+                LogTextBox.ScrollToEnd();
+            });
         }
 
         private void LoadConfig()
@@ -96,11 +178,34 @@ namespace LPTUnoApp
                     dynamic cfg = JsonConvert.DeserializeObject(json);
                     _autoPrintEnabled = cfg?.autoPrint ?? false;
                     BtnToggleAutoPrint.Content = _autoPrintEnabled ? "AutoPrint: ON" : "AutoPrint: OFF";
+
+                    var serialPort = (string?)cfg?.serialPort;
+                    if (!string.IsNullOrEmpty(serialPort))
+                    {
+                        // attempt to select port
+                        RefreshPorts();
+                        foreach (var item in PortCombo.Items)
+                        {
+                            if (item is string s && s == serialPort)
+                            {
+                                PortCombo.SelectedItem = s;
+                                try
+                                {
+                                    _serialManager.Open(s);
+                                    BtnConnectPort.Content = "Desconectar";
+                                    AppendLog($"Serial auto-connected to {s}");
+                                }
+                                catch { }
+                                break;
+                            }
+                        }
+                    }
                 }
             }
             catch (Exception ex)
             {
                 StatusText.Text = "Erro ao carregar config";
+                AppendLog($"LoadConfig error: {ex.Message}");
             }
         }
 
@@ -109,10 +214,14 @@ namespace LPTUnoApp
             try
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(_configPath));
-                var cfg = new { autoPrint = _autoPrintEnabled, version = "1.0" };
+                var cfg = new { autoPrint = _autoPrintEnabled, version = "1.0", serialPort = _serialManager.CurrentPortName };
                 File.WriteAllText(_configPath, JsonConvert.SerializeObject(cfg, Formatting.Indented));
+                AppendLog("Config saved");
             }
-            catch { }
+            catch (Exception ex)
+            {
+                AppendLog($"SaveConfig error: {ex.Message}");
+            }
         }
     }
 }

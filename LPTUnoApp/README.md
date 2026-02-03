@@ -8,6 +8,10 @@ This is a native Windows WPF prototype for the LPT-UNO project.
 - Persist configuration in `%APPDATA%/LPT-UNO/config.json`
 - Provide same features as web interface (AutoSave, AutoPrint, Data folder, serial comms)
 
+## Serial (Arduino)
+- The app detects available COM ports. Use the dropdown and 'Conectar' to connect to the emulator (115200 baud).
+- Incoming serial data is logged to the UI. When *AutoPrint* is ON, the app will save incoming data to `%APPDATA%/LPT-UNO/DATA` as timestamped files to be processed later for printing.
+
 ## Requirements
 - .NET SDK (net8.0 or compatible) installed to build
 - `dotnet build` and `dotnet run` will build and start the application
