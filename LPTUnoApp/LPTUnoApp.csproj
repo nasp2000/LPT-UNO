@@ -9,5 +9,6 @@
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="14.0.1" />
     <PackageReference Include="System.IO.Ports" Version="6.0.1" />
+    <PackageReference Include="System.Drawing.Common" Version="7.0.0" />
   </ItemGroup>
 </Project>

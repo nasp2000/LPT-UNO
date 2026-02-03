@@ -12,6 +12,11 @@ This is a native Windows WPF prototype for the LPT-UNO project.
 - The app detects available COM ports. Use the dropdown and 'Conectar' to connect to the emulator (115200 baud).
 - Incoming serial data is logged to the UI. When *AutoPrint* is ON, the app will save incoming data to `%APPDATA%/LPT-UNO/DATA` as timestamped files to be processed later for printing.
 
+## AutoPrint & Printing
+- The app monitors `%APPDATA%/LPT-UNO/DATA` for new `*.txt` files and automatically sends them to the configured printer when AutoPrint is enabled.
+- Printed files are moved to `%APPDATA%/LPT-UNO/DATA/printed` and on failure to `%APPDATA%/LPT-UNO/DATA/error`.
+- Use the `Imprimir Já` button to schedule the latest file for printing manually.
+
 ## Requirements
 - .NET SDK (net8.0 or compatible) installed to build
 - `dotnet build` and `dotnet run` will build and start the application

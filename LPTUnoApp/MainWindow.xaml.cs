@@ -13,6 +13,9 @@ namespace LPTUnoApp
         private bool _autoPrintEnabled = false;
         private readonly string _configPath;
         private readonly SerialManager _serialManager = new SerialManager();
+        private PrintManager? _printManager;
+        private System.Timers.Timer? _reconnectTimer;
+        private readonly string _dataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "LPT-UNO", "DATA");
 
         public MainWindow()
         {
@@ -22,7 +25,49 @@ namespace LPTUnoApp
             _serialManager.DataReceived += OnSerialDataReceived;
             RefreshPorts();
             LoadConfig();
+            InitializePrintManager();
+            InitializeReconnectTimer();
             StatusText.Text = "Pronto";
+        }
+
+        private void InitializePrintManager()
+        {
+            _printManager = new PrintManager(_dataFolder);
+            RefreshPrinters();
+        }
+
+        private void InitializeReconnectTimer()
+        {
+            _reconnectTimer = new System.Timers.Timer(5000);
+            _reconnectTimer.Elapsed += (s, e) =>
+            {
+                if (!_serialManager.IsOpen)
+                {
+                    var cfgPort = GetSavedSerialPort();
+                    if (!string.IsNullOrEmpty(cfgPort))
+                    {
+                        var available = _serialManager.GetPorts();
+                        foreach (var p in available)
+                        {
+                            if (string.Equals(p, cfgPort, StringComparison.OrdinalIgnoreCase))
+                            {
+                                try
+                                {
+                                    _serialManager.Open(p);
+                                    Dispatcher.Invoke(() =>
+                                    {
+                                        BtnConnectPort.Content = "Desconectar";
+                                        AppendLog($"Reconnected serial to {p}");
+                                    });
+                                    break;
+                                }
+                                catch { }
+                            }
+                        }
+                    }
+                }
+            };
+            _reconnectTimer.Start();
         }
 
         private void InitializeTray()
@@ -89,6 +134,20 @@ namespace LPTUnoApp
             _autoPrintEnabled = !_autoPrintEnabled;
             BtnToggleAutoPrint.Content = _autoPrintEnabled ? "AutoPrint: ON" : "AutoPrint: OFF";
             StatusText.Text = $"AutoPrint: {(_autoPrintEnabled ? "Ligado" : "Desligado")}";
+            if (_printManager != null)
+            {
+                if (_autoPrintEnabled)
+                {
+                    _printManager.PrinterName = PrinterCombo.SelectedItem as string;
+                    _printManager.Start();
+                    AppendLog("AutoPrint watcher started");
+                }
+                else
+                {
+                    _printManager.Stop();
+                    AppendLog("AutoPrint watcher stopped");
+                }
+            }
             SaveConfig();
             AppendLog($"AutoPrint set to {_autoPrintEnabled}");
         }
@@ -138,6 +197,42 @@ namespace LPTUnoApp
             catch { }
         }
 
+        private void RefreshPrinters()
+        {
+            try
+            {
+                PrinterCombo.Items.Clear();
+                foreach (var p in System.Drawing.Printing.PrinterSettings.InstalledPrinters)
+                    PrinterCombo.Items.Add(p);
+                AppendLog("Printers refreshed");
+            }
+            catch { }
+        }
+
+        private void BtnRefreshPrinters_Click(object sender, RoutedEventArgs e)
+        {
+            RefreshPrinters();
+        }
+
+        private void BtnPrintNow_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var dataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "LPT-UNO", "DATA");
+                var newest = Directory.GetFiles(dataFolder, "*.txt").OrderByDescending(f => File.GetCreationTimeUtc(f)).FirstOrDefault();
+                if (newest == null) { MessageBox.Show("No files to print", "Info", MessageBoxButton.OK, MessageBoxImage.Information); return; }
+                var pm = new PrintManager(dataFolder);
+                pm.PrinterName = PrinterCombo.SelectedItem as string;
+                pm.Start();
+                // enqueue newest directly by moving into queue via file watcher (start already enqueued existing files)
+                MessageBox.Show($"Scheduled {Path.GetFileName(newest)} for printing.", "Print", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                AppendLog($"PrintNow error: {ex.Message}");
+            }
+        }
+
         private void OnSerialDataReceived(string data)
         {
             AppendLog($"[RX] {data}");
@@ -168,6 +263,21 @@ namespace LPTUnoApp
             });
         }
 
+        private string? GetSavedSerialPort()
+        {
+            try
+            {
+                if (File.Exists(_configPath))
+                {
+                    var json = File.ReadAllText(_configPath);
+                    dynamic cfg = JsonConvert.DeserializeObject(json);
+                    return (string?)cfg?.serialPort;
+                }
+            }
+            catch { }
+            return null;
+        }
+
         private void LoadConfig()
         {
             try
@@ -180,6 +290,20 @@ namespace LPTUnoApp
                     BtnToggleAutoPrint.Content = _autoPrintEnabled ? "AutoPrint: ON" : "AutoPrint: OFF";
 
                     var serialPort = (string?)cfg?.serialPort;
+                    var printer = (string?)cfg?.printer;
+                    if (!string.IsNullOrEmpty(printer))
+                    {
+                        RefreshPrinters();
+                        foreach (var item in PrinterCombo.Items)
+                        {
+                            if (item is string s && s == printer)
+                            {
+                                PrinterCombo.SelectedItem = s;
+                                break;
+                            }
+                        }
+                    }
+
                     if (!string.IsNullOrEmpty(serialPort))
                     {
                         // attempt to select port
@@ -200,6 +324,13 @@ namespace LPTUnoApp
                             }
                         }
                     }
+
+                    if (_autoPrintEnabled && _printManager != null)
+                    {
+                        _printManager.PrinterName = PrinterCombo.SelectedItem as string;
+                        _printManager.Start();
+                        AppendLog("AutoPrint watcher started from config");
+                    }
                 }
             }
             catch (Exception ex)
@@ -214,7 +345,7 @@ namespace LPTUnoApp
             try
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(_configPath));
-                var cfg = new { autoPrint = _autoPrintEnabled, version = "1.0", serialPort = _serialManager.CurrentPortName };
+                var cfg = new { autoPrint = _autoPrintEnabled, version = "1.0", serialPort = _serialManager.CurrentPortName, printer = PrinterCombo.SelectedItem as string };
                 File.WriteAllText(_configPath, JsonConvert.SerializeObject(cfg, Formatting.Indented));
                 AppendLog("Config saved");
             }
