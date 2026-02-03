@@ -12,6 +12,12 @@ This is a native Windows WPF prototype for the LPT-UNO project.
 - The app detects available COM ports. Use the dropdown and 'Conectar' to connect to the emulator (115200 baud).
 - Incoming serial data is logged to the UI. When *AutoPrint* is ON, the app will save incoming data to `%APPDATA%/LPT-UNO/DATA` as timestamped files to be processed later for printing.
 
+## MoveToData (Downloads monitor)
+- The app can monitor your `Downloads` folder for auto-save timestamped files (`*_YYYY-MM-DD_HH-MM-SS.*`) and move them into `%APPDATA%/LPT-UNO/DATA` (equivalent to `LPT-UNO_MoveToData.ps1`). Use the **Iniciar Monitor Downloads** button to start.
+
+## Compatibility with existing scripts
+- The app creates/removes `%APPDATA%/LPT-UNO/.autoprint_enabled` when AutoPrint is toggled to preserve compatibility with existing scripts. The original `.bat`/`.ps1` scripts are still present but **deprecated** in favor of the native app; they will be removed only after review.
+
 ## AutoPrint & Printing
 - The app monitors `%APPDATA%/LPT-UNO/DATA` for new `*.txt` files and automatically sends them to the configured printer when AutoPrint is enabled.
 - Printed files are moved to `%APPDATA%/LPT-UNO/DATA/printed` and on failure to `%APPDATA%/LPT-UNO/DATA/error`.

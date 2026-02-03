@@ -14,8 +14,12 @@ namespace LPTUnoApp
         private readonly string _configPath;
         private readonly SerialManager _serialManager = new SerialManager();
         private PrintManager? _printManager;
+        private MoveManager? _moveManager;
+        private bool _moveMonitorRunning = false;
         private System.Timers.Timer? _reconnectTimer;
         private readonly string _dataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "LPT-UNO", "DATA");
+        private readonly string _downloadsFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+        private readonly string _autoprintFlagPath;
 
         public MainWindow()
         {
@@ -23,6 +27,7 @@ namespace LPTUnoApp
             _configPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "LPT-UNO", "config.json");
             InitializeTray();
             _serialManager.DataReceived += OnSerialDataReceived;
+            _autoprintFlagPath = Path.Combine(Path.GetDirectoryName(_configPath) ?? _dataFolder, ".autoprint_enabled");
             RefreshPorts();
             LoadConfig();
             InitializePrintManager();
@@ -34,6 +39,39 @@ namespace LPTUnoApp
         {
             _printManager = new PrintManager(_dataFolder);
             RefreshPrinters();
+        }
+
+        private void InitializeMoveManager()
+        {
+            if (_moveManager == null)
+            {
+                _moveManager = new MoveManager(_downloadsFolder, _dataFolder);
+                _moveManager.FileMoved += (f) => Dispatcher.Invoke(() => { AppendLog($"Moved file to DATA: {f}"); });
+                _moveManager.Error += (e) => Dispatcher.Invoke(() => { AppendLog($"MoveManager error: {e}"); });
+            }
+        }
+
+        private void StartMoveMonitor()
+        {
+            InitializeMoveManager();
+            if (_moveManager != null && !_moveMonitorRunning)
+            {
+                _moveManager.Start();
+                _moveMonitorRunning = true;
+                BtnToggleMoveMonitor.Content = "Parar Monitor Downloads";
+                AppendLog("Move monitor started");
+            }
+        }
+
+        private void StopMoveMonitor()
+        {
+            if (_moveManager != null && _moveMonitorRunning)
+            {
+                _moveManager.Stop();
+                _moveMonitorRunning = false;
+                BtnToggleMoveMonitor.Content = "Iniciar Monitor Downloads";
+                AppendLog("Move monitor stopped");
+            }
         }
 
         private void InitializeReconnectTimer()
@@ -86,6 +124,14 @@ namespace LPTUnoApp
             openItem.Click += (s, e) => Dispatcher.Invoke(ShowMainWindow);
             contextMenu.Items.Add(openItem);
 
+            var toggleAutoPrintItem = new ToolStripMenuItem("Ativar AutoPrint");
+            toggleAutoPrintItem.Click += (s, e) => Dispatcher.Invoke(() => ToggleAutoPrint(!_autoPrintEnabled));
+            contextMenu.Items.Add(toggleAutoPrintItem);
+
+            var toggleMoveMonitorItem = new ToolStripMenuItem("Iniciar Monitor Downloads");
+            toggleMoveMonitorItem.Click += (s, e) => Dispatcher.Invoke(() => { if (_moveMonitorRunning) StopMoveMonitor(); else StartMoveMonitor(); });
+            contextMenu.Items.Add(toggleMoveMonitorItem);
+
             var exitItem = new ToolStripMenuItem("Sair");
             exitItem.Click += (s, e) => Dispatcher.Invoke(ExitApp);
             contextMenu.Items.Add(exitItem);
@@ -131,7 +177,27 @@ namespace LPTUnoApp
 
         private void BtnToggleAutoPrint_Click(object sender, RoutedEventArgs e)
         {
-            _autoPrintEnabled = !_autoPrintEnabled;
+            ToggleAutoPrint(!_autoPrintEnabled);
+        }
+
+        private void BtnToggleAutoPrintFlag_Click(object sender, RoutedEventArgs e)
+        {
+            // toggles the presence of .autoprint_enabled file (compatibility with scripts)
+            if (File.Exists(_autoprintFlagPath))
+            {
+                try { File.Delete(_autoprintFlagPath); AppendLog("Removed .autoprint_enabled flag"); BtnToggleAutoPrintFlag.Content = "Ativar .autoprint_enabled"; }
+                catch (Exception ex) { AppendLog($"Error removing flag: {ex.Message}"); }
+            }
+            else
+            {
+                try { File.WriteAllText(_autoprintFlagPath, "Auto-print ativado"); AppendLog("Created .autoprint_enabled flag"); BtnToggleAutoPrintFlag.Content = "Desativar .autoprint_enabled"; }
+                catch (Exception ex) { AppendLog($"Error creating flag: {ex.Message}"); }
+            }
+        }
+
+        private void ToggleAutoPrint(bool enable)
+        {
+            _autoPrintEnabled = enable;
             BtnToggleAutoPrint.Content = _autoPrintEnabled ? "AutoPrint: ON" : "AutoPrint: OFF";
             StatusText.Text = $"AutoPrint: {(_autoPrintEnabled ? "Ligado" : "Desligado")}";
             if (_printManager != null)
@@ -141,17 +207,19 @@ namespace LPTUnoApp
                     _printManager.PrinterName = PrinterCombo.SelectedItem as string;
                     _printManager.Start();
                     AppendLog("AutoPrint watcher started");
+                    // create compatibility flag file
+                    try { File.WriteAllText(_autoprintFlagPath, "Auto-print ativado"); AppendLog("Created .autoprint_enabled flag"); } catch { }
                 }
                 else
                 {
                     _printManager.Stop();
                     AppendLog("AutoPrint watcher stopped");
+                    try { if (File.Exists(_autoprintFlagPath)) File.Delete(_autoprintFlagPath); AppendLog("Removed .autoprint_enabled flag"); } catch { }
                 }
             }
             SaveConfig();
             AppendLog($"AutoPrint set to {_autoPrintEnabled}");
         }
-
         private void BtnRefreshPorts_Click(object sender, RoutedEventArgs e)
         {
             RefreshPorts();
@@ -224,13 +292,17 @@ namespace LPTUnoApp
                 var pm = new PrintManager(dataFolder);
                 pm.PrinterName = PrinterCombo.SelectedItem as string;
                 pm.Start();
-                // enqueue newest directly by moving into queue via file watcher (start already enqueued existing files)
                 MessageBox.Show($"Scheduled {Path.GetFileName(newest)} for printing.", "Print", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
                 AppendLog($"PrintNow error: {ex.Message}");
             }
+        }
+
+        private void BtnToggleMoveMonitor_Click(object sender, RoutedEventArgs e)
+        {
+            if (_moveMonitorRunning) StopMoveMonitor(); else StartMoveMonitor();
         }
 
         private void OnSerialDataReceived(string data)
