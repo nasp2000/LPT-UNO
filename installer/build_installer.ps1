@@ -3,8 +3,12 @@ param(
     [string]$Runtime = 'win-x64'
 )
 
-$project = Join-Path .. LPTUnoApp\LPTUnoApp.csproj
-$publishDir = Join-Path .. LPTUnoApp publish
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
+$repoRoot = Split-Path -Parent $scriptDir
+$project = Join-Path $repoRoot 'LPTUnoApp\LPTUnoApp.csproj'
+
+$publishSub = if ($Runtime -eq 'win-x86') { 'publish-x86' } else { 'publish' }
+$publishDir = Join-Path $repoRoot "LPTUnoApp\$publishSub"
 
 Write-Host "Publishing project to $publishDir..."
 $pub = dotnet publish $project -c $Configuration -r $Runtime --self-contained true -p:PublishSingleFile=true -p:PublishTrimmed=false -o $publishDir
@@ -17,7 +21,8 @@ if (-not $iscc) {
     exit 0
 }
 
-$scriptPath = Join-Path (Split-Path -Parent $MyInvocation.MyCommand.Definition) 'LPT-UNO-Installer.iss'
+$scriptName = if ($Runtime -eq 'win-x86') { 'LPT-UNO-Installer-x86.iss' } else { 'LPT-UNO-Installer.iss' }
+$scriptPath = Join-Path $scriptDir $scriptName
 Write-Host "Building installer with ISCC: $scriptPath"
 & iscc.exe $scriptPath
 if ($LASTEXITCODE -ne 0) { Write-Error "ISCC failed"; exit 1 }
