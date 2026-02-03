@@ -28,10 +28,10 @@ Open Arduino Serial Monitor (115200 baud):
 - `R` - reset buffer
 - `?` - help
 
-### Step 3: Launch Web Interface
+### Step 3: Launch Native App
 
-- Windows (recommended): run `LPT-UNO_AutoPrint_Direct.bat` to open the web UI and enable auto-print mode.
-- Manual: open `web_interface.html` in Chrome / Edge / Opera, click "Connect to Arduino" and select the COM port.
+- Windows (recommended): build and run the `LPTUnoApp` application (see `LPTUnoApp/README.md`) to open the native interface and enable auto-print/move monitor.
+- The legacy `web_interface.html` has been removed in this branch; use the native app for connection and printing.
 
 ---
 
@@ -39,7 +39,7 @@ Open Arduino Serial Monitor (115200 baud):
 
 - **Encodings**: UTF-8 (default), ISO-8859-1 (Latin), CP-437 (DOS), Windows-1252. For CP-437 the UI uses a conversion table; other encodings use TextDecoder.
 - **Auto-save**: configurable inactivity timer (default 10s).
-- **Auto-print**: controlled by external scripts — `Ativar_AutoPrint.bat` / `Desativar_AutoPrint.bat`. Files are moved from Downloads to `DATA` and printed by `LPT-UNO_MoveToData.ps1`.
+- **Auto-print**: controlled by the native app (AutoPrint flag and Move Monitor). Files are moved from Downloads to `DATA` and printed by the app's `MoveManager` / `PrintManager` components (replacing `LPT-UNO_MoveToData.ps1`).
 
 ---
 
@@ -101,7 +101,7 @@ See `PINOUT.txt` for a complete ASCII diagram. Key mappings:
 
 - If no data: confirm wiring and STROBE pin; test with Arduino Serial Monitor first.
 - If characters are garbled: try CP-437 (DOS) or ISO-8859-1 in the UI; verify encoding of the source data.
-- If auto-print doesn't run: ensure `.autoprint_enabled` exists in `DATA` and `LPT-UNO_MoveToData.ps1` has permissions to move/print files.
+- If auto-print doesn't run: ensure `.autoprint_enabled` exists in `DATA` and the native app's Move Monitor is running (see `LPTUnoApp` MoveManager).
 
 ---
 

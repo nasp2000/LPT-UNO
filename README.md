@@ -30,7 +30,7 @@ Perfect for reviving old DOS applications, legacy software testing, or education
 ## Features
 
 - Full IEEE 1284 compatibility (Parallel LPT/DB25)
-- Web UI with real-time visualization and selectable encodings (UTF‑8 default)
+- Native Windows app (WPF) with real-time visualization and selectable encodings (UTF‑8 default)
 - Auto-save and optional auto-print via provided scripts
 - 256‑byte circular buffer, interrupt-driven (low-latency)
 
@@ -39,10 +39,10 @@ Perfect for reviving old DOS applications, legacy software testing, or education
 ## Quick Start (3 steps)
 
 1. Upload firmware: open **LPT_Emulator/LPT_Emulator.ino** in Arduino IDE and upload at 115200 baud.
-2. Launch the web UI: run **LPT-UNO_AutoPrint_Direct.bat** (Windows launcher) or open **web_interface.html** in Chrome/Edge/Opera.
-3. Auto-print (optional): enable with **Ativar_AutoPrint.bat** (creates **.autoprint_enabled** in DATA); **Desativar_AutoPrint.bat** disables it.
+2. Run the native Windows application: build/run `LPTUnoApp` (see `LPTUnoApp/README.md`) to open the LPT-UNO native interface. The legacy `web_interface.html` and helper scripts were removed in this branch in favor of the native app.
+3. Auto-print (optional): enable via the native app (creates `%APPDATA%/LPT-UNO/.autoprint_enabled`).
 
-> Connect to the Arduino from the web UI to start receiving data.
+> Connect to the Arduino using the native app's Connect control to start receiving data.
 
 ---
 
@@ -60,7 +60,7 @@ Perfect for reviving old DOS applications, legacy software testing, or education
 - Use **5V TTL** levels; avoid 3.3V boards without level shifting.
 - Ground DB25 pins **18–25** to Arduino GND.
 - **Firmware:** upload **LPT_Emulator/LPT_Emulator.ino** at **115200** baud.
-- **Web UI:** open **web_interface.html** (Chrome/Edge/Opera) or run **LPT-UNO_AutoPrint_Direct.bat** on Windows.
+- **Native App:** build and run `LPTUnoApp` (see `LPTUnoApp/README.md`) for Windows users.
 
 **More details:** see [docs/TECHNICAL.md](docs/TECHNICAL.md) (timings, wiring, troubleshooting).
 
@@ -74,9 +74,9 @@ Example session:
 <details>
 <summary>Advanced Usage (click to expand)</summary>
 
-- **Silent Printing (Windows):** Use **Ativar_AutoPrint.bat** / **Desativar_AutoPrint.bat** to enable/disable automatic printing (see **Auto-Print** for details).
+- **Silent Printing (Windows):** Use the native app AutoPrint controls (see **Auto-Print** in the native app) to enable/disable automatic printing.
 - **Custom Printer:** Set your desired printer as the system default before launching the app.
-- **Testing Without Hardware:** Open **web_interface.html** and use the developer 'Simulate Test Data' feature.
+- **Testing Without Hardware:** Use the native app's developer/test features or simulate test data via serial input.
 
 </details>
 
@@ -88,11 +88,7 @@ Example session:
 <summary>Project structure (click to expand)</summary>
 
 - **LPT_Emulator/LPT_Emulator.ino**
-- **web_interface.html**
-- **Ativar_AutoPrint.bat**
-- **Desativar_AutoPrint.bat**
-- **LPT-UNO_AutoPrint_Direct.bat**
-- **LPT-UNO_MoveToData.ps1**
+- **LPTUnoApp/** (Native Windows prototype, branch `LPT-UNO-Wifi`)
 - **PINOUT.txt**
 - **README.md**
 
@@ -124,7 +120,7 @@ Example session:
 
 ### Software
 - **Firmware version**: 1.0
-- **Web interface version**: 1.0
+- **Web interface**: removed in this branch; use the `LPTUnoApp` native app instead.
 - **Build date**: 2026-01-25
 - **Serial speed**: 115200 baud
 - **Encoding**: UTF-8

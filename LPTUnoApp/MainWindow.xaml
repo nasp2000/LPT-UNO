@@ -1,25 +1,59 @@
 <Window x:Class="LPTUnoApp.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="LPT-UNO" Height="300" Width="400">
+        Title="LPT-UNO" Height="650" Width="420" WindowState="Maximized">
+    <Window.Resources>
+        <SolidColorBrush x:Key="AccentBrush" Color="#2D9CDB"/>
+        <SolidColorBrush x:Key="PanelBrush" Color="#F4F7FB"/>
+        <Style TargetType="GroupBox">
+            <Setter Property="Margin" Value="0,10,0,0"/>
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="Background" Value="{StaticResource PanelBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="6,3"/>
+            <Setter Property="BorderBrush" Value="#2A7FB3"/>
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#DCE9F8"/>
+        </Style>
+    </Window.Resources>
+
     <Grid Margin="10">
         <StackPanel>
-            <TextBlock Text="LPT-UNO Native App (WPF) - Prototype" FontWeight="Bold" Margin="0,0,0,10"/>
+            <TextBlock Text="LPT-UNO" FontWeight="Bold" FontSize="16" Foreground="{StaticResource AccentBrush}" Margin="0,0,0,10"/>
             <WrapPanel>
                 <Button Name="BtnOpenDataFolder" Margin="5" Click="BtnOpenDataFolder_Click">Abrir pasta DATA</Button>
                 <Button Name="BtnToggleAutoPrint" Margin="5" Click="BtnToggleAutoPrint_Click">Alternar AutoPrint</Button>
             </WrapPanel>
 
-            <GroupBox Header="Serial / Porta COM" Margin="0,10,0,0">
-                <StackPanel Orientation="Horizontal" Margin="5">
-                    <ComboBox Name="PortCombo" Width="150" Margin="0,0,5,0"/>
-                    <Button Name="BtnRefreshPorts" Click="BtnRefreshPorts_Click" Margin="0,0,5,0">Atualizar</Button>
-                    <Button Name="BtnConnectPort" Click="BtnConnectPort_Click">Conectar</Button>
-                    <CheckBox Name="ChkAutoConnect" Content="Auto-Connect" Margin="10,0,0,0" Checked="ChkAutoConnect_Checked" Unchecked="ChkAutoConnect_Unchecked"/>
+            <GroupBox Header="Conexão (Arduino)">
+                <StackPanel>
+                    <RadioButton Name="RbSerial" Content="Serial (USB)" IsChecked="True" Checked="RbConnection_Checked" Margin="5,5,0,0"/>
+                    <StackPanel x:Name="PanelSerial" Orientation="Horizontal" Margin="5">
+                        <ComboBox Name="PortCombo" Width="120" Margin="0,0,5,0"/>
+                        <Button Name="BtnRefreshPorts" Click="BtnRefreshPorts_Click" Margin="0,0,5,0">⚡</Button>
+                        <Button Name="BtnConnectPort" Click="BtnConnectPort_Click" Margin="0,0,5,0">Conectar</Button>
+                        <Button Name="BtnConfigWifi" Click="BtnConfigWifi_Click" Background="#FFDDDDDD">⚙️ Setup WiFi</Button>
+                        <CheckBox Name="ChkAutoConnect" Content="Auto-Connect" Margin="10,0,0,0" Checked="ChkAutoConnect_Checked" Unchecked="ChkAutoConnect_Unchecked"/>
+                    </StackPanel>
+                    
+                    <RadioButton Name="RbNetwork" Content="Rede (WiFi)" Checked="RbConnection_Checked" Margin="5,5,0,0"/>
+                    <StackPanel x:Name="PanelNetwork" Orientation="Horizontal" Margin="5" IsEnabled="False">
+                        <TextBox Name="TxtIpAddress" Width="150" Text="192.168.1.xxx:2323" Margin="0,0,5,0" VerticalContentAlignment="Center"/>
+                        <Button Name="BtnScanWifi" Click="BtnScanWifi_Click" Margin="0,0,5,0">🔍 Scan</Button>
+                        <Button Name="BtnConnectNetwork" Click="BtnConnectNetwork_Click">Conectar</Button>
+                        <CheckBox Name="ChkAutoNetwork" Content="Auto-Connect" Margin="10,0,0,0" IsChecked="True" Checked="ChkAutoNetwork_Checked" Unchecked="ChkAutoNetwork_Unchecked"/>
+                    </StackPanel>
                 </StackPanel>
             </GroupBox>
 
-            <GroupBox Header="Impressão / AutoPrint" Margin="0,10,0,0">
+            <GroupBox Header="Impressão / AutoPrint">
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="5">
                         <ComboBox Name="PrinterCombo" Width="220" Margin="0,0,5,0" />
@@ -33,18 +67,25 @@
                 </StackPanel>
             </GroupBox>
 
-            <Grid Margin="0,10,0,0">
+            <GroupBox Header="Configurações e Email">
+                 <StackPanel>
+                     <Button Name="BtnConfigEmails" Click="BtnConfigEmails_Click" Width="200" HorizontalAlignment="Left" Margin="5">Configurar Emails / Destinatários</Button>
+                     <CheckBox Name="ChkMinimizeToTray" Content="Minimizar para tray" Margin="5,6,0,0" Checked="ChkMinimizeToTray_Checked" Unchecked="ChkMinimizeToTray_Unchecked"/>
+                 </StackPanel>
+            </GroupBox>
+
+            <Grid Margin="0,10,0,0" Height="250">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="2*" />
                     <ColumnDefinition Width="3*" />
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="Log" FontWeight="Bold" />
-                    <TextBox Name="LogTextBox" Margin="0,4,0,0" Height="120" IsReadOnly="True" VerticalScrollBarVisibility="Auto" AcceptsReturn="True"/>
+                    <TextBlock Text="Buffer / Log de Dados Recebidos" FontWeight="Bold" FontSize="12" Foreground="{StaticResource AccentBrush}" />
+                    <TextBox Name="LogTextBox" Margin="0,4,0,0" Height="120" IsReadOnly="True" VerticalScrollBarVisibility="Auto" AcceptsReturn="True" FontFamily="Consolas"/>
                 </StackPanel>
 
-                <GroupBox Header="Arquivos em DATA" Grid.Column="1" Margin="10,0,0,0">
+                <GroupBox Header="Arquivos em DATA" Grid.Column="1">
                     <DockPanel>
                         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,5">
                             <Button Name="BtnRefreshDataFiles" Click="BtnRefreshDataFiles_Click" Margin="0,0,5,0">Atualizar</Button>

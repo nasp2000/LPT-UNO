@@ -38,9 +38,47 @@
 // ===========================
 // INFORMAÇÕES DE VERSÃO
 // ===========================
-#define FIRMWARE_VERSION "1.0"
+#define FIRMWARE_VERSION "1.1"
 #define BUILD_DATE __DATE__
 #define BUILD_TIME __TIME__
+
+// ===========================
+// WIFI SUPPORT (UNO R4 WIFI)
+// ===========================
+#if defined(ARDUINO_UNOR4_WIFI)
+  #include "WiFiS3.h"
+  #include <EEPROM.h>
+  #include <WiFiUdp.h>
+  
+  // Credentials storage
+  struct Config {
+    char ssid[33];
+    char pass[64];
+    byte valid; // 0xAA indicates valid config
+  } wifiConfig;
+
+  int status = WL_IDLE_STATUS;
+  WiFiServer server(2323);             // Porta TCP para conexão (Padrão: 2323)
+  WiFiClient wifiClient;
+  bool wifiConnected = false;
+  
+  // Discovery
+  WiFiUDP udp;
+  unsigned long lastBroadcast = 0;
+  
+  void loadConfig() {
+    EEPROM.get(0, wifiConfig);
+  }
+  
+  void saveConfig(String s, String p) {
+    memset(wifiConfig.ssid, 0, 33);
+    memset(wifiConfig.pass, 0, 64);
+    s.toCharArray(wifiConfig.ssid, 33);
+    p.toCharArray(wifiConfig.pass, 64);
+    wifiConfig.valid = 0xAA;
+    EEPROM.put(0, wifiConfig);
+  }
+#endif
 
 // ===========================
 // DEFINIÇÃO DE PINOS
@@ -122,16 +160,133 @@ void setup() {
   Serial.println(BUILD_TIME);
   Serial.println("===================================");
   Serial.println("Ready - Waiting for parallel data...");
+
+  #if defined(ARDUINO_UNOR4_WIFI)
+    // Inicialização do WiFi (apenas R4 WiFi)
+    if (WiFi.status() == WL_NO_MODULE) {
+      Serial.println("Communication with WiFi module failed!");
+    } else {
+      // Firmware check disabled by default to avoid spurious messages for users.
+      // To enable and require a minimum WiFi firmware version, define
+      // WIFI_FIRMWARE_LATEST_VERSION and set WIFI_FIRMWARE_CHECK to 1 at the top
+      // of this file. Example:
+      //   #define WIFI_FIRMWARE_CHECK 1
+      //   #define WIFI_FIRMWARE_LATEST_VERSION "1.0.0"
+      // Then uncomment the lines below.
+      // String fv = WiFi.firmwareVersion();
+      // if (fv < WIFI_FIRMWARE_LATEST_VERSION) {
+      //   Serial.println("Please upgrade the firmware");
+      // }
+      
+      // Load credentials
+      loadConfig();
+      
+      if (wifiConfig.valid == 0xAA) {
+        Serial.print("Attempting to connect to SSID: ");
+        Serial.println(wifiConfig.ssid);
+        
+        // Tentar conectar (não bloqueante para não impedir operação USB se falhar)
+        // Mas para setup inicial, vamos tentar algumas vezes
+        int attempts = 0;
+        status = WiFi.begin(wifiConfig.ssid, wifiConfig.pass);
+        
+        // Wait 10 seconds for connection:
+        delay(10000);
+        status = WiFi.status();
+        
+        if (status == WL_CONNECTED) {
+          wifiConnected = true;
+          server.begin();
+          udp.begin(2324); // Start UDP on port 2324
+          printWifiStatus();
+        } else {
+          Serial.println("\nWiFi connection failed. Check credentials via Serial Command.");
+        }
+      } else {
+        Serial.println("No WiFi config found. Configure via Serial: CMD:WIFI:SSID:PASS");
+      }
+    }
+  #endif
 }
 
 // ===========================
 // LOOP PRINCIPAL
 // ===========================
 void loop() {
+  #if defined(ARDUINO_UNOR4_WIFI)
+    // Gerenciar conexão WiFi
+    if (wifiConnected) {
+      WiFiClient newClient = server.available();
+      if (newClient) {
+        if (!wifiClient || !wifiClient.connected()) {
+          wifiClient = newClient;
+          Serial.println("New WiFi client connected");
+          wifiClient.println("LPT-UNO Connected");
+        } else {
+           newClient.stop();
+        }
+      }
+      
+      // UDP Discovery Broadcast every 5 seconds
+      if (millis() - lastBroadcast > 5000) {
+        lastBroadcast = millis();
+        // Broadcast IP to port 2324
+        udp.beginPacket(IPAddress(255, 255, 255, 255), 2324);
+        udp.write("LPT-UNO-R4");
+        udp.endPacket();
+      }
+    }
+  #endif
+  
+  // Check for Serial Commands (Config)
+  if (Serial.available()) {
+    String input = Serial.readStringUntil('\n');
+    input.trim();
+    if (input.length() > 0) {
+       // Legacy single char commands
+       if (input.length() == 1) {
+          switch(input[0]) {
+             case 'R': case 'r': resetBuffer(); Serial.println("Buffer reset"); break;
+             case 'S': case 's': printStats(); break;
+             case 'V': case 'v': printVersion(); break;
+             case 'I': case 'i': printIdentification(); break;
+          }
+       }
+       #if defined(ARDUINO_UNOR4_WIFI)
+       // CMD:WIFI:SSID:PASS
+       else if (input.startsWith("CMD:WIFI:")) {
+          int firstColon = input.indexOf(':');
+          int secondColon = input.indexOf(':', firstColon + 1);
+          int thirdColon = input.indexOf(':', secondColon + 1);
+          
+          if (secondColon > 0 && thirdColon > 0) {
+            String newSSID = input.substring(secondColon + 1, thirdColon);
+            String newPass = input.substring(thirdColon + 1);
+            Serial.print("Saving WiFi config: ");
+            Serial.println(newSSID);
+            saveConfig(newSSID, newPass);
+            Serial.println("Config Saved. Restarting...");
+            delay(100);
+            NVIC_SystemReset();
+          } else {
+             Serial.println("Error: Invalid Format. Use CMD:WIFI:SSID:PASS");
+          }
+       }
+       #endif
+    }
+  }
+
   // Verificar se há dados no buffer para enviar via USB
   if (bufferReadIndex != bufferWriteIndex) {
     // Enviar dados via Serial
     Serial.write(dataBuffer[bufferReadIndex]);
+
+    #if defined(ARDUINO_UNOR4_WIFI)
+      // Enviar também via WiFi se conectado
+      if (wifiConnected && wifiClient && wifiClient.connected()) {
+        wifiClient.write(dataBuffer[bufferReadIndex]);
+      }
+    #endif
     
     // Avançar índice de leitura (circular)
     bufferReadIndex = (bufferReadIndex + 1) % BUFFER_SIZE;
@@ -220,6 +375,18 @@ void printVersion() {
   Serial.println("===================================");
 }
 
+#if defined(ARDUINO_UNOR4_WIFI)
+void printWifiStatus() {
+  Serial.print("SSID: ");
+  Serial.println(WiFi.SSID());
+  IPAddress ip = WiFi.localIP();
+  Serial.print("IP Address: ");
+  Serial.println(ip);
+  Serial.print("Port: ");
+  Serial.println("2323");
+}
+#endif
+
 // Função para enviar identificação única
 void printIdentification() {
   Serial.println("DEVICE:LPT-UNO");
@@ -229,10 +396,10 @@ void printIdentification() {
 }
 
 // ===========================
-// COMANDOS SERIAL (OPCIONAL)
+// COMANDOS SERIAL (LEGACY - MANTIDO EM LOOP AGORA)
 // ===========================
-// Você pode adicionar comandos via Serial para controlar o emulador
-// Exemplo: enviar 'R' para reset, 'S' para stats, etc.
+// A função serialEvent é substituída pela verificação no loop para suportar Strings.
+/*
 void serialEvent() {
   while (Serial.available()) {
     char inChar = (char)Serial.read();
@@ -261,3 +428,4 @@ void serialEvent() {
     }
   }
 }
+*/

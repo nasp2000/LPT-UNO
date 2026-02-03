@@ -67,6 +67,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `web_interface.html` — Legacy web interface removed in favor of the native app (branch `LPT-UNO-Wifi`).
 - Legacy helper scripts removed: `Ativar_AutoPrint.bat`, `Desativar_AutoPrint.bat`, `LPT-UNO_AutoPrint_Direct.bat`, `LPT-UNO_MoveToData.ps1` (functionality replaced by MoveManager/PrintManager).
 
+### Fixed
+- Discovery: Handle IPv6 addresses and bracketed `[IPv6]:port` notation to allow auto-connect on IPv6 networks.
+- Tray icon: Properly destroy native icon handle on exit to avoid resource leak.
+
+### Added
+- Minimize-to-tray preference (persisted in config) with UI checkbox `ChkMinimizeToTray`.
+- Runtime creation of a placeholder `images/printer.png` when missing and automatic generation of `TrayIcon.ico` so the app always shows a tray icon.
+- Programmatically generate a simple printer icon (32×32) when no custom icon is supplied.
+
 ### Future Ideas
 - Support for other Arduino boards (Mega, Due, ESP32)
 - Bidirectional communication (EPP/ECP modes)

@@ -6,16 +6,23 @@ using System.Threading.Tasks;
 
 namespace LPTUnoApp
 {
-    public class SerialManager : IDisposable
+    public class SerialManager : IConnectionSource
     {
         private SerialPort? _port;
         public event Action<string>? DataReceived;
         public event Action<bool, string?>? ConnectionChanged;
 
         public bool IsOpen => _port?.IsOpen ?? false;
+        public string? ConnectionInfo => _port?.PortName;
         public string? CurrentPortName => _port?.PortName;
 
         public string[] GetPorts() => SerialPort.GetPortNames();
+
+        // Interface implementation for Open(string)
+        public void Open(string connectionString)
+        {
+            Open(connectionString, 115200);
+        }
 
         public void Open(string portName, int baudRate = 115200)
         {
@@ -47,6 +54,16 @@ namespace LPTUnoApp
                 _port = null;
                 ConnectionChanged?.Invoke(false, name);
             }
+        }
+
+        public Task WriteAsync(string data)
+        {
+             if (IsOpen && _port != null)
+             {
+                 _port.Write(data);
+                 return Task.CompletedTask;
+             }
+             return Task.FromException(new InvalidOperationException("Serial port not open"));
         }
 
         private void OnDataReceived(object? sender, SerialDataReceivedEventArgs e)
