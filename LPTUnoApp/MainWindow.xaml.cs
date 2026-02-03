@@ -32,6 +32,9 @@ namespace LPTUnoApp
             LoadConfig();
             InitializePrintManager();
             InitializeReconnectTimer();
+            InitializeAutoConnectTimer();
+            StartDataWatcher();
+            RefreshDataFiles();
             StatusText.Text = "Pronto";
         }
 
@@ -164,7 +167,7 @@ namespace LPTUnoApp
             _notifyIcon.Visible = false;
             _notifyIcon.Dispose();
             _serialManager.Dispose();
-            Application.Current.Shutdown();
+            System.Windows.Application.Current.Shutdown();
         }
 
         private void BtnOpenDataFolder_Click(object sender, RoutedEventArgs e)
@@ -173,6 +176,47 @@ namespace LPTUnoApp
             Directory.CreateDirectory(dataFolder);
             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo() { FileName = dataFolder, UseShellExecute = true });
             AppendLog($"Opened DATA folder: {dataFolder}");
+            RefreshDataFiles();
+        }
+
+        private void BtnRefreshDataFiles_Click(object sender, RoutedEventArgs e)
+        {
+            RefreshDataFiles();
+        }
+
+        private void DataFilesList_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            try
+            {
+                if (DataFilesList.SelectedItem is string name)
+                {
+                    var path = Path.Combine(_dataFolder, name);
+                    if (File.Exists(path))
+                    {
+                        FilePreview.Text = File.ReadAllText(path);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                AppendLog($"DataFilesList selection error: {ex.Message}");
+            }
+        }
+
+        private void BtnOpenDataFile_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (DataFilesList.SelectedItem is string name)
+                {
+                    var path = Path.Combine(_dataFolder, name);
+                    if (File.Exists(path)) System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo() { FileName = path, UseShellExecute = true });
+                }
+            }
+            catch (Exception ex)
+            {
+                AppendLog($"Open file error: {ex.Message}");
+            }
         }
 
         private void BtnToggleAutoPrint_Click(object sender, RoutedEventArgs e)
@@ -253,6 +297,23 @@ namespace LPTUnoApp
             }
         }
 
+        private void ChkAutoConnect_Checked(object sender, RoutedEventArgs e)
+        {
+            AppendLog("Auto-Connect enabled");
+            _autoConnectTimer?.Start();
+            SaveConfig();
+        }
+
+        private void ChkAutoConnect_Unchecked(object sender, RoutedEventArgs e)
+        {
+            AppendLog("Auto-Connect disabled");
+            _autoConnectTimer?.Stop();
+            SaveConfig();
+        }
+
+        private System.Timers.Timer? _autoConnectTimer;
+        private FileSystemWatcher? _dataWatcher;
+
         private void RefreshPorts()
         {
             try
@@ -265,6 +326,64 @@ namespace LPTUnoApp
             catch { }
         }
 
+        private void InitializeAutoConnectTimer()
+        {
+            _autoConnectTimer = new System.Timers.Timer(5000);
+            _autoConnectTimer.Elapsed += async (s, e) =>
+            {
+                if (ChkAutoConnect.IsChecked == true && !_serialManager.IsOpen)
+                {
+                    AppendLog("Auto-Connect: scanning ports...");
+                    var ok = await _serialManager.ProbeAndOpenAsync();
+                    if (ok) Dispatcher.Invoke(() =>
+                    {
+                        RefreshPorts();
+                        BtnConnectPort.Content = "Desconectar";
+                        AppendLog("Auto-Connect: device found and connected");
+                    });
+                }
+            };
+        }
+
+        private void StartDataWatcher()
+        {
+            try
+            {
+                if (_dataWatcher != null) return;
+                Directory.CreateDirectory(_dataFolder);
+                _dataWatcher = new FileSystemWatcher(_dataFolder, "*.txt") { NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite, EnableRaisingEvents = true };
+                _dataWatcher.Created += (s, e) => Dispatcher.Invoke(() => RefreshDataFiles());
+                _dataWatcher.Deleted += (s, e) => Dispatcher.Invoke(() => RefreshDataFiles());
+                _dataWatcher.Renamed += (s, e) => Dispatcher.Invoke(() => RefreshDataFiles());
+            }
+            catch { }
+        }
+
+        private void StopDataWatcher()
+        {
+            try
+            {
+                _dataWatcher?.Dispose();
+                _dataWatcher = null;
+            }
+            catch { }
+        }
+
+        private void RefreshDataFiles()
+        {
+            try
+            {
+                Directory.CreateDirectory(_dataFolder);
+                DataFilesList.Items.Clear();
+                var files = Directory.GetFiles(_dataFolder, "*.txt").OrderByDescending(f => File.GetCreationTimeUtc(f));
+                foreach (var f in files) DataFilesList.Items.Add(Path.GetFileName(f));
+                AppendLog($"Data files refreshed ({DataFilesList.Items.Count})");
+            }
+            catch (Exception ex)
+            {
+                AppendLog($"RefreshDataFiles error: {ex.Message}");
+            }
+        }
         private void RefreshPrinters()
         {
             try
@@ -363,6 +482,7 @@ namespace LPTUnoApp
 
                     var serialPort = (string?)cfg?.serialPort;
                     var printer = (string?)cfg?.printer;
+                    var autoConnect = (bool?)(cfg?.autoConnect) ?? false;
                     if (!string.IsNullOrEmpty(printer))
                     {
                         RefreshPrinters();
@@ -397,6 +517,12 @@ namespace LPTUnoApp
                         }
                     }
 
+                    if (autoConnect)
+                    {
+                        ChkAutoConnect.IsChecked = true;
+                        _autoConnectTimer?.Start();
+                    }
+
                     if (_autoPrintEnabled && _printManager != null)
                     {
                         _printManager.PrinterName = PrinterCombo.SelectedItem as string;
@@ -417,7 +543,7 @@ namespace LPTUnoApp
             try
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(_configPath));
-                var cfg = new { autoPrint = _autoPrintEnabled, version = "1.0", serialPort = _serialManager.CurrentPortName, printer = PrinterCombo.SelectedItem as string };
+                var cfg = new { autoPrint = _autoPrintEnabled, version = "1.0", serialPort = _serialManager.CurrentPortName, printer = PrinterCombo.SelectedItem as string, autoConnect = ChkAutoConnect.IsChecked == true };
                 File.WriteAllText(_configPath, JsonConvert.SerializeObject(cfg, Formatting.Indented));
                 AppendLog("Config saved");
             }
