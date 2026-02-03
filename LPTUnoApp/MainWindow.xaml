@@ -1,0 +1,15 @@
+<Window x:Class="LPTUnoApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="LPT-UNO" Height="300" Width="400">
+    <Grid Margin="10">
+        <StackPanel>
+            <TextBlock Text="LPT-UNO Native App (WPF) - Prototype" FontWeight="Bold" Margin="0,0,0,10"/>
+            <WrapPanel>
+                <Button Name="BtnOpenDataFolder" Margin="5" Click="BtnOpenDataFolder_Click">Abrir pasta DATA</Button>
+                <Button Name="BtnToggleAutoPrint" Margin="5" Click="BtnToggleAutoPrint_Click">Alternar AutoPrint</Button>
+            </WrapPanel>
+            <TextBlock Name="StatusText" Margin="0,10,0,0">Status: Inicializando...</TextBlock>
+        </StackPanel>
+    </Grid>
+</Window>

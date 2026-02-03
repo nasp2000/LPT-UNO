@@ -59,6 +59,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Native Windows prototype app (WPF) in branch `LPT-UNO-Wifi` — initial prototype: tray app, config file, data folder and basic UI.
+
 ### Future Ideas
 - Support for other Arduino boards (Mega, Due, ESP32)
 - Bidirectional communication (EPP/ECP modes)
