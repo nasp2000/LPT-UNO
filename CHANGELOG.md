@@ -44,11 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Files
 - `LPT_Emulator/LPT_Emulator.ino` - Arduino firmware v1.0
-- `web_interface.html` - Web interface v1.0
-- `Ativar_AutoPrint.bat` - Ativa auto-print e abre interface
-- `Desativar_AutoPrint.bat` - Desativa auto-print e abre interface
-- `LPT-UNO_AutoPrint_Direct.bat` - Launcher principal (abre interface e monitor)
-- `LPT-UNO_MoveToData.ps1` - Script PowerShell: move e imprime arquivos
+- `LPTUnoApp/` - Native Windows app prototype (branch `LPT-UNO-Wifi`)
 - `PINOUT.txt` - ASCII art pinout diagram
 - `README.md` - Complete documentation
 - `LICENSE` - MIT License
@@ -61,6 +57,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Native Windows prototype app (WPF) in branch `LPT-UNO-Wifi` — initial prototype: tray app, config file, data folder and basic UI.
+- AutoPrint watcher and PrintManager (monitor DATA folder and print `*.txt` files automatically). 
+- Basic serial reconnection logic (periodic reconnection attempts to saved COM port).
+- MoveToData functionality: monitor `Downloads` and move timestamped files into `DATA` (replaces `LPT-UNO_MoveToData.ps1`).
+- Added controls to create/remove `.autoprint_enabled` flag and to start/stop Downloads monitor (replacing `Ativar/Desativar_AutoPrint.bat` behaviors).
+- Added installer packaging scripts and an Inno Setup definition for Windows installer (`installer/`).
+
+### Removed
+- `web_interface.html` — Legacy web interface removed in favor of the native app (branch `LPT-UNO-Wifi`).
+- Legacy helper scripts removed: `Ativar_AutoPrint.bat`, `Desativar_AutoPrint.bat`, `LPT-UNO_AutoPrint_Direct.bat`, `LPT-UNO_MoveToData.ps1` (functionality replaced by MoveManager/PrintManager).
 
 ### Future Ideas
 - Support for other Arduino boards (Mega, Due, ESP32)

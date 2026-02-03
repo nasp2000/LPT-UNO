@@ -32,6 +32,12 @@ This is a native Windows WPF prototype for the LPT-UNO project.
 2. From repository root: `dotnet build ./LPTUnoApp`
 3. To run: `dotnet run --project ./LPTUnoApp`
 
+## Packaging & Installer
+- You can create a Windows installer (Inno Setup) that bundles the published app as a self-contained executable.
+- See `../installer/README.md` for prerequisites and steps. In short:
+  - `dotnet publish ./LPTUnoApp -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o LPTUnoApp/publish`
+  - Install Inno Setup and run `installer/build_installer.ps1` to build the installer (.exe).
+
 ## Notes
 - Tray icon placeholder: `LPTUnoApp/TrayIcon.ico` (replace with real icon)
 - AutoPrint / Serial support to be implemented in next iterations (prototype has UI & config)
