@@ -61,6 +61,11 @@
   WiFiServer server(2323);             // Porta TCP para conexão (Padrão: 2323)
   WiFiClient wifiClient;
   bool wifiConnected = false;
+
+  // HTTP server for web interface SSE (port 80)
+  WiFiServer webServer(80);
+  WiFiClient sseClient;
+  bool sseClientConnected = false;
   
   // Discovery
   WiFiUDP udp;
@@ -77,6 +82,71 @@
     p.toCharArray(wifiConfig.pass, 64);
     wifiConfig.valid = 0xAA;
     EEPROM.put(0, wifiConfig);
+  }
+
+  // Envia byte via SSE para a web interface
+  void sendSSEData(byte b) {
+    if (!sseClientConnected || !sseClient.connected()) {
+      sseClientConnected = false;
+      return;
+    }
+    sseClient.print("data:");
+    if (b >= 0x20 && b < 0x7F) {
+      sseClient.write(b);
+    } else {
+      sseClient.print("\\x");
+      if (b < 0x10) sseClient.print("0");
+      sseClient.print(b, HEX);
+    }
+    sseClient.print("\n\n");
+  }
+
+  // Trata ligações HTTP na porta 80 (Server-Sent Events)
+  void handleWebClient() {
+    WiFiClient client = webServer.available();
+    if (!client) return;
+    String req = "";
+    unsigned long t = millis();
+    while (client.connected() && (millis() - t) < 500) {
+      if (client.available()) {
+        req += (char)client.read();
+        if (req.endsWith("\r\n\r\n")) break;
+      }
+    }
+    if (req.indexOf("GET /events") >= 0) {
+      client.println("HTTP/1.1 200 OK");
+      client.println("Content-Type: text/event-stream");
+      client.println("Cache-Control: no-cache");
+      client.println("Access-Control-Allow-Origin: *");
+      client.println("Connection: keep-alive");
+      client.println();
+      client.print(": connected\n\n");
+      if (sseClient && sseClient.connected()) sseClient.stop();
+      sseClient = client;
+      sseClientConnected = true;
+      Serial.println("[WiFi] Web interface SSE conectada");
+    } else if (req.indexOf("GET /status") >= 0 || req.indexOf("GET /ip") >= 0) {
+      IPAddress ip = WiFi.localIP();
+      String ipStr = String(ip[0])+"."+String(ip[1])+"."+String(ip[2])+"."+String(ip[3]);
+      String json = "{\"version\":\"" + String(FIRMWARE_VERSION) + "\",\"ip\":\"" + ipStr + "\"}";
+      client.println("HTTP/1.1 200 OK");
+      client.println("Content-Type: application/json");
+      client.println("Access-Control-Allow-Origin: *");
+      client.println("Connection: close");
+      client.println();
+      client.print(json);
+      client.stop();
+    } else {
+      client.println("HTTP/1.1 200 OK");
+      client.println("Content-Type: text/plain");
+      client.println("Access-Control-Allow-Origin: *");
+      client.println("Connection: close");
+      client.println();
+      IPAddress ip = WiFi.localIP();
+      client.print("LPT-UNO v"); client.println(FIRMWARE_VERSION);
+      client.print("SSE: http://"); client.print(ip); client.println("/events");
+      client.stop();
+    }
   }
 #endif
 
@@ -197,6 +267,7 @@ void setup() {
         if (status == WL_CONNECTED) {
           wifiConnected = true;
           server.begin();
+          webServer.begin();  // HTTP/SSE para web interface (porta 80)
           udp.begin(2324); // Start UDP on port 2324
           printWifiStatus();
         } else {
@@ -235,6 +306,8 @@ void loop() {
         udp.write("LPT-UNO-R4");
         udp.endPacket();
       }
+      // Tratar ligações HTTP/SSE (web interface)
+      handleWebClient();
     }
   #endif
   
@@ -285,6 +358,10 @@ void loop() {
       // Enviar também via WiFi se conectado
       if (wifiConnected && wifiClient && wifiClient.connected()) {
         wifiClient.write(dataBuffer[bufferReadIndex]);
+      }
+      // Enviar também via SSE (web interface WiFi)
+      if (wifiConnected && sseClientConnected) {
+        sendSSEData(dataBuffer[bufferReadIndex]);
       }
     #endif
     
@@ -380,10 +457,12 @@ void printWifiStatus() {
   Serial.print("SSID: ");
   Serial.println(WiFi.SSID());
   IPAddress ip = WiFi.localIP();
-  Serial.print("IP Address: ");
+  Serial.print("IP: ");
   Serial.println(ip);
-  Serial.print("Port: ");
-  Serial.println("2323");
+  Serial.println("TCP 2323: app desktop");
+  Serial.print("Web Interface SSE: http://");
+  Serial.print(ip);
+  Serial.println("/events");
 }
 #endif
 
