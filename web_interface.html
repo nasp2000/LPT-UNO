@@ -148,20 +148,20 @@
         }
         
         #connectBtn {
-            background: #28a745;
+            background: #0056b3;
             color: white;
         }
         
         #connectBtn:hover {
-            background: #218838;
+            background: #004494;
         }
         
         #connectBtn.connected {
-            background: #dc3545;
+            background: #28a745;
         }
         
         #connectBtn.connected:hover {
-            background: #c82333;
+            background: #218838;
         }
         
         #wifiBtn {
@@ -171,11 +171,17 @@
         #wifiBtn:hover {
             background: #003f8a;
         }
+        #wifiBtn.wifi-searching {
+            background: #e07b00;
+        }
+        #wifiBtn.wifi-searching:hover {
+            background: #c06500;
+        }
         #wifiBtn.wifi-active {
-            background: #00796b;
+            background: #28a745;
         }
         #wifiBtn.wifi-active:hover {
-            background: #00574b;
+            background: #218838;
         }
         
         #clearBtn {
@@ -350,6 +356,8 @@
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
             max-width: 500px;
             width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
             animation: slideDown 0.3s;
         }
         
@@ -359,6 +367,115 @@
         
         #recipientsModal .modal-content {
             max-width: 900px;
+        }
+        
+        #wifiModal .modal-content {
+            max-width: 560px;
+            padding: 18px 22px;
+        }
+        
+        #wifiModal h3 {
+            font-size: 0.95em;
+            margin: 0 0 7px 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        #wifiModal .wifi-section {
+            margin-bottom: 14px;
+            padding-bottom: 14px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        #wifiModal .wifi-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        #wifiModal .modal-btn {
+            width: auto;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 8px 28px;
+            font-size: 0.9em;
+        }
+
+        #wifiModal .form-group {
+            margin-bottom: 8px;
+        }
+
+        #wifiModal .field-note {
+            font-size: 0.8em;
+            padding: 6px 10px;
+        }
+
+        /* Definições modal — compacto para caber sem scrollbar */
+        #settingsModal .modal-content {
+            padding: 16px 20px;
+        }
+        #settingsModal .modal-header {
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+        }
+        #settingsModal .modal-header h2 {
+            font-size: 1.2em;
+        }
+        #settingsModal .modal-section {
+            margin-bottom: 6px;
+        }
+        #settingsModal h3 {
+            font-size: 0.85em !important;
+            padding-bottom: 5px !important;
+            margin-bottom: 8px !important;
+            margin-top: 0 !important;
+        }
+        #settingsModal h4 {
+            font-size: 0.8em !important;
+            margin-bottom: 5px !important;
+        }
+        #settingsModal .modal-options {
+            gap: 4px;
+        }
+        #settingsModal .modal-option {
+            padding: 5px 10px;
+            font-size: 0.82em;
+        }
+        #settingsModal .modal-select-group {
+            padding: 5px 8px;
+            gap: 6px;
+        }
+        #settingsModal .modal-select-group label {
+            font-size: 0.8em !important;
+            min-width: 0;
+        }
+        #settingsModal .modal-select-group select {
+            padding: 3px 6px;
+            font-size: 0.82em;
+        }
+        #settingsModal .toggle {
+            padding: 6px 12px;
+            font-size: 0.85em;
+        }
+        /* Grid 2 colunas para opções de impressão */
+        .print-options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+            margin-top: 6px;
+        }
+        .print-options-grid .modal-select-group {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 3px;
+            padding: 5px 8px;
+        }
+        .print-options-grid .modal-select-group select,
+        .print-options-grid .modal-select-group .print-check-wrap {
+            width: 100%;
+            font-size: 0.8em;
         }
         
         @keyframes slideDown {
@@ -907,7 +1024,7 @@
         }
         
         body.ocean-theme #connectBtn.connected {
-            background: #d32f2f;
+            background: #2e7d32;
         }
         
         body.ocean-theme #resetBtn {
@@ -1053,15 +1170,15 @@
         }
         
         body.forest-theme #connectBtn {
-            background: #388e3c;
+            background: #1976d2;
         }
         
         body.forest-theme #connectBtn:hover {
-            background: #2e7d32;
+            background: #1565c0;
         }
         
         body.forest-theme #connectBtn.connected {
-            background: #d32f2f;
+            background: #2e7d32;
         }
         
         body.forest-theme #resetBtn {
@@ -1224,7 +1341,7 @@
         }
         
         body.sunset-theme #connectBtn.connected {
-            background: #ef5350;
+            background: #2e7d32;
         }
         
         body.sunset-theme #resetBtn {
@@ -1319,9 +1436,8 @@
         </header>
         
         <div class="controls">
-            <button id="connectBtn">🔌 Conectar Arduino</button>
-            <button id="wifiBtn">📶 WiFi</button>
-            <button id="resetBtn">🔄 Reset Buffer</button>
+            <button id="connectBtn">🔌 Connect USB</button>
+            <button id="wifiBtn">📶 Connect WiFi</button>
             <button id="clearBtn">🗑️ Limpar</button>
             
             <div style="flex: 1;"></div>
@@ -1368,9 +1484,7 @@
         </div>
         
         <div class="output-container">
-            <div class="info-message" id="infoMsg">
-                ℹ️ Clique em "Conectar Arduino" e selecione a porta COM do Arduino Uno (115200 baud)
-            </div>
+            <div class="info-message" id="infoMsg" style="display:none;"></div>
             
             <div class="error-message" id="errorMsg"></div>
             
@@ -1385,9 +1499,9 @@
                     <button class="modal-close" id="closeModal">×</button>
                 </div>
                 
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 25px; align-items: start;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start;">
                     
-                    <!-- ⏱️ COLUNA 1: AUTO-SALVAR -->
+                    <!-- ⏱️ COLUNA 1: AUTO-SALVAR + 💾 ARQUIVOS -->
                     <div>
                         <h3 id="autoSalvarTitle" style="color: #007bff; border-bottom: 2px solid #007bff; padding-bottom: 10px; margin-bottom: 15px;">
                             ⏱️ Auto-Salvar
@@ -1405,6 +1519,90 @@
                                     <option value="120">2 minutos</option>
                                     <option value="300">5 minutos</option>
                                 </select>
+                            </div>
+                        </div>
+
+                        <!-- 💾 ARQUIVOS (abaixo de Auto-Salvar) -->
+                        <h3 id="filesTitle" style="color: #dc3545; border-bottom: 2px solid #dc3545; padding-bottom: 10px; margin-bottom: 15px; margin-top: 25px;">
+                            💾 Arquivos
+                        </h3>
+                        
+                        <div class="modal-section">
+                            <h4 id="saveFormatTitle" style="font-size: 0.95em; margin-bottom: 10px;">💾 Formato de Gravação</h4>
+                            <div class="modal-options">
+                                <label class="modal-option selected" data-format="txt">
+                                    <input type="radio" name="saveFormat" value="txt" checked>
+                                    <span>📝 Texto (.txt)</span>
+                                </label>
+                                <label class="modal-option" data-format="csv">
+                                    <input type="radio" name="saveFormat" value="csv">
+                                    <span>📊 CSV (.csv)</span>
+                                </label>
+                                <label class="modal-option" data-format="pdf">
+                                    <input type="radio" name="saveFormat" value="pdf">
+                                    <span>📄 PDF (.pdf)</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="modal-section" style="margin-top: 8px;">
+                            <h4 id="printScaleTitle" style="font-size: 0.95em; margin-bottom: 6px;">🖨️ Escala de Impressão</h4>
+                            <div class="print-options-grid">
+                                <div class="modal-select-group">
+                                    <label for="printFontSizeSelect" id="printFontSizeLabel">Tamanho:</label>
+                                    <select id="printFontSizeSelect">
+                                        <option value="auto">Auto</option>
+                                        <option value="6pt">6pt</option>
+                                        <option value="8pt">8pt</option>
+                                        <option value="9pt">9pt</option>
+                                        <option value="10pt">10pt</option>
+                                        <option value="11pt">11pt</option>
+                                        <option value="12pt">12pt</option>
+                                        <option value="14pt">14pt</option>
+                                    </select>
+                                </div>
+                                <div class="modal-select-group">
+                                    <label for="printMarginSelect" id="printMarginLabel">Margem:</label>
+                                    <select id="printMarginSelect">
+                                        <option value="0mm">0mm</option>
+                                        <option value="3mm">3mm</option>
+                                        <option value="5mm">5mm</option>
+                                        <option value="10mm">10mm</option>
+                                        <option value="15mm">15mm</option>
+                                    </select>
+                                </div>
+                                <div class="modal-select-group">
+                                    <label id="printCenterLabel">Centrar:</label>
+                                    <label class="print-check-wrap" style="display:flex; align-items:center; gap:5px; cursor:pointer;">
+                                        <input type="checkbox" id="printCenterCheck" style="width:13px; height:13px; cursor:pointer; accent-color:#007bff;">
+                                        <span id="printCenterText" style="font-size:0.8em;">Centrar na folha</span>
+                                    </label>
+                                </div>
+                                <div class="modal-select-group">
+                                    <label for="printOrientationSelect" id="printOrientationLabel">Orientação:</label>
+                                    <select id="printOrientationSelect">
+                                        <option value="portrait">📄 Retrato</option>
+                                        <option value="landscape">📃 Paisagem</option>
+                                    </select>
+                                </div>
+                                <div class="modal-select-group">
+                                    <label for="printLineHeightSelect" id="printLineHeightLabel">Espaçamento:</label>
+                                    <select id="printLineHeightSelect">
+                                        <option value="1.0">1.0</option>
+                                        <option value="1.2">1.2</option>
+                                        <option value="1.5">1.5</option>
+                                        <option value="2.0">2.0</option>
+                                    </select>
+                                </div>
+                                <div class="modal-select-group">
+                                    <label for="printPaperSizeSelect" id="printPaperSizeLabel">Papel:</label>
+                                    <select id="printPaperSizeSelect">
+                                        <option value="A4">A4</option>
+                                        <option value="A3">A3</option>
+                                        <option value="Letter">Letter</option>
+                                        <option value="Legal">Legal</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1445,44 +1643,20 @@
                         </div>
                     </div>
                     
-                    <!-- 💾 COLUNA 3: ARQUIVOS -->
-                    <div>
-                        <h3 id="filesTitle" style="color: #dc3545; border-bottom: 2px solid #dc3545; padding-bottom: 10px; margin-bottom: 15px;">
-                            💾 Arquivos
-                        </h3>
-                        
-                        <div class="modal-section">
-                            <h4 id="saveFormatTitle" style="font-size: 0.95em; margin-bottom: 10px;">💾 Formato de Gravação</h4>
-                            <div class="modal-options">
-                                <label class="modal-option selected" data-format="txt">
-                                    <input type="radio" name="saveFormat" value="txt" checked>
-                                    <span>📝 Texto (.txt)</span>
-                                </label>
-                                <label class="modal-option" data-format="csv">
-                                    <input type="radio" name="saveFormat" value="csv">
-                                    <span>📊 CSV (.csv)</span>
-                                </label>
-                                <label class="modal-option" data-format="pdf">
-                                    <input type="radio" name="saveFormat" value="pdf">
-                                    <span>📄 PDF (.pdf)</span>
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <div class="modal-section" style="margin-top: 20px;">
-                            <h4 id="advancedTitle" style="font-size: 0.95em; margin-bottom: 10px;">🔧 Avançado</h4>
-                            <button class="modal-btn" id="openEmailConfig" style="width: 100%; margin-bottom: 8px;">
-                                📧 Configurar Email
-                            </button>
-                            <button class="modal-btn" id="importIniBtn" style="width: 100%; margin-bottom: 8px; background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
-                                📥 Importar Configurações (.ini)
-                            </button>
-                            <button class="modal-btn" id="setupIniBtn" style="width: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                                💾 Exportar Configurações (.ini)
-                            </button>
-                        </div>
-                    </div>
-                    
+                </div>
+                
+                <!-- 🔧 Avançado — barra full-width abaixo das colunas -->
+                <div style="border-top: 1px solid #e9ecef; margin-top: 12px; padding-top: 10px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <span id="advancedTitle" style="font-size: 0.82em; font-weight: 600; color: #6c757d; white-space: nowrap;">🔧 Avançado:</span>
+                    <button class="modal-btn" id="openEmailConfig" style="flex:1; min-width:120px; padding:6px 10px; font-size:0.82em;">
+                        📧 Configurar Email
+                    </button>
+                    <button class="modal-btn" id="importIniBtn" style="flex:1; min-width:140px; padding:6px 10px; font-size:0.82em; background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+                        📥 Importar Configurações (.ini)
+                    </button>
+                    <button class="modal-btn" id="setupIniBtn" style="flex:1; min-width:140px; padding:6px 10px; font-size:0.82em; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        💾 Exportar Configurações (.ini)
+                    </button>
                 </div>
             </div>
         </div>
@@ -1616,15 +1790,15 @@
         
         <!-- Modal WiFi v1.1 -->
         <div id="wifiModal" class="modal">
-            <div class="modal-content" style="max-width: 560px;">
+            <div class="modal-content">
                 <div class="modal-header">
                     <h2>📶 Configuração WiFi</h2>
                     <button class="modal-close" id="closeWifiModal">×</button>
                 </div>
 
                 <!-- Secção 1: Configurar WiFi no Arduino via Serial -->
-                <div style="margin-bottom: 25px; padding-bottom: 20px; border-bottom: 2px solid #e9ecef;">
-                    <h3 style="color: #0056b3; margin-bottom: 10px;">1️⃣ Configurar WiFi no Arduino (via USB/Serial)</h3>
+                <div class="wifi-section">
+                    <h3 style="color: #0056b3;"><span>1️⃣</span> Configurar WiFi no Arduino (via USB/Serial)</h3>
                     <div class="field-note"><strong>ℹ️ Nota:</strong> Requer ligação USB activa. O Arduino irá reiniciar após salvar as credenciais.</div>
                     <div class="form-group" style="margin-top: 12px;">
                         <label>SSID (nome da rede WiFi)</label>
@@ -1634,28 +1808,24 @@
                         <label>Password</label>
                         <input type="password" id="wifiPassInput" placeholder="Password da rede" autocomplete="new-password"/>
                     </div>
-                    <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 14px;">
-                        <button class="modal-btn" id="sendWifiCredsBtn" style="flex: 0 1 auto; max-width: 280px;">📤 Enviar para Arduino</button>
-                        <span id="wifiCredsStatus" style="font-size: 0.85em; color: #6c757d;"></span>
-                    </div>
+                    <button class="modal-btn" id="sendWifiCredsBtn" style="margin-top: 10px;">📤 Enviar para Arduino</button>
+                    <div id="wifiCredsStatus" style="margin-top: 8px; font-size: 0.85em; color: #6c757d; text-align: center;"></div>
                 </div>
 
-                <!-- Secção 2: Conectar web interface via WiFi (SSE) -->
-                <div>
-                    <h3 style="color: #00796b; margin-bottom: 10px;">2️⃣ Conectar web interface via WiFi (SSE)</h3>
-                    <div class="field-note"><strong>ℹ️ Nota:</strong> Requer firmware v1.1+. Clique em <strong>Auto-descobrir</strong> para pesquisar o Arduino na rede local, ou introduza o IP manualmente.</div>
+                <!-- Secção 2: Conectar web interface via WiFi (stream HTTP) -->
+                <div class="wifi-section">
+                    <h3 style="color: #00796b;"><span>2️⃣</span> Conectar web interface via WiFi (stream)</h3>
+                    <div class="field-note"><strong>ℹ️ Nota:</strong> Requer firmware v1.1+. Usa streaming HTTP bruto, mais leve que SSE. Clique em <strong>Auto-descobrir</strong> para pesquisar o Arduino na rede local, ou introduza o IP manualmente.</div>
                     <div class="form-group" style="margin-top: 12px;">
                         <label>Endereço IP do Arduino</label>
                         <div style="display:flex; gap:8px;">
                             <input type="text" id="wifiIpInput" placeholder="192.168.1.100" value="" autocomplete="off" style="flex:1;"/>
-                            <button class="modal-btn" id="autoDiscoverBtn" style="white-space:nowrap; flex:0 0 auto; background:#6f42c1;">🔍 Auto-descobrir</button>
+                            <button class="modal-btn" id="autoDiscoverBtn" style="white-space:nowrap; flex:0 0 auto; background:#6f42c1; width:auto; margin:0;">🔍 Auto-descobrir</button>
                         </div>
                     </div>
                     <div id="wifiSseStatus" style="margin: 8px 0; font-size: 0.85em; padding: 8px 12px; border-radius: 5px; display:none;"></div>
-                    <div style="display: flex; justify-content: center; gap: 10px; margin-top: 14px;">
-                        <button class="modal-btn" id="connectWifiBtn" style="flex: 0 1 auto; max-width: 280px; background: #00796b;">🌐 Conectar via WiFi</button>
-                        <button class="modal-btn" id="disconnectWifiBtn" style="flex: 0 1 auto; max-width: 280px; background: #dc3545; display:none;">⛔ Desligar WiFi</button>
-                    </div>
+                    <button class="modal-btn" id="connectWifiBtn" style="margin-top: 10px; background: #00796b;">🌐 Conectar via WiFi</button>
+                    <button class="modal-btn" id="disconnectWifiBtn" style="margin-top: 8px; background: #dc3545; display:none;">— Desligar WiFi</button>
                 </div>
             </div>
         </div>
@@ -1773,9 +1943,12 @@
         let inactivityTimer = null;
         let lastDataTime = null;
         let pendingData = '';
+        let _pageCounter = 0;  // contador de páginas por sessão
         let firmwareVersion = 'Unknown';
         let firmwareBuild = 'Unknown';
         let currentEncoding = 'utf-8'; // Default to UTF-8 for modern systems
+        let metadataBuffer = '';       // buffer para parsing do banner do firmware
+        let statsInterval = null;      // ID do setInterval de estatísticas (evitar leak)
         
         // Novas variáveis para melhorias
         let autoReconnectEnabled = true;
@@ -1810,8 +1983,8 @@
             pt: {
                 title: 'LPT-UNO - Emulador Impressora Paralela',
                 subtitle: 'Emulador de Impressora Paralela - Arduino Uno',
-                connect: 'Conectar Arduino',
-                disconnect: 'Desconectar',
+                connect: 'Connect USB',
+                disconnect: 'Desligar USB',
                 reset: 'Reset Buffer',
                 stats: 'Estatísticas',
                 clear: 'Limpar',
@@ -1953,13 +2126,27 @@
                 filesGoToConfigFolder: 'Arquivos baixados vão para pasta configurada',
                 advanced: 'Avançado',
                 files: 'Arquivos',
-                saveFormat: 'Formato de Gravação'
+                saveFormat: 'Formato de Gravação',
+                printScale: 'Escala de Impressão',
+                printSize: 'Tamanho:',
+                printMargin: 'Margem:',
+                printCenter: 'Centrar:',
+                printCenterLabel: 'Centrar na folha',
+                printOrientation: 'Orientação:',
+                printOrientPortrait: '📄 Retrato',
+                printOrientLandscape: '📃 Paisagem',
+                printLineHeight: 'Espaçamento:',
+                printPaper: 'Papel:',
+                printOrientPortraitMsg: 'Orientação: Retrato',
+                printOrientLandscapeMsg: 'Orientação: Paisagem',
+                printCenteredMsg: 'Impressão centrada na folha',
+                printLeftMsg: 'Impressão alinhada à esquerda'
             },
             en: {
                 title: 'LPT-UNO - Parallel Printer Emulator',
                 subtitle: 'Parallel Printer Emulator - Arduino Uno',
-                connect: 'Connect Arduino',
-                disconnect: 'Disconnect',
+                connect: 'Connect USB',
+                disconnect: 'Disconnect USB',
                 reset: 'Reset Buffer',
                 stats: 'Statistics',
                 clear: 'Clear',
@@ -2101,13 +2288,27 @@
                 filesGoToConfigFolder: 'Downloaded files go to configured folder',
                 advanced: 'Advanced',
                 files: 'Files',
-                saveFormat: 'Save Format'
+                saveFormat: 'Save Format',
+                printScale: 'Print Scale',
+                printSize: 'Size:',
+                printMargin: 'Margin:',
+                printCenter: 'Center:',
+                printCenterLabel: 'Center on page',
+                printOrientation: 'Orientation:',
+                printOrientPortrait: '📄 Portrait',
+                printOrientLandscape: '📃 Landscape',
+                printLineHeight: 'Line spacing:',
+                printPaper: 'Paper:',
+                printOrientPortraitMsg: 'Orientation: Portrait',
+                printOrientLandscapeMsg: 'Orientation: Landscape',
+                printCenteredMsg: 'Print centered on page',
+                printLeftMsg: 'Print left-aligned'
             },
             es: {
                 title: 'LPT-UNO - Emulador Impresora Paralela',
                 subtitle: 'Emulador de Impresora Paralela - Arduino Uno',
-                connect: 'Conectar Arduino',
-                disconnect: 'Desconectar',
+                connect: 'Connect USB',
+                disconnect: 'Desconectar USB',
                 reset: 'Reiniciar Buffer',
                 stats: 'Estadísticas',
                 clear: 'Limpiar',
@@ -2249,7 +2450,21 @@
                 filesGoToConfigFolder: 'Archivos descargados van a carpeta configurada',
                 advanced: 'Avanzado',
                 files: 'Archivos',
-                saveFormat: 'Formato de Guardado'
+                saveFormat: 'Formato de Guardado',
+                printScale: 'Escala de Impresión',
+                printSize: 'Tamaño:',
+                printMargin: 'Margen:',
+                printCenter: 'Centrar:',
+                printCenterLabel: 'Centrar en página',
+                printOrientation: 'Orientación:',
+                printOrientPortrait: '📄 Retrato',
+                printOrientLandscape: '📃 Paisaje',
+                printLineHeight: 'Interlineado:',
+                printPaper: 'Papel:',
+                printOrientPortraitMsg: 'Orientación: Retrato',
+                printOrientLandscapeMsg: 'Orientación: Paisaje',
+                printCenteredMsg: 'Impresión centrada en página',
+                printLeftMsg: 'Impresión alineada a izquierda'
             }
         };
         
@@ -2262,15 +2477,17 @@
         // Função: Carregar preferências
         function loadPreferences() {
             try {
+                if (loadPreferences._cache) return loadPreferences._cache;
                 const saved = localStorage.getItem(STORAGE_KEY);
                 if (saved) {
-                    return JSON.parse(saved);
+                    loadPreferences._cache = JSON.parse(saved);
+                    return loadPreferences._cache;
                 }
             } catch (e) {
                 console.error('Erro ao carregar preferências:', e);
             }
             // Preferências padrão
-            return {
+            loadPreferences._cache = {
                 autoSave: true,
                 autoPrint: false,
                 autoSaveTime: 10,
@@ -2278,14 +2495,17 @@
                 encoding: 'utf-8',
                 saveFormat: 'txt',
                 dataFolder: null,
-                subfolderName: 'default'
+                subfolderName: 'default',
+                printFontSize: 'auto',
+                printMargin: '5mm'
             };
+            return loadPreferences._cache;
         }
         
         // Função: Salvar preferências
         async function savePreferences(prefs) {
             try {
-                // Salvar no localStorage
+                loadPreferences._cache = prefs;  // invalidar cache
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
             } catch (e) {
                 console.error('Erro ao salvar preferências:', e);
@@ -2488,8 +2708,7 @@ baudRate=115200
             if (subtitle) subtitle.textContent = t.subtitle;
             
             // Botões principais
-            if (connectBtn) connectBtn.innerHTML = isConnected ? `🔌 ${t.disconnect}` : `🔌 ${t.connect}`;
-            if (resetBtn) resetBtn.innerHTML = `🔄 ${t.reset}`;
+            if (connectBtn) connectBtn.innerHTML = isConnected ? `✔ ${t.disconnect}` : `🔌 ${t.connect}`;
             if (clearBtn) clearBtn.innerHTML = `🗑️ ${t.clear}`;
             if (settingsBtn) settingsBtn.innerHTML = `⚙️ ${t.settings}`;
             
@@ -2725,6 +2944,37 @@ baudRate=115200
             
             const advancedTitle = document.getElementById('advancedTitle');
             if (advancedTitle) advancedTitle.textContent = `🔧 ${t.advanced}`;
+
+            // Escala de Impressão
+            const printScaleTitle = document.getElementById('printScaleTitle');
+            if (printScaleTitle) printScaleTitle.textContent = `🖨️ ${t.printScale}`;
+
+            const printFontSizeLabel = document.getElementById('printFontSizeLabel');
+            if (printFontSizeLabel) printFontSizeLabel.textContent = t.printSize;
+
+            const printMarginLabel = document.getElementById('printMarginLabel');
+            if (printMarginLabel) printMarginLabel.textContent = t.printMargin;
+
+            const printCenterLabel = document.getElementById('printCenterLabel');
+            if (printCenterLabel) printCenterLabel.textContent = t.printCenter;
+
+            const printCenterText = document.getElementById('printCenterText');
+            if (printCenterText) printCenterText.textContent = t.printCenterLabel;
+
+            const printOrientationLabel = document.getElementById('printOrientationLabel');
+            if (printOrientationLabel) printOrientationLabel.textContent = t.printOrientation;
+
+            const printOrientationSelect = document.getElementById('printOrientationSelect');
+            if (printOrientationSelect) {
+                const opts = printOrientationSelect.querySelectorAll('option');
+                if (opts.length >= 2) { opts[0].textContent = t.printOrientPortrait; opts[1].textContent = t.printOrientLandscape; }
+            }
+
+            const printLineHeightLabel = document.getElementById('printLineHeightLabel');
+            if (printLineHeightLabel) printLineHeightLabel.textContent = t.printLineHeight;
+
+            const printPaperSizeLabel = document.getElementById('printPaperSizeLabel');
+            if (printPaperSizeLabel) printPaperSizeLabel.textContent = t.printPaper;
             
             // Footer
             const footerPs = document.querySelectorAll('footer p');
@@ -3016,7 +3266,8 @@ baudRate=115200
         
         async function requestWakeLock() {
             try {
-                if ('wakeLock' in navigator) {
+                // Wake Lock exige que a página esteja visível (não minimizada ou em background de tab)
+                if ('wakeLock' in navigator && document.visibilityState === 'visible') {
                     wakeLock = await navigator.wakeLock.request('screen');
                     console.log('🔒 Wake Lock ativado - Sistema não adormecerá');
                     
@@ -3036,7 +3287,10 @@ baudRate=115200
                     return true;
                 }
             } catch (err) {
-                console.warn('Wake Lock não suportado ou negado:', err);
+                // Silenciar erros causados por falta de visibilidade, são normais e inofensivos
+                if (err.name !== 'NotAllowedError') {
+                    console.warn('Wake Lock não suportado ou negado:', err);
+                }
                 return false;
             }
         }
@@ -3098,11 +3352,10 @@ baudRate=115200
         document.addEventListener('visibilitychange', async () => {
             if (document.hidden) {
                 console.log('👁️ Página em background - Mantendo conexão ativa');
-                // Manter conexão ativa mesmo em background
             } else {
                 console.log('👁️ Página visível novamente');
-                // Reativar Wake Lock se foi liberado
-                if (isConnected && wakeLock === null) {
+                // Reativar Wake Lock sempre que a página fica visível
+                if (wakeLock === null) {
                     await requestWakeLock();
                 }
             }
@@ -3115,10 +3368,13 @@ baudRate=115200
         
         window.addEventListener('focus', async () => {
             console.log('🔼 Janela em foco');
-            if (isConnected && wakeLock === null) {
+            if (wakeLock === null) {
                 await requestWakeLock();
             }
         });
+
+        // Ativar Wake Lock imediatamente ao abrir a página
+        requestWakeLock();
         
         async function connect(autoConnect = false) {
             const t = translations[currentLanguage];
@@ -3153,6 +3409,7 @@ baudRate=115200
                 
                 isConnected = true;
                 updateStatus(true);
+                _resetOnConnect();  // limpa timer e dados pendentes ao conectar USB
                 infoMsg.style.display = 'none';
                 startTime = Date.now();
                 
@@ -3213,18 +3470,22 @@ baudRate=115200
                 setTimeout(() => {
                     if (isConnected) {
                         output.textContent = '';
+                        _displayBuffer = '';
+                        _displayTotalChars = 0;
                         byteCount = 0;
                         byteCountEl.textContent = '0';
                         pendingData = '';
-                        console.log('🧹 Output limpo automaticamente após 3s (banner firmware)');
+                        lineDisplayBuffer = '';
+                        metadataBuffer = '';
+                        _pageCounter = 0;  // reset contador de páginas por sessão
                     }
                 }, 3000);
                 
                 // Iniciar leitura de dados
                 readData();
-                
-                // Iniciar atualização de estatísticas
-                setInterval(updateStats, 1000);
+
+                // Iniciar atualização de estatísticas (singleton — impede duplicar ao reconectar)
+                if (!statsInterval) statsInterval = setInterval(updateStats, 1000);
                 
             } catch (error) {
                 // Suprimir erro esperado quando auto-connect tenta sem gesto do utilizador
@@ -3313,7 +3574,14 @@ baudRate=115200
                 
                 isConnected = false;
                 updateStatus(false);
-                
+
+                // Limpar buffers internos ao desligar
+                lineDisplayBuffer = '';
+                metadataBuffer    = '';
+
+                // Parar stats interval
+                if (statsInterval) { clearInterval(statsInterval); statsInterval = null; }
+
                 // Não reconectar automaticamente na próxima vez
                 localStorage.removeItem('lptUnoAutoConnect');
                 
@@ -3322,8 +3590,11 @@ baudRate=115200
             }
         }
         
-        // Buffer para parsing de metadados
-        let metadataBuffer = '';
+        // Regex de diagnóstico do firmware (compilada uma vez, fora do loop)
+        const _diagLines = /^(\[WiFi\]|\[UNO\]|New WiFi client|Communication with WiFi|Attempting to connect|WiFi connection|No WiFi config|Connecting to SSID|WiFi: falha)/;
+
+        // Buffer de linha para filtrar mensagens de diagnóstico do firmware
+        let lineDisplayBuffer = '';
 
         // Função: Ler dados do Arduino
         async function readData() {
@@ -3342,6 +3613,10 @@ baudRate=115200
                         textValue = value;
                     }
                     
+                    // Filtrar linhas de diagnóstico interno do firmware (não exibir no output)
+                    // Linhas como "[WiFi] ...", "[UNO] ...", "New WiFi client..." são internas.
+                    // O filtro actua sobre o buffer de display, NÃO sobre parsing de metadados.
+                    const diagLines = _diagLines;
                     // Acumular para parsing de versão (robusto contra pacotes fragmentados)
                     metadataBuffer += textValue;
                     // Limitar tamanho do buffer de metadados para não crescer infinitamente
@@ -3352,6 +3627,11 @@ baudRate=115200
                          if (lastNewline !== -1) {
                              metadataBuffer = metadataBuffer.substring(lastNewline + 1);
                          } 
+                    }
+
+                    // Invocar listener de resposta WiFi (CMD:WIFI callback)
+                    if (window.__wifiSaveListener) {
+                        window.__wifiSaveListener(textValue);
                     }
 
                     // Tentar extrair versão do buffer acumulado
@@ -3370,26 +3650,67 @@ baudRate=115200
                         updateFirmwareDisplay();
                     }
                     
-                    // Processar dados recebidos (Exibição imediata - SEM FILTROS)
+                    // Processar dados recebidos com filtro de diagnóstico por linha
                     for (let i = 0; i < textValue.length; i++) {
                         const byte = textValue.charCodeAt(i);
-                        
-                        byteCount++;
-                        displayByte(byte);
-                        
-                        // Acumular dados para auto-save/print
-                        if (byte >= 32 && byte <= 126) {
-                            pendingData += String.fromCharCode(byte);
-                        } else if (byte === 10 || byte === 13) {
-                            pendingData += String.fromCharCode(byte);
+                        const ch = String.fromCharCode(byte);
+
+                        if (byte === 13) continue; // ignorar CR isolado
+
+                        if (byte === 12) {
+                            // Form Feed (0x0C) — troca de folha
+                            // 1. Flush da linha actual (sem newline)
+                            if (lineDisplayBuffer.length > 0 && !diagLines.test(lineDisplayBuffer)) {
+                                for (const c of lineDisplayBuffer) {
+                                    byteCount++;
+                                    displayByte(c.charCodeAt(0));
+                                    if (c.charCodeAt(0) >= 32 && c.charCodeAt(0) <= 126) pendingData += c;
+                                }
+                            }
+                            lineDisplayBuffer = '';
+                            // 2. Separador visual no monitor
+                            const _pg = _pageCounter + 1;
+                            _displayBuffer += `\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 [ Troca de Folha \u2192 Pág. ${_pg} ] \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n`;
+                            if (!_displayRafPending) { _displayRafPending = true; requestAnimationFrame(_flushDisplayBuffer); }
+                            // 3. Processar página completa
+                            handlePageBreak();
+                            continue;
                         }
+
+                        if (byte === 10) {
+                            // Fim de linha: verificar se é linha de diagnóstico
+                            if (!diagLines.test(lineDisplayBuffer)) {
+                                // Linha normal: exibir todos os chars acumulados + newline
+                                for (const c of lineDisplayBuffer) {
+                                    byteCount++;
+                                    displayByte(c.charCodeAt(0));
+                                    if (c.charCodeAt(0) >= 32 && c.charCodeAt(0) <= 126) pendingData += c;
+                                }
+                                byteCount++;
+                                displayByte(10);
+                                pendingData += '\n';
+                            }
+                            lineDisplayBuffer = '';
+                        } else {
+                            lineDisplayBuffer += ch;
+                        }
+                    }
+
+                    // Flush de chars sem newline ainda: só para linhas longas (dados binários)
+                    // linhas de diagnóstico têm < 80 chars, portanto > 128 = nunca diagnóstico
+                    if (lineDisplayBuffer.length > 128) {
+                        for (const c of lineDisplayBuffer) {
+                            byteCount++;
+                            displayByte(c.charCodeAt(0));
+                            if (c.charCodeAt(0) >= 32 && c.charCodeAt(0) <= 126) pendingData += c;
+                        }
+                        lineDisplayBuffer = '';
                     }
                     
                     // Resetar timer de inatividade após receber dados
                     if (isConnected) {
                         resetInactivityTimer();
                     }
-                    resetInactivityTimer();
                 }
             } catch (error) {
                 if (isConnected) {
@@ -3407,38 +3728,124 @@ baudRate=115200
             }
         }
         
+        // Buffer de performance para display (evita DOM thrashing em PCs lentos)
+        let _displayBuffer = '';
+        let _displayRafPending = false;
+        let _displayTotalChars = 0;
+        let _displayLastScroll = 0;
+        const _DISPLAY_MAX_CHARS = 60000; // Manter ~60K chars visíveis no output
+
+        function _flushDisplayBuffer() {
+            _displayRafPending = false;
+            if (!_displayBuffer) return;
+
+            const chunk = _displayBuffer;
+            _displayBuffer = '';
+            _displayTotalChars += chunk.length;
+
+            // Adiciona texto directamente sem criar elementos DOM
+            output.insertAdjacentText('beforeend', chunk);
+
+            // Poda automática: ao exceder 90K, corta para os últimos ~60K chars
+            if (_displayTotalChars > _DISPLAY_MAX_CHARS * 1.5) {
+                const full = output.textContent;
+                const keepFrom = full.indexOf('\n', full.length - _DISPLAY_MAX_CHARS);
+                if (keepFrom > 0) {
+                    output.textContent = full.slice(keepFrom + 1);
+                } else {
+                    output.textContent = full.slice(full.length - _DISPLAY_MAX_CHARS);
+                }
+                _displayTotalChars = output.textContent.length;
+            }
+
+            // Auto-scroll throttled (máx. 1x a cada 200ms)
+            const now = Date.now();
+            if (now - _displayLastScroll > 200) {
+                _displayLastScroll = now;
+                output.scrollTop = output.scrollHeight;
+            }
+        }
+
         // Função: Exibir byte recebido no monitor (modo texto)
         function displayByte(byte) {
-            const char = String.fromCharCode(byte);
-            
-            // Criar span para o caractere
-            const span = document.createElement('span');
-            span.style.fontFamily = 'Consolas, Monaco, monospace';
-            span.style.fontSize = '14px';
-            span.style.whiteSpace = 'pre';
-            
-            // Exibir caracteres imprimíveis e alguns controles
+            let ch;
             if (byte >= 32 && byte <= 126) {
-                // Caracteres imprimíveis normais
-                span.textContent = char;
+                ch = String.fromCharCode(byte);
             } else if (byte === 10) {
-                // Line Feed (nova linha)
-                span.textContent = '\n';
-            } else if (byte === 13) {
-                // Carriage Return (ignorar, pois Windows usa \r\n)
-                return; // Não adicionar ao output
+                ch = '\n';                          // Line Feed
             } else if (byte === 9) {
-                // Tab
-                span.textContent = '\t';
+                ch = '\t';                          // Tab
+            } else if (byte === 13) {
+                return;                             // CR ignorado (\r\n Windows)
             } else {
-                // Outros caracteres de controle - exibir como espaço ou ignorar
-                return; // Ignorar caracteres de controle não imprimíveis
+                return;                             // Outros controles ignorados
             }
-            
-            output.appendChild(span);
-            
-            // Auto-scroll para o final
-            output.scrollTop = output.scrollHeight;
+
+            _displayBuffer += ch;
+
+            // Agendar flush no próximo frame (agrupa todos os bytes do mesmo frame)
+            if (!_displayRafPending) {
+                _displayRafPending = true;
+                requestAnimationFrame(_flushDisplayBuffer);
+            }
+        }
+
+        function appendWifiBytes(bytes) {
+            if (!bytes || bytes.length === 0) return;
+
+            let displayChunk = '';
+            let saveChunk = '';
+            let addedBytes = 0;
+
+            for (let index = 0; index < bytes.length; index++) {
+                const code = bytes[index];
+
+                if (code === 13) continue;
+
+                if (code === 12) {
+                    if (displayChunk) {
+                        _displayBuffer += displayChunk;
+                        displayChunk = '';
+                    }
+                    const nextPage = _pageCounter + 1;
+                    _displayBuffer += `\n────────── [ Troca de Folha → Pág. ${nextPage} ] ──────────\n`;
+                    handlePageBreak();
+                    addedBytes++;
+                    continue;
+                }
+
+                if (code === 10) {
+                    displayChunk += '\n';
+                    saveChunk += '\n';
+                    addedBytes++;
+                    continue;
+                }
+
+                if (code === 9) {
+                    displayChunk += '\t';
+                    addedBytes++;
+                    continue;
+                }
+
+                if (code >= 32 && code <= 126) {
+                    const char = String.fromCharCode(code);
+                    displayChunk += char;
+                    saveChunk += char;
+                    addedBytes++;
+                }
+            }
+
+            if (displayChunk) _displayBuffer += displayChunk;
+            if (saveChunk) pendingData += saveChunk;
+            if (addedBytes) {
+                byteCount += addedBytes;
+                byteCountEl.textContent = byteCount;
+                resetInactivityTimer();
+                if (!_displayRafPending) {
+                    _displayRafPending = true;
+                    requestAnimationFrame(_flushDisplayBuffer);
+                }
+            }
         }
         
         // Função: Atualizar status
@@ -3447,7 +3854,7 @@ baudRate=115200
             if (connected) {
                 statusIndicator.classList.add('connected');
                 statusText.textContent = t.connected;
-                connectBtn.textContent = `🔌 ${t.disconnect}`;
+                connectBtn.textContent = `✔ ${t.disconnect}`;
                 connectBtn.classList.add('connected');
             } else {
                 statusIndicator.classList.remove('connected');
@@ -3482,6 +3889,9 @@ baudRate=115200
         // Função: Limpar output
         clearBtn.addEventListener('click', () => {
             output.textContent = '';
+            _displayBuffer = '';
+            _displayTotalChars = 0;
+            _pageCounter = 0;
             errorMsg.style.display = 'none';
         });
         
@@ -3612,32 +4022,41 @@ baudRate=115200
         });
 
         
-        // Função: Enviar comando Reset ao Arduino
-        resetBtn.addEventListener('click', async () => {
+        // Função: Enviar comando Reset ao Arduino (botão removido da UI mas função mantida)
+        if (resetBtn) resetBtn.addEventListener('click', async () => {
             if (isConnected && writer) {
                 try {
                     await writer.write('R');
-                    showInfo('Comando Reset enviado ao Arduino');
                 } catch (error) {
                     showError('Erro ao enviar comando: ' + error.message);
                 }
-            } else {
-                showError('Arduino não conectado');
             }
         });
         
         // Função: Abrir modal de definições
         settingsBtn.addEventListener('click', () => {
             settingsModal.classList.add('show');
-            
+
             // Carregar preferências atuais
             const prefs = loadPreferences();
-            
-            // Carregar valores se necessário
+
+            // Tempo de auto-salvar
             const autoSaveTimeSelect = document.getElementById('autoSaveTime');
-            if (autoSaveTimeSelect) {
-                autoSaveTimeSelect.value = prefs.autoSaveTime || 10;
-            }
+            if (autoSaveTimeSelect) autoSaveTimeSelect.value = prefs.autoSaveTime || 10;
+
+            // Escala de impressão
+            const pfsEl = document.getElementById('printFontSizeSelect');
+            const pmEl  = document.getElementById('printMarginSelect');
+            if (pfsEl) pfsEl.value = prefs.printFontSize || 'auto';
+            if (pmEl)  pmEl.value  = prefs.printMargin   || '5mm';
+            const pcEl = document.getElementById('printCenterCheck');
+            if (pcEl) pcEl.checked = !!(prefs.printCenter);
+            const poEl = document.getElementById('printOrientationSelect');
+            if (poEl) poEl.value = prefs.printOrientation || 'portrait';
+            const plhEl = document.getElementById('printLineHeightSelect');
+            if (plhEl) plhEl.value = prefs.printLineHeight || '1.2';
+            const ppsEl = document.getElementById('printPaperSizeSelect');
+            if (ppsEl) ppsEl.value = prefs.printPaperSize || 'A4';
         });
         
         // Função: Fechar modal
@@ -3658,17 +4077,83 @@ baudRate=115200
             const prefs = loadPreferences();
             prefs.autoSaveTime = selectedTime;
             savePreferences(prefs);
-            
-            const timeText = selectedTime >= 60 ? 
-                `${selectedTime / 60} minuto${selectedTime > 60 ? 's' : ''}` : 
+
+            const timeText = selectedTime >= 60 ?
+                `${selectedTime / 60} minuto${selectedTime > 60 ? 's' : ''}` :
                 `${selectedTime} segundos`;
             showInfo(`⏱️ ${translations[currentLanguage].autoSaveTimeChanged} ${timeText}`);
-            
-            // Reiniciar timer de inatividade com novo tempo
-            if (isConnected) {
-                resetInactivityTimer();
-            }
+
+            if (isConnected) resetInactivityTimer();
         });
+
+        // Escala de impressão — tamanho de fonte
+        const printFontSizeSelect = document.getElementById('printFontSizeSelect');
+        if (printFontSizeSelect) {
+            printFontSizeSelect.addEventListener('change', () => {
+                const prefs = loadPreferences();
+                prefs.printFontSize = printFontSizeSelect.value;
+                savePreferences(prefs);
+                const label = printFontSizeSelect.options[printFontSizeSelect.selectedIndex].text;
+                showInfo(`🖨️ Tamanho de impressão: ${label}`);
+            });
+        }
+
+        // Escala de impressão — margem
+        const printMarginSelect = document.getElementById('printMarginSelect');
+        if (printMarginSelect) {
+            printMarginSelect.addEventListener('change', () => {
+                const prefs = loadPreferences();
+                prefs.printMargin = printMarginSelect.value;
+                savePreferences(prefs);
+                showInfo(`🖨️ Margem de impressão: ${printMarginSelect.value}`);
+            });
+        }
+
+        // Escala de impressão — centrar na folha
+        const printCenterCheck = document.getElementById('printCenterCheck');
+        if (printCenterCheck) {
+            printCenterCheck.addEventListener('change', () => {
+                const prefs = loadPreferences();
+                prefs.printCenter = printCenterCheck.checked;
+                savePreferences(prefs);
+                const t = translations[currentLanguage];
+                showInfo(printCenterCheck.checked ? `🖨️ ${t.printCenteredMsg}` : `🖨️ ${t.printLeftMsg}`);
+            });
+        }
+
+        // Escala de impressão — orientação
+        const printOrientationSelect = document.getElementById('printOrientationSelect');
+        if (printOrientationSelect) {
+            printOrientationSelect.addEventListener('change', () => {
+                const prefs = loadPreferences();
+                prefs.printOrientation = printOrientationSelect.value;
+                savePreferences(prefs);
+                const t = translations[currentLanguage];
+                showInfo(`🖨️ ${printOrientationSelect.value === 'landscape' ? t.printOrientLandscapeMsg : t.printOrientPortraitMsg}`);
+            });
+        }
+
+        // Escala de impressão — espaçamento de linhas
+        const printLineHeightSelect = document.getElementById('printLineHeightSelect');
+        if (printLineHeightSelect) {
+            printLineHeightSelect.addEventListener('change', () => {
+                const prefs = loadPreferences();
+                prefs.printLineHeight = printLineHeightSelect.value;
+                savePreferences(prefs);
+                showInfo(`🖨️ Espaçamento de linhas: ${printLineHeightSelect.value}`);
+            });
+        }
+
+        // Escala de impressão — tamanho do papel
+        const printPaperSizeSelect = document.getElementById('printPaperSizeSelect');
+        if (printPaperSizeSelect) {
+            printPaperSizeSelect.addEventListener('change', () => {
+                const prefs = loadPreferences();
+                prefs.printPaperSize = printPaperSizeSelect.value;
+                savePreferences(prefs);
+                showInfo(`🖨️ Tamanho do papel: ${printPaperSizeSelect.value}`);
+            });
+        }
         
         // Função: Alterar idioma
         if (languageSelect) {
@@ -4294,16 +4779,31 @@ function testEmail() {
             }, 5000);
         }
         
-        // Função: Mostrar info
-        function showInfo(message) {
-            infoMsg.textContent = 'ℹ️ ' + message;
-            infoMsg.style.display = 'block';
-            setTimeout(() => {
-                infoMsg.style.display = 'none';
-            }, 3000);
-        }
+        // Função: Mostrar info (silenciado — utilizador optou por sem notificações)
+        function showInfo(message) { /* silenciado */ }
         
         // Função: Resetar timer de inatividade
+        // Limpa estado de inactividade ao conectar — evita auto-print/save espúrio
+        // Limpa imediatamente E agenda uma segunda limpeza ao fim de 5s
+        // (cobre dados de inicialização do Arduino que chegam nos primeiros segundos)
+        function _resetOnConnect() {
+            if (inactivityTimer) { clearTimeout(inactivityTimer); inactivityTimer = null; }
+            pendingData = '';
+            _displayBuffer = '';
+            output.textContent = '';
+            _displayTotalChars = 0;
+            // Segunda limpeza após 5s — garante que dados de boot/inicialização não disparam timer
+            setTimeout(() => {
+                if (inactivityTimer) { clearTimeout(inactivityTimer); inactivityTimer = null; }
+                pendingData = '';
+                _displayBuffer = '';
+                output.textContent = '';
+                _displayTotalChars = 0;
+                byteCount = 0;
+                if (byteCountEl) byteCountEl.textContent = '0';
+            }, 5000);
+        }
+
         function resetInactivityTimer() {
             lastDataTime = Date.now();
             
@@ -4360,25 +4860,19 @@ function testEmail() {
             const dataToSave = pendingData || output.textContent;
             
             if (!dataToSave || dataToSave.trim().length === 0) {
-                console.log('⏱️ Inatividade detectada, mas sem dados para processar');
-                return; // Nada para processar
+                return;
             }
             
-            console.log(`⏱️ Inatividade: processando ${dataToSave.length} caracteres`);
             const timestamp = generateTimestamp();
             const prefs = loadPreferences();
             const format = prefs.saveFormat || 'txt';
             const filePrefix = prefs.subfolderName || 'lpt-uno';
             const sanitizedPrefix = filePrefix.replace(/[<>:"/\\|?*]/g, '_');
             
-            // Sempre verificar se há destinatários correspondentes e enviar emails
-            console.log('📧 Verificando destinatários configurados...');
             const matchedRecipients = checkAndSendEmails(dataToSave, timestamp, filePrefix, sanitizedPrefix);
             
             // Auto-salvar se habilitado
             if (autoSaveBtn.classList.contains('active')) {
-                console.log('💾 Auto-salvando arquivo...');
-                // Se houver destinatários encontrados, usar nome com destinatário
                 if (matchedRecipients.length > 0) {
                     const recipientNames = matchedRecipients.map(r => r.name).join(' - ');
                     const customPrefix = `${sanitizedPrefix} - ${recipientNames}`;
@@ -4390,75 +4884,142 @@ function testEmail() {
                 }
             }
             
-            // Auto-imprimir se habilitado (com delay de 3 segundos após save)
             if (prefs.autoPrint) {
-                console.log('🖨️ Auto-print ativo: arquivo salvo será impresso em background pelo monitor externo (.bat / PowerShell).');
-                showInfo('🖨️ Arquivo salvo: impressão em background pelo sistema externo (se ativado)');
-                // Não chamar printData() aqui para evitar abrir o diálogo de impressão do navegador.
+                printData(dataToSave);
+                showInfo('🖨️ Enviado para impressão automática (inactividade)');
             }
             
-            // Limpar dados pendentes apenas se auto-save ou auto-print estiver ativo
-            // NOTA: Limpeza ocorre imediatamente, mas dados já foram copiados para print
             if (autoSaveBtn.classList.contains('active') || prefs.autoPrint) {
                 pendingData = '';
                 output.textContent = '';
+                _displayBuffer = '';
+                _displayTotalChars = 0;
                 byteCount = 0;
                 byteCountEl.textContent = '0';
-                console.log('🧹 Buffer limpo após processamento');
             }
+        }
+
+        // Função: Lidar com Form Feed (troca de folha, byte 0x0C)
+        function handlePageBreak() {
+            const data = pendingData;
+            if (!data || data.trim().length === 0) {
+                // FF sem conteúdo: apenas incrementar página
+                _pageCounter++;
+                return;
+            }
+
+            // Cancelar inactivity timer — página completa pelo emissor
+            if (inactivityTimer) { clearTimeout(inactivityTimer); inactivityTimer = null; }
+
+            _pageCounter++;
+            const timestamp = generateTimestamp();
+            const prefs = loadPreferences();
+            const format = prefs.saveFormat || 'txt';
+            const filePrefix = prefs.subfolderName || 'lpt-uno';
+            const sanitizedPrefix = filePrefix.replace(/[<>:"/\\|?*]/g, '_');
+            const pagePrefix = `${sanitizedPrefix}_pag${String(_pageCounter).padStart(3, '0')}`;
+
+            const matchedRecipients = checkAndSendEmails(data, timestamp, filePrefix, sanitizedPrefix);
+
+            // Auto-salvar página
+            if (autoSaveBtn.classList.contains('active')) {
+                if (matchedRecipients.length > 0) {
+                    const recipientNames = matchedRecipients.map(r => r.name).join(' - ');
+                    saveToFile(data, timestamp, format, `${pagePrefix} - ${recipientNames}`);
+                } else {
+                    saveToFile(data, timestamp, format, pagePrefix);
+                }
+                showInfo(`💾 Pág. ${_pageCounter} guardada: ${pagePrefix}_${timestamp}.${format}`);
+            }
+
+            // Auto-imprimir página
+            if (prefs.autoPrint) {
+                printData(data);
+                showInfo(`🖨️ Pág. ${_pageCounter} enviada para impressão`);
+            }
+
+            // Limpar dados da página processada
+            pendingData = '';
         }
         
         // Função: Imprimir dados na impressora padrão
         function printData(data) {
             try {
-                // Criar iframe invisível para impressão
+                const prefs = loadPreferences();
+                const printFontSize = prefs.printFontSize || 'auto';
+                const printMargin   = prefs.printMargin   || '5mm';
+                const printCenter      = !!(prefs.printCenter);
+                const printOrientation = prefs.printOrientation || 'portrait';
+                const printLineHeight  = prefs.printLineHeight  || '1.2';
+                const printPaperSize   = prefs.printPaperSize   || 'A4';
+
+                // Calcular font-size efectivo
+                let fontSize;
+                if (printFontSize === 'auto') {
+                    // Largura útil (mm) varia com papel e orientação
+                    const paperUsableWidths = {
+                        'A4:portrait': 180, 'A4:landscape': 270,
+                        'A3:portrait': 270, 'A3:landscape': 390,
+                        'Letter:portrait': 178, 'Letter:landscape': 240,
+                        'Legal:portrait': 178, 'Legal:landscape': 306,
+                    };
+                    const usableW = paperUsableWidths[`${printPaperSize}:${printOrientation}`] || 180;
+                    const lines = data.split('\n');
+                    const maxLen = lines.reduce((m, l) => Math.max(m, l.length), 1);
+                    // fontSize(pt) = usableW / (maxLen × charWidth_mm) ; charWidth_mm = 0.6em × 0.353mm/pt × 1pt
+                    const computed = Math.round(usableW / (maxLen * 0.2118));
+                    fontSize = Math.min(14, Math.max(6, computed)) + 'pt';
+                } else {
+                    fontSize = printFontSize;
+                }
+
+                // Dimensões do iframe conforme papel e orientação (evita escala incorrecta)
+                const paperDims = { 'A4': [21.0, 29.7], 'A3': [29.7, 42.0], 'Letter': [21.59, 27.94], 'Legal': [21.59, 35.56] };
+                const [pw, ph] = paperDims[printPaperSize] || paperDims['A4'];
                 const printFrame = document.createElement('iframe');
-                printFrame.style.position = 'absolute';
-                printFrame.style.width = '0';
-                printFrame.style.height = '0';
+                printFrame.style.position = 'fixed';
+                printFrame.style.left = '-10000px';
+                printFrame.style.top = '0';
+                printFrame.style.width  = printOrientation === 'landscape' ? `${ph}cm` : `${pw}cm`;
+                printFrame.style.height = printOrientation === 'landscape' ? `${pw}cm` : `${ph}cm`;
                 printFrame.style.border = 'none';
                 printFrame.style.visibility = 'hidden';
                 document.body.appendChild(printFrame);
-                
+
                 // Escrever conteúdo no iframe
                 const doc = printFrame.contentWindow.document;
                 doc.open();
                 doc.write('<html><head><meta charset="UTF-8"><title>LPT-UNO Print</title>');
                 doc.write('<style>');
                 doc.write('@media print { ');
-                doc.write('  @page { margin: 0.5cm; size: auto; }');
-                doc.write('  body { margin: 0; padding: 0; font-family: "Courier New", monospace; font-size: 10pt; white-space: pre-wrap; }');
+                doc.write(`  @page { margin: ${printMargin}; size: ${printPaperSize} ${printOrientation}; }`);
+                doc.write(`  body { margin: 0; padding: 0; font-family: "Courier New", monospace; font-size: ${fontSize}; white-space: pre; line-height: ${printLineHeight}; text-align: ${printCenter ? 'center' : 'left'}; }`);
                 doc.write('}');
-                doc.write('body { font-family: "Courier New", monospace; white-space: pre-wrap; }');
+                doc.write(`body { font-family: "Courier New", monospace; font-size: ${fontSize}; white-space: pre; line-height: ${printLineHeight}; text-align: ${printCenter ? 'center' : 'left'}; }`);
                 doc.write('</style>');
                 doc.write('</head><body>');
-                doc.write(data.replace(/</g, '&lt;').replace(/>/g, '&gt;'));
+                doc.write(data.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'));
                 doc.write('</body></html>');
                 doc.close();
-                
+
                 // Aguardar carregamento e imprimir automaticamente
                 printFrame.contentWindow.focus();
                 setTimeout(() => {
                     try {
-                        // Imprimir diretamente
                         printFrame.contentWindow.print();
-                        console.log('🖨️ Comando de impressão enviado automaticamente');
-                        showInfo('🖨️ Enviado para impressora automaticamente');
+                        const orientLabel = printOrientation === 'landscape' ? 'paisagem' : 'retrato';
+                        showInfo(`🖨️ Enviado para impressora (${printPaperSize} ${orientLabel}, ${fontSize}, margem ${printMargin}${printCenter ? ', centrado' : ''})`);
                     } catch (printError) {
                         console.error('Erro ao imprimir:', printError);
                         showError('Erro ao imprimir: ' + printError.message);
                     }
-                    
+
                     // Remover iframe após impressão
                     setTimeout(() => {
-                        try {
-                            document.body.removeChild(printFrame);
-                        } catch (e) {
-                            // Iframe já removido
-                        }
+                        try { document.body.removeChild(printFrame); } catch (e) { /* já removido */ }
                     }, 2000);
-                }, 500);
-                
+                }, 600);
+
             } catch (error) {
                 console.error('Erro na função printData:', error);
                 showError('Erro ao preparar impressão: ' + error.message);
@@ -4598,10 +5159,19 @@ function testEmail() {
         };
         
         // ========================================
-        // WIFI / SSE (v1.1)
+        // WIFI / HTTP STREAM (v1.1)
         // ========================================
-        let sseSource = null;
+        let wifiStreamReader = null;
+        let wifiStreamAbort = null;
+        let wifiStreamConnectId = 0;
+        const WIFI_QUICK_PROBE_TIMEOUT = 450;
+        const WIFI_CONNECT_TIMEOUT = 1500;
+        const WIFI_LAST_HOST_KEY = 'lptUnoWifiLastHost';
+        const WIFI_LAST_HOSTS_KEY = 'lptUnoWifiLastHosts';
+        const WIFI_MANUAL_IP_KEY = 'lptUnoWifiManualIp';
         let sseConnected = false;
+        let wifiAutoRetryTimer = null;   // timer de retry automático
+        let wifiUserDisconnected = false; // true se o utilizador desligou manualmente
 
         const wifiModal = document.getElementById('wifiModal');
         const wifiBtn = document.getElementById('wifiBtn');
@@ -4613,13 +5183,23 @@ function testEmail() {
 
         if (wifiBtn) {
             wifiBtn.addEventListener('click', () => {
+                requestWakeLock(); // Pede Wake Lock logo após clique do utilizador
+                
+                // Sempre abre o modal — permite configurar SSID/password em qualquer estado
                 wifiModal.classList.add('show');
-                // Auto-tentar ligação ao abrir o modal se houver IP guardado
-                const saved = localStorage.getItem('lptUnoWifiIp');
-                if (saved && !sseConnected) {
-                    document.getElementById('wifiIpInput').value = saved;
-                    setTimeout(() => connectSSE(saved), 300);
+                // Se estava em contagem/retry: cancela e fica à espera de ação manual
+                if (wifiBtn.classList.contains('wifi-searching')) {
+                    if (wifiAutoRetryTimer) { clearTimeout(wifiAutoRetryTimer); wifiAutoRetryTimer = null; }
+                    if (_cntInterval)       { clearInterval(_cntInterval);      _cntInterval = null; }
+                    wifiBtn.classList.remove('wifi-searching');
+                    wifiBtn.textContent = '📶 Connect WiFi';
                 }
+                // Auto-preencher IP guardado no campo
+                const saved = localStorage.getItem(WIFI_MANUAL_IP_KEY) || localStorage.getItem(WIFI_LAST_HOST_KEY) || localStorage.getItem('lptUnoWifiIp');
+                if (saved) document.getElementById('wifiIpInput').value = saved;
+                // Auto-preencher SSID guardado
+                const savedSsid = localStorage.getItem('lptUnoWifiSsid');
+                if (savedSsid) document.getElementById('wifiSsidInput').value = savedSsid;
             });
         }
         if (closeWifiModal) {
@@ -4638,11 +5218,42 @@ function testEmail() {
                 const pass = document.getElementById('wifiPassInput').value;
                 const statusEl = document.getElementById('wifiCredsStatus');
                 if (!ssid) { statusEl.style.color = '#dc3545'; statusEl.textContent = '⚠️ SSID obrigatório'; return; }
-                if (!isConnected || !writer) { statusEl.style.color = '#dc3545'; statusEl.textContent = '⚠️ Arduino não conectado via Serial'; return; }
+                if (!isConnected || !writer) { statusEl.style.color = '#dc3545'; statusEl.textContent = '⚠️ Arduino não conectado via USB'; return; }
+                
+                // Salvar rede e senha localmente para uso futuro
+                localStorage.setItem('lptUnoWifiSsid', ssid);
+                localStorage.setItem('lptUnoWifiPass', pass);
+                
                 try {
-                    await writer.write(new TextEncoder().encode(`CMD:WIFI:${ssid}:${pass}\n`));
-                    statusEl.style.color = '#28a745';
-                    statusEl.textContent = '✅ Enviado! Arduino vai reiniciar...';
+                    // Enviar o comando com \r\n para garantia máxima de compatibilidade
+                    const cmd = `CMD:WIFI:${ssid}:${pass}\r\n`;
+                    await writer.write(cmd);
+                    statusEl.style.color = '#fd7e14';
+                    statusEl.textContent = '⏳ A aguardar confirmação do Arduino...';
+                    
+                    // Aguardar resposta "OK:WIFI:SAVED" no stream de leitura (timeout 5s)
+                    const savedCallback = (line) => {
+                        if (line.includes('OK:WIFI:SAVED') || line.includes('OK:RESTARTING')) {
+                            statusEl.style.color = '#28a745';
+                            statusEl.textContent = '✅ Gravado! Arduino vai reiniciar e ligar ao Wi-Fi...';
+                            window.__wifiSaveListener = null;
+                        } else if (line.includes('ERR:WIFI')) {
+                            statusEl.style.color = '#dc3545';
+                            statusEl.textContent = '❌ Erro no Arduino: formato inválido';
+                            window.__wifiSaveListener = null;
+                        }
+                    };
+                    window.__wifiSaveListener = savedCallback;
+                    // Timeout de segurança: 6 segundos
+                    setTimeout(() => {
+                        if (window.__wifiSaveListener) {
+                            window.__wifiSaveListener = null;
+                            if (statusEl.textContent.includes('aguardar')) {
+                                statusEl.style.color = '#ffc107';
+                                statusEl.textContent = '⚠️ Sem resposta do Arduino. Verifique a ligação USB e tente novamente.';
+                            }
+                        }
+                    }, 6000);
                 } catch (e) {
                     statusEl.style.color = '#dc3545';
                     statusEl.textContent = '❌ Erro: ' + e.message;
@@ -4650,12 +5261,26 @@ function testEmail() {
             });
         }
 
-        // Conectar via SSE
-        // Restaurar último IP conhecido do localStorage
-        (function restoreLastIp() {
-            const saved = localStorage.getItem('lptUnoWifiIp');
-            const input = document.getElementById('wifiIpInput');
-            if (saved && input) input.value = saved;
+        // Conectar via HTTP streaming
+        // Restaurar último IP e rede conhecidos
+        (function restoreWifiConfigs() {
+            const savedIp = localStorage.getItem(WIFI_MANUAL_IP_KEY) || localStorage.getItem(WIFI_LAST_HOST_KEY) || localStorage.getItem('lptUnoWifiIp');
+            if (savedIp) {
+                const input = document.getElementById('wifiIpInput');
+                if (input) input.value = savedIp;
+            }
+            
+            const savedSsid = localStorage.getItem('lptUnoWifiSsid');
+            if (savedSsid) {
+                const inputSsid = document.getElementById('wifiSsidInput');
+                if (inputSsid) inputSsid.value = savedSsid;
+            }
+            
+            const savedPass = localStorage.getItem('lptUnoWifiPass');
+            if (savedPass) {
+                const inputPass = document.getElementById('wifiPassInput');
+                if (inputPass) inputPass.value = savedPass;
+            }
         })();
 
         // Auto-descoberta: scan de subnet para encontrar o Arduino
@@ -4675,6 +5300,7 @@ function testEmail() {
                     });
                     if (ip) {
                         ipInput.value = ip;
+                        localStorage.setItem(WIFI_MANUAL_IP_KEY, ip);
                         localStorage.setItem('lptUnoWifiIp', ip);
                         showSseStatus(`✅ LPT-UNO encontrado em ${ip}`, 'ok');
                         autoDiscoverBtn.disabled = false;
@@ -4689,51 +5315,174 @@ function testEmail() {
             });
         }
 
-        // Tenta aceder a /status no host dado; retorna true se for um LPT-UNO
-        async function probeArduino(host) {
+        // Tenta aceder a /ping no host dado; retorna true se for um LPT-UNO
+        async function probeArduino(host, timeout = WIFI_QUICK_PROBE_TIMEOUT) {
             try {
                 const ctrl = new AbortController();
-                const timer = setTimeout(() => ctrl.abort(), 2000);
-                const r = await fetch(`http://${host}/status`, { signal: ctrl.signal });
+                const timer = setTimeout(() => ctrl.abort(), timeout);
+                const r = await fetch(`http://${host}/ping`, { signal: ctrl.signal, cache: 'no-store' });
                 clearTimeout(timer);
                 if (!r.ok) return false;
                 const json = await r.json().catch(() => null);
-                return json && (json.version !== undefined);
+                return json && json.d === 'LPT-UNO';
             } catch { return false; }
+        }
+
+        function getRecentWifiHosts() {
+            const hosts = [];
+            const lastHost = localStorage.getItem(WIFI_LAST_HOST_KEY);
+            if (lastHost) hosts.push(lastHost);
+
+            try {
+                const parsed = JSON.parse(localStorage.getItem(WIFI_LAST_HOSTS_KEY) || '[]');
+                if (Array.isArray(parsed)) {
+                    for (const host of parsed) {
+                        if (typeof host === 'string') hosts.push(host);
+                    }
+                }
+            } catch {}
+
+            return [...new Set(hosts.filter(Boolean))];
+        }
+
+        function rememberSuccessfulWifiHost(host) {
+            if (!host) return;
+            localStorage.setItem(WIFI_LAST_HOST_KEY, host);
+
+            const history = getRecentWifiHosts().filter(item => item !== host);
+            history.unshift(host);
+            localStorage.setItem(WIFI_LAST_HOSTS_KEY, JSON.stringify(history.slice(0, 4)));
+
+            if (host !== 'lpt-uno.local') {
+                localStorage.setItem(WIFI_MANUAL_IP_KEY, host);
+                localStorage.setItem('lptUnoWifiIp', host);
+            }
+        }
+
+        async function tryDirectStreamHost(host, timeoutMs = 800) {
+            if (!host) return false;
+            try {
+                await connectSSE(host, { timeoutMs, silent: true });
+                return sseConnected;
+            } catch {
+                return false;
+            }
+        }
+
+        async function probePreferredHosts(savedWifiIp) {
+            const hosts = [];
+            for (const host of getRecentWifiHosts()) hosts.push(host);
+            if (savedWifiIp) hosts.push(savedWifiIp);
+            hosts.push('lpt-uno.local');
+
+            const uniqueHosts = [...new Set(hosts.filter(Boolean))];
+
+            if (uniqueHosts.length === 0) return null;
+
+            return await new Promise(resolve => {
+                let pending = uniqueHosts.length;
+                let resolved = false;
+
+                for (const host of uniqueHosts) {
+                    probeArduino(host).then(ok => {
+                        if (resolved) return;
+                        if (ok) {
+                            resolved = true;
+                            resolve(host);
+                            return;
+                        }
+                        pending--;
+                        if (pending === 0) resolve(null);
+                    });
+                }
+            });
         }
 
         // Tenta descobrir subnet a partir do último IP guardado ou via WebRTC
         async function guessSubnet() {
+            // Tentar do último IP salvo
+            const savedIp = localStorage.getItem('lptUnoWifiIp');
+            if (savedIp && /^(\d{1,3}\.\d{1,3}\.\d{1,3})\.\d+$/.test(savedIp)) {
+                const subnet = savedIp.match(/^(\d{1,3}\.\d{1,3}\.\d{1,3})\.\d+$/)[1];
+                // Verificar se não é localhost
+                if (!subnet.startsWith('127.')) {
+                    console.log(`🔍 Usando subnet do último IP: ${subnet}`);
+                    return subnet;
+                }
+            }
+
             // Tentar WebRTC para obter IP local
             try {
                 const pc = new RTCPeerConnection({ iceServers: [] });
                 pc.createDataChannel('');
                 await pc.createOffer().then(o => pc.setLocalDescription(o));
-                await new Promise(r => setTimeout(r, 500));
+                await new Promise(r => setTimeout(r, 600));
                 const sdp = pc.localDescription && pc.localDescription.sdp;
                 pc.close();
                 if (sdp) {
-                    const m = sdp.match(/\b(\d{1,3}\.(\d{1,3})\.(\d{1,3}))\.\d+\b/);
-                    if (m) return m[1]; // e.g. "192.168.1"
+                    // Procurar por todos os IPs no SDP
+                    const matches = sdp.matchAll(/\b(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})\b/g);
+                    for (const match of matches) {
+                        const ip = match[0];
+                        const first = parseInt(match[1]);
+                        const second = parseInt(match[2]);
+                        
+                        // Filtrar apenas redes privadas (ignorar 127.x, 0.x, 255.x, etc.)
+                        if (first === 192 && second === 168) {
+                            const subnet = `${first}.${second}.${match[3]}`;
+                            console.log(`🔍 WebRTC detectou subnet: ${subnet}`);
+                            return subnet;
+                        } else if (first === 10) {
+                            const subnet = `${first}.${second}.${match[3]}`;
+                            console.log(`🔍 WebRTC detectou subnet: ${subnet}`);
+                            return subnet;
+                        } else if (first === 172 && second >= 16 && second <= 31) {
+                            const subnet = `${first}.${second}.${match[3]}`;
+                            console.log(`🔍 WebRTC detectou subnet: ${subnet}`);
+                            return subnet;
+                        }
+                    }
                 }
             } catch { }
-            // Fallback: tentar subnets comuns
+            
+            // Fallback: tentar subnets comuns (mais provável primeiro)
+            console.log('🔍 Usando subnet padrão: 192.168.1');
             return '192.168.1';
         }
 
         async function scanSubnet(subnet, progress) {
-            const total = 30; // scan .1-.30 rapidamente; aumentar se necessário
-            for (let i = 1; i <= total; i++) {
-                progress(i, total);
-                const ip = `${subnet}.${i}`;
-                if (await probeArduino(ip)) return ip;
+            // Ordem de prioridade: .100-149 (DHCP tipico), .1-99, .150-254
+            const ranges = [
+                [100, 149],   // 1º: range DHCP tipico de routers caseiros
+                [1,   99],    // 2º: IPs baixos (estaticos / gateway)
+                [150, 254]    // 3º: range alto
+            ];
+            const batchSize = 50;  // batch maior → menos rondas
+            const total = 254;
+
+            // Resolve mal o 1.º probe responder OK dentro do batch — sem esperar os restantes
+            function firstFound(ips) {
+                return new Promise(resolve => {
+                    let remaining = ips.length;
+                    if (!remaining) { resolve(null); return; }
+                    ips.forEach(ip => {
+                        probeArduino(ip).then(ok => {
+                            if (ok) resolve(ip);
+                            else if (--remaining === 0) resolve(null);
+                        });
+                    });
+                });
             }
-            // segunda passagem .31-.100
-            const total2 = 100;
-            for (let i = 31; i <= total2; i++) {
-                progress(i, total2);
-                const ip = `${subnet}.${i}`;
-                if (await probeArduino(ip)) return ip;
+
+            for (const [rangeStart, rangeEnd] of ranges) {
+                for (let i = rangeStart; i <= rangeEnd; i += batchSize) {
+                    const end = Math.min(i + batchSize - 1, rangeEnd);
+                    const ips = [];
+                    for (let h = i; h <= end; h++) ips.push(`${subnet}.${h}`);
+                    progress(end, total);
+                    const found = await firstFound(ips);
+                    if (found) return found;
+                }
             }
             return null;
         }
@@ -4742,6 +5491,9 @@ function testEmail() {
             connectWifiBtn.addEventListener('click', () => {
                 const ip = document.getElementById('wifiIpInput').value.trim();
                 if (!ip) { showSseStatus('⚠️ Introduza o IP do Arduino', 'warning'); return; }
+                wifiUserDisconnected = false; // utilizador quer ligar — re-ativar retry automático
+                if (wifiAutoRetryTimer) { clearTimeout(wifiAutoRetryTimer); wifiAutoRetryTimer = null; }
+                localStorage.setItem(WIFI_MANUAL_IP_KEY, ip);
                 localStorage.setItem('lptUnoWifiIp', ip);
                 connectSSE(ip);
             });
@@ -4759,55 +5511,210 @@ function testEmail() {
             wifiSseStatusEl.textContent = msg;
         }
 
-        function connectSSE(ip) {
-            if (sseSource) disconnectSSE();
-            const url = `http://${ip}/events`;
-            showSseStatus(`🔄 A conectar a ${url} ...`, 'info');
+        // ─────────────────────────────────────────────────────────────────
+        // Helper: contagem decrescente no botão WiFi + callback ao terminar
+        // ─────────────────────────────────────────────────────────────────
+        let _cntInterval = null;
+        function _startWifiCountdown(secs, callback) {
+            if (wifiAutoRetryTimer) { clearTimeout(wifiAutoRetryTimer); wifiAutoRetryTimer = null; }
+            if (_cntInterval)       { clearInterval(_cntInterval);      _cntInterval = null; }
+            let rem = secs;
+            const tick = () => {
+                if (wifiBtn && !wifiBtn.classList.contains('wifi-active')) {
+                    wifiBtn.classList.add('wifi-searching');
+                    wifiBtn.textContent = `📶 Retry ${rem}s`;
+                }
+            };
+            tick();
+            _cntInterval = setInterval(() => {
+                rem--;
+                tick();
+                if (rem <= 0) { clearInterval(_cntInterval); _cntInterval = null; }
+            }, 1000);
+            wifiAutoRetryTimer = setTimeout(() => {
+                if (_cntInterval) { clearInterval(_cntInterval); _cntInterval = null; }
+                callback();
+            }, secs * 1000);
+        }
+
+        // ─────────────────────────────────────────────────────────────────
+        // Reconexão inteligente após queda do stream:
+        //   1.ª tentativa — IP direto em 5 s (Arduino pode ter mudado de IP)
+        //   2.ª tentativa — scan completo em 30 s
+        // ─────────────────────────────────────────────────────────────────
+        function _scheduleWifiReconnect(lastIp) {
+            if (wifiUserDisconnected) { if (wifiBtn) wifiBtn.textContent = '📶 Connect WiFi'; return; }
+            showSseStatus('❌ Ligação perdida. Nova tentativa em 3s...', 'error');
+            _startWifiCountdown(3, async () => {
+                if (wifiUserDisconnected) return;
+                if (await probeArduino(lastIp)) {
+                    connectSSE(lastIp);
+                } else {
+                    // IP guardado falhou — scan imediato sem esperar 30s
+                    showSseStatus('⚠️ Arduino sem resposta. A procurar na rede...', 'warning');
+                    if (!wifiUserDisconnected && !isConnected) startAutoDiscovery();
+                }
+            });
+        }
+
+        // ─────────────────────────────────────────────────────────────────
+        function clearWifiStreamHandles() {
+            wifiStreamReader = null;
+            wifiStreamAbort = null;
+        }
+
+        // connectSSE — mantém o nome para minimizar alterações, mas agora usa
+        // streaming HTTP bruto com fetch() + ReadableStream.
+        // ─────────────────────────────────────────────────────────────────
+        async function connectSSE(ip, options = {}) {
+            const connectionId = ++wifiStreamConnectId;
+            if (wifiStreamAbort) wifiStreamAbort.abort();
+            clearWifiStreamHandles();
+            sseConnected = false;
+            const url = `http://${ip}/stream`;
+            const timeoutMs = options.timeoutMs || WIFI_CONNECT_TIMEOUT;
+            if (!options.silent) showSseStatus(`🔄 A conectar a ${url}...`, 'info');
+            if (wifiBtn) { wifiBtn.classList.add('wifi-searching'); wifiBtn.classList.remove('wifi-active'); }
+
             try {
-                sseSource = new EventSource(url);
-                sseSource.onopen = () => {
-                    sseConnected = true;
-                    showSseStatus(`✅ Ligado a ${ip} via WiFi (SSE)`, 'ok');
-                    connectWifiBtn.style.display = 'none';
-                    disconnectWifiBtn.style.display = 'inline-block';
-                    wifiBtn.classList.add('wifi-active');
-                    wifiBtn.textContent = '📶 WiFi ✔';
-                };
-                sseSource.onmessage = (e) => {
-                    let text = e.data;
-                    // Decode \xNN escapes sent by firmware
-                    text = text.replace(/\\x([0-9a-fA-F]{2})/g, (_, h) => String.fromCharCode(parseInt(h, 16)));
-                    for (const ch of text) {
-                        displayByte(ch.charCodeAt(0));
-                        byteCount++;
-                        if (ch.charCodeAt(0) >= 32 && ch.charCodeAt(0) <= 126) pendingData += ch;
-                        else if (ch === '\n' || ch === '\r') pendingData += ch;
-                    }
-                    byteCountEl.textContent = byteCount;
-                    resetInactivityTimer();
-                };
-                sseSource.onerror = () => {
-                    if (sseConnected) showSseStatus('❌ Conexão WiFi perdida', 'error');
-                    else showSseStatus('❌ Não foi possível conectar. Verifique o IP e que o Arduino está ligado.', 'error');
-                    sseConnected = false;
-                    connectWifiBtn.style.display = 'inline-block';
-                    disconnectWifiBtn.style.display = 'none';
-                    wifiBtn.classList.remove('wifi-active');
-                    wifiBtn.textContent = '📶 WiFi';
-                };
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), timeoutMs);
+                wifiStreamAbort = controller;
+                const response = await fetch(url, {
+                    signal: controller.signal,
+                    cache: 'no-store',
+                    mode: 'cors'
+                });
+                clearTimeout(timeout);
+
+                if (connectionId !== wifiStreamConnectId) return;
+                if (!response.ok || !response.body) throw new Error(`HTTP ${response.status}`);
+
+                wifiStreamReader = response.body.getReader();
+                sseConnected = true;
+                _resetOnConnect();
+                if (wifiAutoRetryTimer) { clearTimeout(wifiAutoRetryTimer); wifiAutoRetryTimer = null; }
+                if (_cntInterval)       { clearInterval(_cntInterval);      _cntInterval = null; }
+                if (!options.silent) showSseStatus(`✅ Ligado a ${ip} via WiFi (stream)`, 'ok');
+                rememberSuccessfulWifiHost(ip);
+                connectWifiBtn.style.display    = 'none';
+                disconnectWifiBtn.style.display = 'inline-block';
+                wifiBtn.classList.remove('wifi-searching');
+                wifiBtn.classList.add('wifi-active');
+                wifiBtn.textContent = '✔ WiFi';
+                requestWakeLock();
+
+                while (connectionId === wifiStreamConnectId) {
+                    const { value, done } = await wifiStreamReader.read();
+                    if (done) break;
+                    appendWifiBytes(value);
+                }
+
+                if (connectionId !== wifiStreamConnectId) return;
+                throw new Error('Stream fechado');
             } catch (err) {
-                showSseStatus('❌ Erro: ' + err.message, 'error');
+                if (connectionId !== wifiStreamConnectId) return;
+                const wasConnected = sseConnected;
+                const isAbort = err && err.name === 'AbortError';
+
+                sseConnected = false;
+                clearWifiStreamHandles();
+                connectWifiBtn.style.display    = 'inline-block';
+                disconnectWifiBtn.style.display = 'none';
+                wifiBtn.classList.remove('wifi-active');
+                wifiBtn.classList.remove('wifi-searching');
+
+                if (wifiUserDisconnected && isAbort) return;
+
+                if (wasConnected) {
+                    _scheduleWifiReconnect(ip);
+                } else if (document.getElementById('wifiModal').classList.contains('show') && !options.silent) {
+                    showSseStatus('❌ Não foi possível conectar. Verifique o IP e se o Arduino está ligado.', 'error');
+                    wifiBtn.textContent = '📶 Connect WiFi';
+                } else if (!options.silent) {
+                    wifiBtn.textContent = '📶 Connect WiFi';
+                    if (!wifiUserDisconnected && !isConnected)
+                        _startWifiCountdown(10, () => { if (!wifiUserDisconnected && !isConnected) startAutoDiscovery(); });
+                }
             }
         }
 
         function disconnectSSE() {
-            if (sseSource) { sseSource.close(); sseSource = null; }
+            wifiUserDisconnected = true;
+            if (wifiAutoRetryTimer) { clearTimeout(wifiAutoRetryTimer); wifiAutoRetryTimer = null; }
+            if (_cntInterval)       { clearInterval(_cntInterval);      _cntInterval = null; }
+            if (wifiStreamAbort) wifiStreamAbort.abort();
+            clearWifiStreamHandles();
             sseConnected = false;
-            connectWifiBtn.style.display = 'inline-block';
+            if (wifiBtn) { wifiBtn.classList.remove('wifi-active'); wifiBtn.classList.remove('wifi-searching'); wifiBtn.textContent = '📶 Connect WiFi'; }
+            connectWifiBtn.style.display    = 'inline-block';
             disconnectWifiBtn.style.display = 'none';
-            wifiBtn.classList.remove('wifi-active');
-            wifiBtn.textContent = '📶 WiFi';
             showSseStatus('⛔ Desligado do Arduino WiFi', 'warning');
+        }
+
+        // ─────────────────────────────────────────────────────────────────
+        // Auto-descoberta WiFi (escopo global, partilhada por SSE e IIFE)
+        //   0. Tenta lpt-uno.local (mDNS — instantâneo se firmware >= 1.1)
+        //   1. Tenta IP guardado no localStorage
+        //   2. Scan inteligente à subnet (prioridade .100-149)
+        // ─────────────────────────────────────────────────────────────────
+        async function startAutoDiscovery() {
+            if (sseConnected) return;   // já ligado via WiFi
+            if (isConnected)  return;   // ligado via USB — scan WiFi desnecessário
+
+            const savedWifiIp = localStorage.getItem(WIFI_MANUAL_IP_KEY) || localStorage.getItem('lptUnoWifiIp');
+
+            // 0. Último host bom: tentar stream direto sem round-trip extra de /ping
+            const lastGoodHost = localStorage.getItem(WIFI_LAST_HOST_KEY);
+            if (lastGoodHost) {
+                if (!wifiBtn.classList.contains('wifi-active')) {
+                    wifiBtn.classList.add('wifi-searching');
+                    wifiBtn.textContent = '📶 Último host...';
+                }
+                if (await tryDirectStreamHost(lastGoodHost, 800)) return;
+            }
+
+            // 1. IP guardado + mDNS em paralelo — caminho mais rápido após o host conhecido
+            if (!wifiBtn.classList.contains('wifi-active')) {
+                wifiBtn.classList.add('wifi-searching');
+                wifiBtn.textContent = savedWifiIp ? '📶 A testar...' : '📶 lpt-uno.local...';
+            }
+            const preferredHost = await probePreferredHosts(savedWifiIp);
+            if (preferredHost) {
+                const input = document.getElementById('wifiIpInput');
+                if (input) input.value = preferredHost;
+                if (preferredHost !== 'lpt-uno.local') {
+                    localStorage.setItem(WIFI_MANUAL_IP_KEY, preferredHost);
+                    localStorage.setItem('lptUnoWifiIp', preferredHost);
+                }
+                connectSSE(preferredHost, { timeoutMs: 1000 });
+                return;
+            }
+
+            // 1. Scan à subnet
+            if (!wifiBtn.classList.contains('wifi-active')) { wifiBtn.classList.add('wifi-searching'); wifiBtn.textContent = '📶 A procurar...'; }
+            const subnet = await guessSubnet();
+            if (!subnet) {
+                if (!wifiUserDisconnected && !isConnected)
+                    _startWifiCountdown(30, () => { if (!wifiUserDisconnected && !isConnected) startAutoDiscovery(); });
+                return;
+            }
+
+            const ip = await scanSubnet(subnet, (n) => {});
+            if (ip) {
+                localStorage.setItem(WIFI_MANUAL_IP_KEY, ip);
+                localStorage.setItem('lptUnoWifiIp', ip);
+                const input = document.getElementById('wifiIpInput');
+                if (input) input.value = ip;
+                connectSSE(ip);
+            } else {
+                if (!wifiUserDisconnected) {
+                    showSseStatus('⚠️ Arduino não encontrado. Nova tentativa em 30s...', 'warning');
+                    _startWifiCountdown(30, () => { if (!wifiUserDisconnected && !isConnected) startAutoDiscovery(); });
+                } else {
+                    if (!wifiBtn.classList.contains('wifi-active')) { wifiBtn.classList.remove('wifi-searching'); wifiBtn.textContent = '📶 Connect WiFi'; }
+                }
+            }
         }
 
         // ========================================
@@ -4816,17 +5723,14 @@ function testEmail() {
         (function() {
             const urlParams = new URLSearchParams(window.location.search);
             const isKioskMode = urlParams.get('kiosk') === 'true';
-            
+
             console.log('✅ Sistema LPT-UNO iniciado');
 
-            // Auto-ligar WiFi/SSE se houver IP guardado
-            const savedWifiIp = localStorage.getItem('lptUnoWifiIp');
-            if (savedWifiIp) {
-                console.log(`📶 A tentar auto-ligar WiFi a: ${savedWifiIp}`);
-                // Pequeno delay para garantir que o DOM está pronto
-                setTimeout(() => connectSSE(savedWifiIp), 1500);
-            }
-            
+            // Iniciar WiFi auto-discovery cedo para reduzir tempo de ligação perceptível
+            wifiUserDisconnected = false;
+            // Só inicia scan WiFi se ainda não houver ligação USB
+            setTimeout(() => { if (!isConnected) startAutoDiscovery(); }, 400);
+
             if (isKioskMode) {
                 console.log('');
                 console.log('═══════════════════════════════════════════');
@@ -4838,11 +5742,11 @@ function testEmail() {
                 console.log('═══════════════════════════════════════════');
                 console.log('');
             }
-            
+
             console.log('💾 Arquivos serão salvos na pasta Downloads');
-            
-            // Detecção automática de dispositivo (Auto-Connect)
-            setTimeout(tryAutoConnect, 1000); // 1s de delay para garantir renderização correta
+
+            // Detecção automática de dispositivo USB (Auto-Connect)
+            setTimeout(tryAutoConnect, 1000);
         })();
     </script>
 </body>
