@@ -43,13 +43,9 @@ Turn an Arduino Uno into a **LPT/DB25 parallel port emulator**. Data received vi
 
 The R4 WiFi is fully supported with the same wiring. To use WiFi:
 
-1. Set your credentials at the top of the sketch:
-   ```cpp
-   const char* ssid     = "YOUR_SSID";
-   const char* password = "YOUR_PASSWORD";
-   ```
-2. Upload the firmware — the board prints its IP on the Serial Monitor.
-3. In **web_interface.html**, use **WiFi Connect → Auto-Discover** or enter the IP manually.
+1. Upload the firmware to the Uno R4 WiFi.
+2. Open **web_interface.html**, go to **Settings → WiFi** and enter your network credentials (SSID and password).
+3. Click **Connect** — the interface discovers the board automatically or you can enter the IP manually.
 
 | | Uno R3 | Uno R4 WiFi |
 |---|---|---|
