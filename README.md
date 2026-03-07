@@ -1,9 +1,10 @@
 # LPT-UNO - Parallel Port Printer Emulator
 
-[![Arduino](https://img.shields.io/badge/Arduino-Uno-00979D?logo=arduino)](https://www.arduino.cc/)
+[![Arduino](https://img.shields.io/badge/Arduino-Uno%20R3%2FR4-00979D?logo=arduino)](https://www.arduino.cc/)
 [![Firmware](https://img.shields.io/badge/Firmware-v1.0-blue)]()
 [![License](https://img.shields.io/badge/License-MIT-green)]()
 [![Web Serial API](https://img.shields.io/badge/Web%20Serial%20API-Chrome%2FEdge-orange)]()
+[![WiFi](https://img.shields.io/badge/WiFi-Uno%20R4%20WiFi-blue?logo=wifi)]()
 
 Transform your Arduino Uno into a **parallel port printer emulator (LPT/DB25)** that receives data through the parallel interface and forwards it via USB Serial to your PC for visualization and printing in a modern web browser with advanced features.
 
@@ -44,6 +45,8 @@ Perfect for reviving old DOS applications, legacy software testing, or education
 
 > Connect to the Arduino using the native app's Connect control to start receiving data.
 
+> **Using an Uno R4 WiFi?** The `LPT-UNO-Wifi` branch adds native WiFi support. The app can discover and connect to the board over the network — no USB cable required after initial setup. See [Uno R4 WiFi Setup](#-arduino-uno-r4-wifi) below.
+
 ---
 
 ## 🔌 Hardware Setup
@@ -63,6 +66,41 @@ Perfect for reviving old DOS applications, legacy software testing, or education
 - **Native App:** build and run `LPTUnoApp` (see `LPTUnoApp/README.md`) for Windows users.
 
 **More details:** see [docs/TECHNICAL.md](docs/TECHNICAL.md) (timings, wiring, troubleshooting).
+
+---
+
+## 📶 Arduino Uno R4 WiFi
+
+The **Arduino Uno R4 WiFi** is fully supported and recommended for wireless deployments. It uses the **Renesas RA4M1** (ARM Cortex-M4) with an integrated **ESP32-S3** coprocessor for WiFi/Bluetooth, while maintaining the same 5V I/O pinout as the R3 — so the wiring diagram is identical.
+
+### Advantages over Uno R3
+
+| Feature | Uno R3 | Uno R4 WiFi |
+|---------|--------|-------------|
+| Connectivity | USB Serial only | USB Serial **+ WiFi** |
+| CPU | ATmega328P (8-bit) | Renesas RA4M1 (32-bit) |
+| Clock | 16 MHz | 48 MHz |
+| RAM | 2 KB | 32 KB |
+| Flash | 32 KB | 256 KB |
+| 5V I/O | ✅ | ✅ |
+
+### WiFi Setup (Uno R4 WiFi)
+
+1. Open **LPT_Emulator/LPT_Emulator.ino** in Arduino IDE.
+2. In the `WiFi configuration` section at the top of the sketch, set your network credentials:
+   ```cpp
+   const char* ssid     = "YOUR_SSID";
+   const char* password = "YOUR_PASSWORD";
+   ```
+3. Upload the firmware. The board will connect to WiFi and print its IP address on the Serial Monitor.
+4. In **LPTUnoApp**, use **Auto-Discover** or enter the IP manually in the WiFi connection dialog.
+5. The app connects via TCP/SSE — no USB cable needed after this step.
+
+### Notes
+
+- The board assigns itself a static IP if DHCP fails (fallback: `192.168.4.1` in AP mode).
+- Wiring is **identical** to the R3 (STROBE → D2, D0..D7, ACK, BUSY, SELECT).
+- If connecting via USB is preferred, select the COM port in the app as usual — WiFi is optional.
 
 Example session:
 - **V** → Firmware Version: 1.0 (Build Date: Jan 25 2026 14:30:00)
@@ -112,7 +150,7 @@ Example session:
 ## 🔧 Technical Specifications
 
 ### Hardware
-- **Microcontroller**: ATmega328P (Arduino Uno)
+- **Microcontroller**: ATmega328P (Uno R3) / Renesas RA4M1 + ESP32-S3 (Uno R4 WiFi)
 - **Input pins**: 9 (8 data + 1 interrupt)
 - **Output pins**: 3 (ACK, BUSY, SELECT)
 - **Buffer size**: 256 bytes (circular)
@@ -127,10 +165,11 @@ Example session:
 - **Monitoring and printing**: via LPT-UNO_MoveToData.ps1
 
 ### Compatibility
-- **Arduino boards**: Uno R3, Uno R4 (5V variants)
+- **Arduino boards**: Uno R3 (ATmega328P), Uno R4 WiFi (RA4M1 + ESP32-S3)
 - **Browsers**: Chrome 89+, Edge 89+, Opera 76+
 - **Operating systems**: Windows 10/11, Linux, macOS
 - **Protocols**: IEEE 1284 compatibility mode
+- **Connectivity**: USB Serial (R3 & R4), WiFi TCP/SSE (R4 WiFi only)
 
 ---
 
