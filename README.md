@@ -1,7 +1,7 @@
 # LPT-UNO - Parallel Port Printer Emulator
 
 [![Arduino](https://img.shields.io/badge/Arduino-Uno%20R3%2FR4-00979D?logo=arduino)](https://www.arduino.cc/)
-[![Firmware](https://img.shields.io/badge/Firmware-v1.0-blue)]()
+[![Firmware](https://img.shields.io/badge/Firmware-v1.1-blue)]()
 [![License](https://img.shields.io/badge/License-MIT-green)]()
 [![Web Serial API](https://img.shields.io/badge/Web%20Serial%20API-Chrome%2FEdge-orange)]()
 [![WiFi](https://img.shields.io/badge/WiFi-Uno%20R4%20WiFi-blue?logo=wifi)]()
@@ -31,7 +31,8 @@ Perfect for reviving old DOS applications, legacy software testing, or education
 ## Features
 
 - Full IEEE 1284 compatibility (Parallel LPT/DB25)
-- Native Windows app (WPF) with real-time visualization and selectable encodings (UTF‑8 default)
+- Web interface (`web_interface.html`) with real-time visualization and selectable encodings (UTF‑8 default)
+- WiFi support via Arduino Uno R4 WiFi (TCP/SSE, auto-discovery)
 - Auto-save and optional auto-print via provided scripts
 - 256‑byte circular buffer, interrupt-driven (low-latency)
 
@@ -40,12 +41,10 @@ Perfect for reviving old DOS applications, legacy software testing, or education
 ## Quick Start (3 steps)
 
 1. Upload firmware: open **LPT_Emulator/LPT_Emulator.ino** in Arduino IDE and upload at 115200 baud.
-2. Run the native Windows application: build/run `LPTUnoApp` (see `LPTUnoApp/README.md`) to open the LPT-UNO native interface. The legacy `web_interface.html` and helper scripts were removed in this branch in favor of the native app.
-3. Auto-print (optional): enable via the native app (creates `%APPDATA%/LPT-UNO/.autoprint_enabled`).
+2. Open **web_interface.html** in Chrome/Edge and click **Connect** to select the Arduino COM port.
+3. Auto-print (optional): enable the **Auto-Print** toggle in the web interface.
 
-> Connect to the Arduino using the native app's Connect control to start receiving data.
-
-> **Using an Uno R4 WiFi?** The `LPT-UNO-Wifi` branch adds native WiFi support. The app can discover and connect to the board over the network — no USB cable required after initial setup. See [Uno R4 WiFi Setup](#-arduino-uno-r4-wifi) below.
+> **Using an Uno R4 WiFi?** The firmware supports WiFi — see [Uno R4 WiFi Setup](#-arduino-uno-r4-wifi) below to connect without USB.
 
 ---
 
@@ -63,7 +62,7 @@ Perfect for reviving old DOS applications, legacy software testing, or education
 - Use **5V TTL** levels; avoid 3.3V boards without level shifting.
 - Ground DB25 pins **18–25** to Arduino GND.
 - **Firmware:** upload **LPT_Emulator/LPT_Emulator.ino** at **115200** baud.
-- **Native App:** build and run `LPTUnoApp` (see `LPTUnoApp/README.md`) for Windows users.
+- **Web Interface:** open `web_interface.html` in Chrome/Edge (Web Serial API required).
 
 **More details:** see [docs/TECHNICAL.md](docs/TECHNICAL.md) (timings, wiring, troubleshooting).
 
@@ -93,8 +92,8 @@ The **Arduino Uno R4 WiFi** is fully supported and recommended for wireless depl
    const char* password = "YOUR_PASSWORD";
    ```
 3. Upload the firmware. The board will connect to WiFi and print its IP address on the Serial Monitor.
-4. In **LPTUnoApp**, use **Auto-Discover** or enter the IP manually in the WiFi connection dialog.
-5. The app connects via TCP/SSE — no USB cable needed after this step.
+4. Open **web_interface.html**, click **WiFi Connect** and use **Auto-Discover** or enter the IP manually.
+5. The interface connects via TCP/SSE — no USB cable needed after this step.
 
 ### Notes
 
@@ -103,7 +102,7 @@ The **Arduino Uno R4 WiFi** is fully supported and recommended for wireless depl
 - If connecting via USB is preferred, select the COM port in the app as usual — WiFi is optional.
 
 Example session:
-- **V** → Firmware Version: 1.0 (Build Date: Jan 25 2026 14:30:00)
+- **V** → Firmware Version: 1.1 (Build Date: Mar 7 2026)
 - **S** → Buffer usage: 42/256 bytes
 - **R** → Buffer reset
 
@@ -112,9 +111,9 @@ Example session:
 <details>
 <summary>Advanced Usage (click to expand)</summary>
 
-- **Silent Printing (Windows):** Use the native app AutoPrint controls (see **Auto-Print** in the native app) to enable/disable automatic printing.
-- **Custom Printer:** Set your desired printer as the system default before launching the app.
-- **Testing Without Hardware:** Use the native app's developer/test features or simulate test data via serial input.
+- **Silent Printing (Windows):** Use the **Auto-Print** toggle in `web_interface.html` or the provided `.bat` helper scripts to enable/disable automatic printing.
+- **Custom Printer:** Set your desired printer as the system default before enabling auto-print.
+- **Testing Without Hardware:** Simulate test data via serial input using Arduino Serial Monitor.
 
 </details>
 
@@ -125,9 +124,10 @@ Example session:
 <details>
 <summary>Project structure (click to expand)</summary>
 
-- **LPT_Emulator/LPT_Emulator.ino**
-- **LPTUnoApp/** (Native Windows prototype, branch `LPT-UNO-Wifi`)
-- **PINOUT.txt**
+- **LPT_Emulator/LPT_Emulator.ino** — Arduino firmware (Uno R3 & R4 WiFi)
+- **web_interface.html** — Browser-based interface (Web Serial API)
+- **PINOUT.txt** — Full wiring diagram
+- **docs/TECHNICAL.md** — Technical reference
 - **README.md**
 
 </details>
@@ -138,7 +138,7 @@ Example session:
 <summary>Troubleshooting (click to expand)</summary>
 
 - **Arduino doesn't respond:** check USB cable, COM port, reset the board, re-upload firmware.
-- **Web interface can't connect:** use Chrome/Edge/Opera, close other apps using the serial port, refresh, check the console (F12).
+- **web_interface.html can't connect:** use Chrome/Edge/Opera, close other apps using the serial port, refresh, check the browser console (F12).
 - **No data received:** verify wiring and confirm STROBE is on pin 2; test with Arduino Serial Monitor.
 - **Auto-print issues:** ensure **.autoprint_enabled** exists in DATA and a default printer is configured.
 - **Characters garbled:** try different encoding (CP‑437 for DOS), check cables and grounding.
@@ -157,12 +157,12 @@ Example session:
 - **Response time**: < 2 µs (interrupt-driven)
 
 ### Software
-- **Firmware version**: 1.0
-- **Web interface**: removed in this branch; use the `LPTUnoApp` native app instead.
-- **Build date**: 2026-01-25
+- **Firmware version**: 1.1
+- **Interface**: `web_interface.html` (Web Serial API — Chrome/Edge)
+- **Build date**: 2026-03-07
 - **Serial speed**: 115200 baud
 - **Encoding**: UTF-8
-- **Monitoring and printing**: via LPT-UNO_MoveToData.ps1
+- **Monitoring and printing**: via `web_interface.html` + helper scripts
 
 ### Compatibility
 - **Arduino boards**: Uno R3 (ATmega328P), Uno R4 WiFi (RA4M1 + ESP32-S3)
