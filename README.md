@@ -10,8 +10,12 @@ Turn an Arduino Uno into a **LPT/DB25 parallel port emulator**. Data received vi
 > No parallel printer required. Works with old DOS apps, legacy software, and educational setups.
 
 <p align="center">
+  <img src="images/image0.jpg" width="45%" />
   <img src="images/image1.png" width="45%" />
+</p>
+<p align="center">
   <img src="images/image2.png" width="45%" />
+  <img src="images/image3.png" width="45%" />
 </p>
 
 ---
