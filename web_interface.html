@@ -4747,6 +4747,23 @@ function testEmail() {
             return matchedRecipients; // Retorna destinatários encontrados
         }
         
+        // Função: Extrair nome do concurso/prova dos dados recebidos
+        function extractContestName(data) {
+            // BRICON: "Concurso: BMANZANARES"
+            const briconMatch = data.match(/Concurso\s*:\s*(\S+)/i);
+            if (briconMatch) return briconMatch[1];
+
+            // UNIKON: "Local de solta MANZAN"
+            const unikonMatch = data.match(/Local\s+de\s+solta\s+(\S+)/i);
+            if (unikonMatch) return unikonMatch[1];
+
+            // Genérico: "Concurso XXXXX" ou "concurso 07"
+            const genericMatch = data.match(/concurso\s+(\S+)/i);
+            if (genericMatch) return genericMatch[1];
+
+            return null;
+        }
+
         // Função: Enviar email para um destinatário
         async function sendEmailToRecipient(recipient, data, timestamp, emailConfig, customFileName) {
             // Usando Google Apps Script - 100% gratuíto e ilimitado!
@@ -4773,8 +4790,19 @@ function testEmail() {
                         to: email,
                         toName: recipient.name,
                         fromName: emailConfig.senderName || 'LPT-UNO',
-                        subject: `LPT-UNO ${fileName}`,
-                        body: `Olá ${recipient.name},\n\nSegue em anexo os dados recebidos pela impressora LPT-UNO.\n\n---\nEnviado automaticamente em ${new Date().toLocaleString('pt-PT')}`,
+                        subject: (() => {
+                            const contest = extractContestName(data);
+                            return contest
+                                ? `LPT-UNO - Encestamento ${contest}`
+                                : `LPT-UNO - ${fileName}`;
+                        })(),
+                        body: (() => {
+                            const contest = extractContestName(data);
+                            const contestLine = contest
+                                ? `Segue em anexo os dados do encestamento de ${contest}.`
+                                : `Segue em anexo os dados recebidos pela impressora LPT-UNO.`;
+                            return `Olá ${recipient.name},\n\n${contestLine}\n\n---\nEnviado automaticamente em ${new Date().toLocaleString('pt-PT')}`;
+                        })(),
                         attachmentData: data,
                         attachmentName: `${fileName}_${timestamp}.txt`
                     };
