@@ -1603,6 +1603,16 @@
                                         <option value="Legal">Legal</option>
                                     </select>
                                 </div>
+                                <div class="modal-select-group">
+                                    <label for="printCopiesSelect" id="printCopiesLabel">Cópias:</label>
+                                    <select id="printCopiesSelect">
+                                        <option value="1">1 cópia</option>
+                                        <option value="2">2 cópias</option>
+                                        <option value="3">3 cópias</option>
+                                        <option value="4">4 cópias</option>
+                                        <option value="5">5 cópias</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -3593,11 +3603,37 @@ baudRate=115200
         // Regex de diagnóstico do firmware (compilada uma vez, fora do loop)
         const _diagLines = /^(\[WiFi\]|\[UNO\]|New WiFi client|Communication with WiFi|Attempting to connect|WiFi connection|No WiFi config|Connecting to SSID|WiFi: falha)/;
 
+        // Comandos ESC/P que levam 1 byte de parâmetro (3 bytes total: ESC + cmd + param)
+        // Sem este filtro, o byte parâmetro (ex: 0x20 = espaço) aparece no output
+        const _escThreeByte = new Set([
+            0x20, // ESC SP - inter-character spacing
+            0x21, // ESC !  - master select
+            0x33, // ESC 3  - line spacing n/216"
+            0x41, // ESC A  - line spacing n/72"
+            0x43, // ESC C  - form length (lines)
+            0x4A, // ESC J  - immediate line feed
+            0x4E, // ESC N  - skip-over-perforation
+            0x51, // ESC Q  - set right margin
+            0x52, // ESC R  - select intl charset
+            0x53, // ESC S  - super/subscript
+            0x57, // ESC W  - double-width on/off
+            0x62, // ESC b  - set vertical tab channel
+            0x65, // ESC e  - set vertical tab in channel
+            0x6A, // ESC j  - reverse line feed
+            0x6B, // ESC k  - select typeface
+            0x6C, // ESC l  - set left margin
+            0x70, // ESC p  - proportional spacing
+            0x72, // ESC r  - select color
+            0x73, // ESC s  - low-speed mode
+            0x78, // ESC x  - letter quality/draft
+        ]);
+
         // Buffer de linha para filtrar mensagens de diagnóstico do firmware
         let lineDisplayBuffer = '';
 
         // Função: Ler dados do Arduino
         async function readData() {
+            let escState = 0; // 0=normal, 1=viu ESC (aguarda cmd), 2=aguarda param de ESC
             try {
                 while (true) {
                     const { value, done } = await reader.read();
@@ -3654,6 +3690,11 @@ baudRate=115200
                     for (let i = 0; i < textValue.length; i++) {
                         const byte = textValue.charCodeAt(i);
                         const ch = String.fromCharCode(byte);
+
+                        // Filtrar sequências ESC/P (evita bytes parâmetro aparecerem no output)
+                        if (byte === 0x1B) { escState = 1; continue; }
+                        if (escState === 1) { escState = _escThreeByte.has(byte) ? 2 : 0; continue; }
+                        if (escState === 2) { escState = 0; continue; }
 
                         if (byte === 13) continue; // ignorar CR isolado
 
@@ -4057,6 +4098,8 @@ baudRate=115200
             if (plhEl) plhEl.value = prefs.printLineHeight || '1.2';
             const ppsEl = document.getElementById('printPaperSizeSelect');
             if (ppsEl) ppsEl.value = prefs.printPaperSize || 'A4';
+            const pcoEl = document.getElementById('printCopiesSelect');
+            if (pcoEl) pcoEl.value = String(prefs.printCopies || 1);
         });
         
         // Função: Fechar modal
@@ -4152,6 +4195,17 @@ baudRate=115200
                 prefs.printPaperSize = printPaperSizeSelect.value;
                 savePreferences(prefs);
                 showInfo(`🖨️ Tamanho do papel: ${printPaperSizeSelect.value}`);
+            });
+        }
+
+        // Escala de impressão — número de cópias
+        const printCopiesSelect = document.getElementById('printCopiesSelect');
+        if (printCopiesSelect) {
+            printCopiesSelect.addEventListener('change', () => {
+                const prefs = loadPreferences();
+                prefs.printCopies = parseInt(printCopiesSelect.value);
+                savePreferences(prefs);
+                showInfo(`🖨️ Cópias: ${printCopiesSelect.value}`);
             });
         }
         
@@ -4826,6 +4880,12 @@ function testEmail() {
                 console.log('⏱️ Timer não iniciado: auto-save, auto-print e auto-email desativados');
                 return; // Não iniciar timer se tudo estiver desativado
             }
+
+            // Não iniciar timer se não há dados pendentes (evita dupla impressão/email após FF)
+            if (!pendingData || pendingData.trim().length === 0) {
+                console.log('⏱️ Timer não iniciado: sem dados pendentes');
+                return;
+            }
             
             // Obter tempo configurado (em segundos)
             const timeInSeconds = prefs.autoSaveTime || 10;
@@ -4857,7 +4917,7 @@ function testEmail() {
         
         // Função: Lidar com inatividade (tempo configurado sem dados)
         function handleInactivity() {
-            const dataToSave = pendingData || output.textContent;
+            const dataToSave = pendingData;
             
             if (!dataToSave || dataToSave.trim().length === 0) {
                 return;
@@ -4952,22 +5012,28 @@ function testEmail() {
                 const printOrientation = prefs.printOrientation || 'portrait';
                 const printLineHeight  = prefs.printLineHeight  || '1.2';
                 const printPaperSize   = prefs.printPaperSize   || 'A4';
+                const printCopies      = parseInt(prefs.printCopies) || 1;
+
+                // Remover espaços em branco no fim de cada linha (padding DOS/ESC/P)
+                // Sem isto, maxLen fica inflacionado e o font-size calculado fica demasiado pequeno
+                const trimmedData = data.split('\n').map(l => l.trimEnd()).join('\n');
 
                 // Calcular font-size efectivo
                 let fontSize;
                 if (printFontSize === 'auto') {
                     // Largura útil (mm) varia com papel e orientação
                     const paperUsableWidths = {
-                        'A4:portrait': 180, 'A4:landscape': 270,
-                        'A3:portrait': 270, 'A3:landscape': 390,
-                        'Letter:portrait': 178, 'Letter:landscape': 240,
-                        'Legal:portrait': 178, 'Legal:landscape': 306,
+                        'A4:portrait': 190, 'A4:landscape': 277,
+                        'A3:portrait': 277, 'A3:landscape': 400,
+                        'Letter:portrait': 186, 'Letter:landscape': 248,
+                        'Legal:portrait': 186, 'Legal:landscape': 313,
                     };
-                    const usableW = paperUsableWidths[`${printPaperSize}:${printOrientation}`] || 180;
-                    const lines = data.split('\n');
+                    const usableW = paperUsableWidths[`${printPaperSize}:${printOrientation}`] || 190;
+                    const lines = trimmedData.split('\n');
                     const maxLen = lines.reduce((m, l) => Math.max(m, l.length), 1);
-                    // fontSize(pt) = usableW / (maxLen × charWidth_mm) ; charWidth_mm = 0.6em × 0.353mm/pt × 1pt
-                    const computed = Math.round(usableW / (maxLen * 0.2118));
+                    // Courier New: 10 CPI → 1 char = 1/10" = 2.54mm a 10pt
+                    // charWidth_mm = (fontSize_pt / 10) × 2.54  →  fontSize_pt = usableW / (maxLen × 0.254)
+                    const computed = Math.round(usableW / (maxLen * 0.254));
                     fontSize = Math.min(14, Math.max(6, computed)) + 'pt';
                 } else {
                     fontSize = printFontSize;
@@ -4986,19 +5052,19 @@ function testEmail() {
                 printFrame.style.visibility = 'hidden';
                 document.body.appendChild(printFrame);
 
-                // Escrever conteúdo no iframe
+                // Escrever conteúdo no iframe (usar trimmedData para não causar overflow por espaços)
                 const doc = printFrame.contentWindow.document;
                 doc.open();
                 doc.write('<html><head><meta charset="UTF-8"><title>LPT-UNO Print</title>');
                 doc.write('<style>');
                 doc.write('@media print { ');
                 doc.write(`  @page { margin: ${printMargin}; size: ${printPaperSize} ${printOrientation}; }`);
-                doc.write(`  body { margin: 0; padding: 0; font-family: "Courier New", monospace; font-size: ${fontSize}; white-space: pre; line-height: ${printLineHeight}; text-align: ${printCenter ? 'center' : 'left'}; }`);
+                doc.write(`  body { margin: 0; padding: 0; font-family: "Courier New", monospace; font-size: ${fontSize}; white-space: pre; overflow: hidden; line-height: ${printLineHeight}; text-align: ${printCenter ? 'center' : 'left'}; }`);
                 doc.write('}');
-                doc.write(`body { font-family: "Courier New", monospace; font-size: ${fontSize}; white-space: pre; line-height: ${printLineHeight}; text-align: ${printCenter ? 'center' : 'left'}; }`);
+                doc.write(`body { font-family: "Courier New", monospace; font-size: ${fontSize}; white-space: pre; overflow: hidden; line-height: ${printLineHeight}; text-align: ${printCenter ? 'center' : 'left'}; }`);
                 doc.write('</style>');
                 doc.write('</head><body>');
-                doc.write(data.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'));
+                doc.write(trimmedData.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'));
                 doc.write('</body></html>');
                 doc.close();
 
@@ -5006,9 +5072,12 @@ function testEmail() {
                 printFrame.contentWindow.focus();
                 setTimeout(() => {
                     try {
-                        printFrame.contentWindow.print();
+                        for (let copy = 0; copy < printCopies; copy++) {
+                            printFrame.contentWindow.print();
+                        }
                         const orientLabel = printOrientation === 'landscape' ? 'paisagem' : 'retrato';
-                        showInfo(`🖨️ Enviado para impressora (${printPaperSize} ${orientLabel}, ${fontSize}, margem ${printMargin}${printCenter ? ', centrado' : ''})`);
+                        const copiesLabel = printCopies > 1 ? `, ${printCopies} cópias` : '';
+                        showInfo(`🖨️ Enviado para impressora (${printPaperSize} ${orientLabel}, ${fontSize}, margem ${printMargin}${printCenter ? ', centrado' : ''}${copiesLabel})`);
                     } catch (printError) {
                         console.error('Erro ao imprimir:', printError);
                         showError('Erro ao imprimir: ' + printError.message);
