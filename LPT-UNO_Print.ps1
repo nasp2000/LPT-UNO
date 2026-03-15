@@ -91,7 +91,7 @@ if ($cfg.fontSize -ne "auto") {
     # Courier New: ~0.6 ems de largura por caracter
     $wLimit = $printableWpt / ([Math]::Max(1, $maxLen * 0.6))
     $hLimit = $printableHpt / ([Math]::Max(1, $lineCount * $cfg.lineHeight))
-    $fontSizePt = [Math]::Max(8, [int][Math]::Min($wLimit, $hLimit, 36))
+    $fontSizePt = [Math]::Max(8, [int][Math]::Min([Math]::Min($wLimit, $hLimit), 36))
 }
 
 Write-Host "  Papel: $($cfg.paperSize) $($cfg.orientation) | Margem: $($cfg.margin) | Letra: ${fontSizePt}pt | Copias: $($cfg.copies)" -ForegroundColor Cyan
