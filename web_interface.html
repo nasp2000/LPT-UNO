@@ -4063,24 +4063,7 @@ baudRate=115200
                         
                     case 'txt':
                     default: {
-                        // Se auto-print activo: embutir config de impressão na 1.a linha
-                        // O LPT-UNO_Print.ps1 lê e remove esta linha antes de imprimir.
-                        // Evita 2.o download (sidecar) que o Chrome bloqueia silenciosamente.
-                        let txtContent = text;
-                        if (sidecarForPrint) {
-                            const p = loadPreferences();
-                            const cfg = {
-                                fontSize:    p.printFontSize    || 'auto',
-                                margin:      p.printMargin      || '5mm',
-                                orientation: p.printOrientation || 'portrait',
-                                paperSize:   p.printPaperSize   || 'A4',
-                                lineHeight:  parseFloat(p.printLineHeight || '1.2'),
-                                copies:      parseInt(p.printCopies || '1'),
-                                center:      !!(p.printCenter)
-                            };
-                            txtContent = '#LPTCFG:' + JSON.stringify(cfg) + '\n' + text;
-                        }
-                        blob = new Blob([txtContent], { type: 'text/plain; charset=utf-8' });
+                        blob = new Blob([text], { type: 'text/plain; charset=utf-8' });
                         filename = `${baseFilename}.txt`;
                         mimeType = 'text/plain';
                         break;
@@ -4098,6 +4081,33 @@ baudRate=115200
             }
         }
         
+        // Função: Guardar configurações de impressão em ficheiro separado (_lptcfg.json)
+        // Chamada a partir dos event handlers dos controlos de impressão (gesto do utilizador)
+        // O LPT-UNO_MoveToData.ps1 move este ficheiro para DATA (sobrescrevendo o anterior)
+        // e o LPT-UNO_Print.ps1 lê-o para aplicar as definições de impressão.
+        function downloadPrintConfig() {
+            const p = loadPreferences();
+            const cfg = {
+                fontSize:    p.printFontSize    || 'auto',
+                margin:      p.printMargin      || '5mm',
+                orientation: p.printOrientation || 'portrait',
+                paperSize:   p.printPaperSize   || 'A4',
+                lineHeight:  parseFloat(p.printLineHeight  || '1.2'),
+                copies:      parseInt(p.printCopies       || '1'),
+                center:      !!(p.printCenter)
+            };
+            const blob = new Blob([JSON.stringify(cfg, null, 2)], { type: 'application/json; charset=utf-8' });
+            const url  = URL.createObjectURL(blob);
+            const a    = document.createElement('a');
+            a.href     = url;
+            a.download = '_lptcfg.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            console.log('⚙️ Configurações de impressão guardadas: _lptcfg.json');
+        }
+
         // Função auxiliar: Download como blob (Downloads padrão)
         function downloadAsBlob(blob, filename) {
             const url = URL.createObjectURL(blob);
@@ -4243,6 +4253,7 @@ baudRate=115200
                 const prefs = loadPreferences();
                 prefs.printFontSize = printFontSizeSelect.value;
                 savePreferences(prefs);
+                downloadPrintConfig();
                 const label = printFontSizeSelect.options[printFontSizeSelect.selectedIndex].text;
                 showInfo(`🖨️ Tamanho de impressão: ${label}`);
             });
@@ -4255,6 +4266,7 @@ baudRate=115200
                 const prefs = loadPreferences();
                 prefs.printMargin = printMarginSelect.value;
                 savePreferences(prefs);
+                downloadPrintConfig();
                 showInfo(`🖨️ Margem de impressão: ${printMarginSelect.value}`);
             });
         }
@@ -4266,6 +4278,7 @@ baudRate=115200
                 const prefs = loadPreferences();
                 prefs.printCenter = printCenterCheck.checked;
                 savePreferences(prefs);
+                downloadPrintConfig();
                 const t = translations[currentLanguage];
                 showInfo(printCenterCheck.checked ? `🖨️ ${t.printCenteredMsg}` : `🖨️ ${t.printLeftMsg}`);
             });
@@ -4278,6 +4291,7 @@ baudRate=115200
                 const prefs = loadPreferences();
                 prefs.printOrientation = printOrientationSelect.value;
                 savePreferences(prefs);
+                downloadPrintConfig();
                 const t = translations[currentLanguage];
                 showInfo(`🖨️ ${printOrientationSelect.value === 'landscape' ? t.printOrientLandscapeMsg : t.printOrientPortraitMsg}`);
             });
@@ -4290,6 +4304,7 @@ baudRate=115200
                 const prefs = loadPreferences();
                 prefs.printLineHeight = printLineHeightSelect.value;
                 savePreferences(prefs);
+                downloadPrintConfig();
                 showInfo(`🖨️ Espaçamento de linhas: ${printLineHeightSelect.value}`);
             });
         }
@@ -4301,6 +4316,7 @@ baudRate=115200
                 const prefs = loadPreferences();
                 prefs.printPaperSize = printPaperSizeSelect.value;
                 savePreferences(prefs);
+                downloadPrintConfig();
                 showInfo(`🖨️ Tamanho do papel: ${printPaperSizeSelect.value}`);
             });
         }
@@ -4312,6 +4328,7 @@ baudRate=115200
                 const prefs = loadPreferences();
                 prefs.printCopies = parseInt(printCopiesSelect.value);
                 savePreferences(prefs);
+                downloadPrintConfig();
                 showInfo(`🖨️ Cópias: ${printCopiesSelect.value}`);
             });
         }

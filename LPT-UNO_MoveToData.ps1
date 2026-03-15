@@ -33,6 +33,20 @@ Write-Host ""
 
 # Loop infinito
 while ($true) {
+    # Verificar se _lptcfg.json chegou em Downloads (configurações de impressão)
+    $cfgFile = Join-Path $downloadsPath '_lptcfg.json'
+    if (Test-Path $cfgFile) {
+        $timestamp = Get-Date -Format "HH:mm:ss"
+        $cfgDest   = Join-Path $dataPath '_lptcfg.json'
+        Write-Host "[$timestamp] Config de impressão detectada: _lptcfg.json" -ForegroundColor Cyan
+        try {
+            Move-Item -Path $cfgFile -Destination $cfgDest -Force -ErrorAction Stop
+            Write-Host "           [OK] _lptcfg.json atualizada em DATA" -ForegroundColor Green
+        } catch {
+            Write-Host "           [AVISO] Nao foi possivel mover _lptcfg.json: $_" -ForegroundColor Yellow
+        }
+    }
+
     # Procurar arquivos com padrão de timestamp: *_YYYY-MM-DD_HH-MM-SS.*
     # Isso captura arquivos salvos pelo auto-save independente do nome configurado
     $files = Get-ChildItem -Path $downloadsPath -Filter "*_????-??-??_??-??-??.*" -ErrorAction SilentlyContinue
