@@ -70,8 +70,8 @@ REM Loop infinito monitorando pasta DATA
         goto :LOOP
     )
     
-    REM Procurar arquivos recentes (excluindo IMPRESSO_*)
-    for /f "delims=" %%f in ('dir /b /o-d /tc "%DATA_FOLDER%\*_????-??-??_??-??-??.*" 2^>nul ^| findstr /v /i "^IMPRESSO_"') do (
+    REM Procurar arquivos recentes (excluindo IMPRESSO_* e sidecars .lptcfg.json)
+    for /f "delims=" %%f in ('dir /b /o-d /tc "%DATA_FOLDER%\*_????-??-??_??-??-??.*" 2^>nul ^| findstr /v /i "^IMPRESSO_" ^| findstr /v /i "\.lptcfg\.json$"') do (
         set "LATEST_FILE=%%f"
         goto :FOUND
     )
@@ -95,10 +95,10 @@ echo     Arquivo: !LATEST_FILE!
 echo.
 
 REM Verificar extensão e imprimir adequadamente
-echo !LATEST_FILE! | findstr /i ".txt .csv" >nul
+echo !LATEST_FILE! | findstr /i ".txt" >nul
 if !errorlevel! equ 0 (
-    REM Arquivos texto - usar Out-Printer
-    powershell -Command "Get-Content '%DATA_FOLDER%\!LATEST_FILE!' | Out-Printer"
+    REM Arquivos texto - usar LPT-UNO_Print.ps1 (respeita definicoes do web interface)
+    powershell -ExecutionPolicy Bypass -File "%~dp0LPT-UNO_Print.ps1" -FilePath "%DATA_FOLDER%\!LATEST_FILE!"
 ) else (
     REM Outros formatos - usar Start-Process com verbo Print
     powershell -Command "Start-Process -FilePath '%DATA_FOLDER%\!LATEST_FILE!' -Verb Print -Wait"
@@ -121,6 +121,12 @@ if !errorlevel! equ 0 (
 REM Renomear arquivo para evitar reimprimir
 ren "%DATA_FOLDER%\!LATEST_FILE!" "IMPRESSO_!LATEST_FILE!"
 echo [8] Arquivo renomeado: IMPRESSO_!LATEST_FILE!
+
+REM Renomear sidecar de configuracoes (se existir)
+if exist "%DATA_FOLDER%\!LATEST_FILE!.lptcfg.json" (
+    ren "%DATA_FOLDER%\!LATEST_FILE!.lptcfg.json" "IMPRESSO_!LATEST_FILE!.lptcfg.json"
+    echo [8b] Sidecar renomeado: IMPRESSO_!LATEST_FILE!.lptcfg.json
+)
 
 REM Continuar monitorando para proximos arquivos
 echo [9] Aguardando proximo arquivo...

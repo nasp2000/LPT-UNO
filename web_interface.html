@@ -1520,6 +1520,13 @@
                                     <option value="300">5 minutos</option>
                                 </select>
                             </div>
+                            <div class="modal-select-group" style="margin-top: 10px;">
+                                <label id="formFeedImmediateLabel">Form Feed:</label>
+                                <label class="print-check-wrap" style="display:flex; align-items:center; gap:5px; cursor:pointer;">
+                                    <input type="checkbox" id="formFeedImmediateCheck" style="width:13px; height:13px; cursor:pointer; accent-color:#007bff;">
+                                    <span id="formFeedImmediateText" style="font-size:0.8em;">Processar imediatamente ao receber FF</span>
+                                </label>
+                            </div>
                         </div>
 
                         <!-- 💾 ARQUIVOS (abaixo de Auto-Salvar) -->
@@ -1545,8 +1552,9 @@
                             </div>
                         </div>
                         
-                        <div class="modal-section" style="margin-top: 8px;">
+                        <div id="printOptionsSection" class="modal-section" style="margin-top: 8px;">
                             <h4 id="printScaleTitle" style="font-size: 0.95em; margin-bottom: 6px;">🖨️ Escala de Impressão</h4>
+                            <div id="silentPrintHint" style="display:none; margin-bottom:8px; padding:8px 10px; border-radius:6px; background:#fff3cd; color:#856404; font-size:0.85em; border:1px solid #ffe69c;"></div>
                             <div class="print-options-grid">
                                 <div class="modal-select-group">
                                     <label for="printFontSizeSelect" id="printFontSizeLabel">Tamanho:</label>
@@ -2150,7 +2158,13 @@
                 printOrientPortraitMsg: 'Orientação: Retrato',
                 printOrientLandscapeMsg: 'Orientação: Paisagem',
                 printCenteredMsg: 'Impressão centrada na folha',
-                printLeftMsg: 'Impressão alinhada à esquerda'
+                printLeftMsg: 'Impressão alinhada à esquerda',
+                silentPrintHint: 'Modo silencioso ativo: a impressão é gerida pelo sistema externo em background.',
+                silentPrintManualDisabled: 'Impressão manual do browser desativada em modo silencioso',
+                formFeedImmediate: 'Form Feed:',
+                formFeedImmediateLabel: 'Processar imediatamente ao receber FF',
+                formFeedImmediateEnabled: 'Form Feed imediato ativado',
+                formFeedImmediateDisabled: 'Form Feed imediato desativado'
             },
             en: {
                 title: 'LPT-UNO - Parallel Printer Emulator',
@@ -2312,7 +2326,13 @@
                 printOrientPortraitMsg: 'Orientation: Portrait',
                 printOrientLandscapeMsg: 'Orientation: Landscape',
                 printCenteredMsg: 'Print centered on page',
-                printLeftMsg: 'Print left-aligned'
+                printLeftMsg: 'Print left-aligned',
+                silentPrintHint: 'Silent mode active: printing is handled by the external background system.',
+                silentPrintManualDisabled: 'Browser manual printing disabled in silent mode',
+                formFeedImmediate: 'Form Feed:',
+                formFeedImmediateLabel: 'Process immediately when FF is received',
+                formFeedImmediateEnabled: 'Immediate Form Feed processing enabled',
+                formFeedImmediateDisabled: 'Immediate Form Feed processing disabled'
             },
             es: {
                 title: 'LPT-UNO - Emulador Impresora Paralela',
@@ -2474,7 +2494,13 @@
                 printOrientPortraitMsg: 'Orientación: Retrato',
                 printOrientLandscapeMsg: 'Orientación: Paisaje',
                 printCenteredMsg: 'Impresión centrada en página',
-                printLeftMsg: 'Impresión alineada a izquierda'
+                printLeftMsg: 'Impresión alineada a izquierda',
+                silentPrintHint: 'Modo silencioso activo: la impresión la gestiona el sistema externo en segundo plano.',
+                silentPrintManualDisabled: 'Impresión manual del navegador desactivada en modo silencioso',
+                formFeedImmediate: 'Form Feed:',
+                formFeedImmediateLabel: 'Procesar inmediatamente al recibir FF',
+                formFeedImmediateEnabled: 'Form Feed inmediato activado',
+                formFeedImmediateDisabled: 'Form Feed imediato desactivado'
             }
         };
         
@@ -2501,6 +2527,7 @@
                 autoSave: true,
                 autoPrint: false,
                 autoSaveTime: 10,
+                formFeedImmediate: false,
                 language: 'en',
                 encoding: 'utf-8',
                 saveFormat: 'txt',
@@ -2541,6 +2568,7 @@ reconnectDelay=1000
 autoSave=${prefs.autoSave || false}
 autoPrint=${prefs.autoPrint || false}
 autoSaveTime=${prefs.autoSaveTime || 10}
+formFeedImmediate=${prefs.formFeedImmediate || false}
 
 [Interface]
 language=${prefs.language || 'en'}
@@ -2643,6 +2671,7 @@ baudRate=115200
                     autoSave: true,
                     autoPrint: false,
                     autoSaveTime: 10,
+                    formFeedImmediate: false,
                     language: 'en',
                     saveFormat: 'txt',
                     notifications: false,
@@ -2682,6 +2711,7 @@ baudRate=115200
                             if (key === 'autoSave') prefs.autoSave = value;
                             else if (key === 'autoPrint') prefs.autoPrint = value;
                             else if (key === 'autoSaveTime') prefs.autoSaveTime = value;
+                            else if (key === 'formFeedImmediate') prefs.formFeedImmediate = value;
                         } else if (currentSection === 'interface') {
                             if (key === 'language') prefs.language = value;
                             else if (key === 'notifications') prefs.notifications = value;
@@ -2985,6 +3015,16 @@ baudRate=115200
 
             const printPaperSizeLabel = document.getElementById('printPaperSizeLabel');
             if (printPaperSizeLabel) printPaperSizeLabel.textContent = t.printPaper;
+
+            const formFeedImmediateLabel = document.getElementById('formFeedImmediateLabel');
+            if (formFeedImmediateLabel) formFeedImmediateLabel.textContent = t.formFeedImmediate;
+
+            const formFeedImmediateText = document.getElementById('formFeedImmediateText');
+            if (formFeedImmediateText) formFeedImmediateText.textContent = t.formFeedImmediateLabel;
+
+            if (silentPrintHint && isSilentPrintMode) {
+                silentPrintHint.textContent = t.silentPrintHint;
+            }
             
             // Footer
             const footerPs = document.querySelectorAll('footer p');
@@ -3027,6 +3067,8 @@ baudRate=115200
         const closeRecipientsModal = document.getElementById('closeRecipientsModal');
         const recipientsContainer = document.getElementById('recipientsContainer');
         const saveRecipientsBtn = document.getElementById('saveRecipients');
+        const printOptionsSection = document.getElementById('printOptionsSection');
+        const silentPrintHint = document.getElementById('silentPrintHint');
         
         // Verificar suporte Web Serial API
         if (!('serial' in navigator)) {
@@ -3039,6 +3081,28 @@ baudRate=115200
         
         // ⚡ VERIFICAR PARÂMETRO URL #autoprint ANTES de aplicar preferências
         const urlHash = window.location.hash;
+        const isSilentPrintMode = urlHash.includes('autoprint=true') || urlHash.includes('autoprint=false');
+
+        function applySilentPrintModeUI() {
+            if (!isSilentPrintMode) return;
+
+            if (printBtn) {
+                printBtn.disabled = true;
+                printBtn.style.opacity = '0.55';
+                printBtn.style.cursor = 'not-allowed';
+                printBtn.title = translations[currentLanguage].silentPrintManualDisabled;
+            }
+
+            if (printOptionsSection) {
+                printOptionsSection.style.opacity = '0.55';
+                printOptionsSection.style.pointerEvents = 'none';
+            }
+
+            if (silentPrintHint) {
+                silentPrintHint.style.display = 'block';
+                silentPrintHint.textContent = translations[currentLanguage].silentPrintHint;
+            }
+        }
         
         if (urlHash.includes('autoprint=true')) {
             console.log('');
@@ -3046,9 +3110,8 @@ baudRate=115200
             console.log('🖨️ AUTO-PRINT ATIVO (via .BAT)');
             console.log('═══════════════════════════════════════════');
             console.log('');
-            
-            // Ativar auto-confirmação de impressão (simular Enter após delay)
-            autoConfirmPrint = true;
+            console.log('   Impressão automática será feita em background');
+            console.log('   via ficheiro + PowerShell, sem diálogo do Windows');
             
             // Forçar auto-print nas preferências
             preferences.autoPrint = true;
@@ -3156,6 +3219,8 @@ baudRate=115200
         //     autoPrintBtn.classList.remove('active');
         //     autoPrintEnabled = false;
         // }
+
+        applySilentPrintModeUI();
         
         
         // Aplicar tempo de auto-salvar
@@ -3234,8 +3299,8 @@ baudRate=115200
         // AUTO-PRINT VIA .BAT
         // ========================================
         
-        // Nota: Diálogos de impressão nativos não podem ser controlados via JavaScript
-        // Use LPT-UNO_AutoPrint_WithConfirm.bat para confirmação automática via PowerShell
+        // Nota: Diálogos de impressão nativos não podem ser controlados via JavaScript.
+        // A impressão automática deve usar o fluxo em background (.bat + PowerShell).
         if (autoConfirmPrint) {
             console.log('');
             console.log('═══════════════════════════════════════════');
@@ -3833,6 +3898,7 @@ baudRate=115200
 
         function appendWifiBytes(bytes) {
             if (!bytes || bytes.length === 0) return;
+            _wifiLastByteMs = Date.now();  // watchdog: actualizar timestamp máx. 1× por chunk
 
             let displayChunk = '';
             let saveChunk = '';
@@ -3841,6 +3907,7 @@ baudRate=115200
             for (let index = 0; index < bytes.length; index++) {
                 const code = bytes[index];
 
+                if (code === 0)  continue;  // keepalive TCP do Arduino (0x00) — ignorar
                 if (code === 13) continue;
 
                 if (code === 12) {
@@ -3952,7 +4019,7 @@ baudRate=115200
         });
         
         // Função: Salvar arquivo no formato escolhido
-        async function saveToFile(text, timestamp, format, customPrefix) {
+        async function saveToFile(text, timestamp, format, customPrefix, sidecarForPrint) {
             try {
                 // Obter prefixo do arquivo (se configurado ou customizado)
                 let sanitizedPrefix;
@@ -4001,6 +4068,28 @@ baudRate=115200
                 downloadAsBlob(blob, filename);
                 console.log(`💾 Arquivo salvo em Downloads: ${filename}`);
                 console.log(`📦 Será movido para pasta DATA automaticamente pelo monitor`);
+
+                // 📋 SIDECAR de configurações de impressão (apenas para auto-print de ficheiros .txt)
+                // O script LPT-UNO_Print.ps1 lê este ficheiro para aplicar as definições corretas
+                if (sidecarForPrint && format === 'txt') {
+                    const p = loadPreferences();
+                    const sidecarData = {
+                        fontSize:    p.printFontSize    || 'auto',
+                        margin:      p.printMargin      || '5mm',
+                        orientation: p.printOrientation || 'portrait',
+                        paperSize:   p.printPaperSize   || 'A4',
+                        lineHeight:  parseFloat(p.printLineHeight || '1.2'),
+                        copies:      parseInt(p.printCopies || '1'),
+                        center:      !!(p.printCenter)
+                    };
+                    const sidecarBlob = new Blob(
+                        [JSON.stringify(sidecarData, null, 2)],
+                        { type: 'application/json; charset=utf-8' }
+                    );
+                    // Pequeno atraso para evitar que o browser bloqueie dois downloads consecutivos
+                    setTimeout(() => downloadAsBlob(sidecarBlob, `${filename}.lptcfg.json`), 400);
+                    console.log(`📋 Sidecar de impressão criado: ${filename}.lptcfg.json`);
+                }
                 
             } catch (error) {
                 console.error('Erro ao salvar arquivo:', error);
@@ -4039,6 +4128,10 @@ baudRate=115200
         
         // Função: Imprimir agora
         printBtn.addEventListener('click', () => {
+            if (isSilentPrintMode) {
+                showError(translations[currentLanguage].silentPrintManualDisabled);
+                return;
+            }
             const text = output.textContent;
             if (!text || text.trim().length === 0) {
                 showError('Nenhum dado para imprimir');
@@ -4100,6 +4193,8 @@ baudRate=115200
             if (ppsEl) ppsEl.value = prefs.printPaperSize || 'A4';
             const pcoEl = document.getElementById('printCopiesSelect');
             if (pcoEl) pcoEl.value = String(prefs.printCopies || 1);
+            const ffiEl = document.getElementById('formFeedImmediateCheck');
+            if (ffiEl) ffiEl.checked = !!prefs.formFeedImmediate;
         });
         
         // Função: Fechar modal
@@ -4128,6 +4223,17 @@ baudRate=115200
 
             if (isConnected) resetInactivityTimer();
         });
+
+        const formFeedImmediateCheck = document.getElementById('formFeedImmediateCheck');
+        if (formFeedImmediateCheck) {
+            formFeedImmediateCheck.addEventListener('change', () => {
+                const prefs = loadPreferences();
+                prefs.formFeedImmediate = formFeedImmediateCheck.checked;
+                savePreferences(prefs);
+                const t = translations[currentLanguage];
+                showInfo(`⏱️ ${formFeedImmediateCheck.checked ? t.formFeedImmediateEnabled : t.formFeedImmediateDisabled}`);
+            });
+        }
 
         // Escala de impressão — tamanho de fonte
         const printFontSizeSelect = document.getElementById('printFontSizeSelect');
@@ -4886,6 +4992,56 @@ function testEmail() {
             }, 5000);
         }
 
+        function clearCaptureBuffer() {
+            if (inactivityTimer) { clearTimeout(inactivityTimer); inactivityTimer = null; }
+            pendingData = '';
+            lineDisplayBuffer = '';
+            _displayBuffer = '';
+            output.textContent = '';
+            _displayTotalChars = 0;
+            byteCount = 0;
+            if (byteCountEl) byteCountEl.textContent = '0';
+        }
+
+        function processPendingCapture(trigger = 'inactivity') {
+            const dataToSave = pendingData;
+
+            if (!dataToSave || dataToSave.trim().length === 0) {
+                return false;
+            }
+
+            const timestamp = generateTimestamp();
+            const prefs = loadPreferences();
+            const format = prefs.saveFormat || 'txt';
+            const filePrefix = prefs.subfolderName || 'lpt-uno';
+            const sanitizedPrefix = filePrefix.replace(/[<>:"/\\|?*]/g, '_');
+            const saveForBackgroundPrint = !!prefs.autoPrint;
+            const shouldSaveFile = autoSaveBtn.classList.contains('active') || saveForBackgroundPrint;
+
+            const matchedRecipients = checkAndSendEmails(dataToSave, timestamp, filePrefix, sanitizedPrefix);
+
+            if (shouldSaveFile) {
+                if (matchedRecipients.length > 0) {
+                    const recipientNames = matchedRecipients.map(r => r.name).join(' - ');
+                    const customPrefix = `${sanitizedPrefix} - ${recipientNames}`;
+                    saveToFile(dataToSave, timestamp, format, customPrefix, saveForBackgroundPrint);
+                    showInfo(`💾 Arquivo salvo: ${customPrefix}_${timestamp}.${format}`);
+                } else {
+                    saveToFile(dataToSave, timestamp, format, undefined, saveForBackgroundPrint);
+                    showInfo(`💾 Arquivo salvo automaticamente: ${timestamp}.${format}`);
+                }
+            }
+
+            if (prefs.autoPrint) {
+                const suffix = trigger === 'formfeed' ? ' (Form Feed)' : '';
+                console.log(`🖨️ Auto-print em background${suffix}: ficheiro guardado para impressão externa`);
+                showInfo(`🖨️ Auto-print em background${suffix}: enviado para o sistema externo`);
+            }
+
+            clearCaptureBuffer();
+            return true;
+        }
+
         function resetInactivityTimer() {
             lastDataTime = Date.now();
             
@@ -4945,89 +5101,51 @@ function testEmail() {
         
         // Função: Lidar com inatividade (tempo configurado sem dados)
         function handleInactivity() {
-            const dataToSave = pendingData;
-            
-            if (!dataToSave || dataToSave.trim().length === 0) {
-                return;
-            }
-            
-            const timestamp = generateTimestamp();
-            const prefs = loadPreferences();
-            const format = prefs.saveFormat || 'txt';
-            const filePrefix = prefs.subfolderName || 'lpt-uno';
-            const sanitizedPrefix = filePrefix.replace(/[<>:"/\\|?*]/g, '_');
-            
-            const matchedRecipients = checkAndSendEmails(dataToSave, timestamp, filePrefix, sanitizedPrefix);
-            
-            // Auto-salvar se habilitado
-            if (autoSaveBtn.classList.contains('active')) {
-                if (matchedRecipients.length > 0) {
-                    const recipientNames = matchedRecipients.map(r => r.name).join(' - ');
-                    const customPrefix = `${sanitizedPrefix} - ${recipientNames}`;
-                    saveToFile(dataToSave, timestamp, format, customPrefix);
-                    showInfo(`💾 Arquivo salvo: ${customPrefix}_${timestamp}.${format}`);
-                } else {
-                    saveToFile(dataToSave, timestamp, format);
-                    showInfo(`💾 Arquivo salvo automaticamente: ${timestamp}.${format}`);
-                }
-            }
-            
-            if (prefs.autoPrint) {
-                printData(dataToSave);
-                showInfo('🖨️ Enviado para impressão automática (inactividade)');
-            }
-            
-            if (autoSaveBtn.classList.contains('active') || prefs.autoPrint) {
-                pendingData = '';
-                output.textContent = '';
-                _displayBuffer = '';
-                _displayTotalChars = 0;
-                byteCount = 0;
-                byteCountEl.textContent = '0';
-            }
+            processPendingCapture('inactivity');
         }
 
         // Função: Lidar com Form Feed (troca de folha, byte 0x0C)
         function handlePageBreak() {
-            const data = pendingData;
-            if (!data || data.trim().length === 0) {
-                // FF sem conteúdo: apenas incrementar página
-                _pageCounter++;
-                return;
-            }
-
-            // Cancelar inactivity timer — página completa pelo emissor
-            if (inactivityTimer) { clearTimeout(inactivityTimer); inactivityTimer = null; }
-
             _pageCounter++;
-            const timestamp = generateTimestamp();
+            if (pendingData && !pendingData.endsWith('\n')) {
+                pendingData += '\n';
+            }
+
             const prefs = loadPreferences();
-            const format = prefs.saveFormat || 'txt';
-            const filePrefix = prefs.subfolderName || 'lpt-uno';
-            const sanitizedPrefix = filePrefix.replace(/[<>:"/\\|?*]/g, '_');
-            const pagePrefix = `${sanitizedPrefix}_pag${String(_pageCounter).padStart(3, '0')}`;
-
-            const matchedRecipients = checkAndSendEmails(data, timestamp, filePrefix, sanitizedPrefix);
-
-            // Auto-salvar página
-            if (autoSaveBtn.classList.contains('active')) {
-                if (matchedRecipients.length > 0) {
-                    const recipientNames = matchedRecipients.map(r => r.name).join(' - ');
-                    saveToFile(data, timestamp, format, `${pagePrefix} - ${recipientNames}`);
-                } else {
-                    saveToFile(data, timestamp, format, pagePrefix);
-                }
-                showInfo(`💾 Pág. ${_pageCounter} guardada: ${pagePrefix}_${timestamp}.${format}`);
+            if (prefs.formFeedImmediate) {
+                processPendingCapture('formfeed');
             }
+        }
 
-            // Auto-imprimir página
-            if (prefs.autoPrint) {
-                printData(data);
-                showInfo(`🖨️ Pág. ${_pageCounter} enviada para impressão`);
-            }
+        function parsePrintMarginMm(printMargin) {
+            const parsed = Number.parseFloat(printMargin);
+            return Number.isFinite(parsed) ? parsed : 0;
+        }
 
-            // Limpar dados da página processada
-            pendingData = '';
+        function estimateAutoPrintFontSize(trimmedData, printPaperSize, printOrientation, printMargin, printLineHeight) {
+            const paperDims = {
+                'A4': [21.0, 29.7],
+                'A3': [29.7, 42.0],
+                'Letter': [21.59, 27.94],
+                'Legal': [21.59, 35.56]
+            };
+            const [pw, ph] = paperDims[printPaperSize] || paperDims['A4'];
+            const pageWidthMm = (printOrientation === 'landscape' ? ph : pw) * 10;
+            const pageHeightMm = (printOrientation === 'landscape' ? pw : ph) * 10;
+            const marginMm = parsePrintMarginMm(printMargin);
+            const printableWidthPt = Math.max(72, ((pageWidthMm - (marginMm * 2)) / 25.4) * 72);
+            const printableHeightPt = Math.max(72, ((pageHeightMm - (marginMm * 2)) / 25.4) * 72);
+            const lines = trimmedData.split('\n').map(line => line.trimEnd());
+            const maxLen = lines.reduce((max, line) => Math.max(max, line.length), 1);
+            const lineCount = Math.max(lines.length, 1);
+            const lineHeight = Number.parseFloat(printLineHeight) || 1.2;
+
+            // Fontes monoespaçadas do browser têm largura média ~0.52em por carácter.
+            const widthLimitPt = printableWidthPt / Math.max(1, maxLen * 0.52);
+            const heightLimitPt = printableHeightPt / Math.max(1, lineCount * lineHeight);
+            const computed = Math.floor(Math.min(widthLimitPt, heightLimitPt, 36));
+
+            return `${Math.max(8, computed)}pt`;
         }
         
         // Função: Imprimir dados na impressora padrão
@@ -5041,6 +5159,7 @@ function testEmail() {
                 const printLineHeight  = prefs.printLineHeight  || '1.2';
                 const printPaperSize   = prefs.printPaperSize   || 'A4';
                 const printCopies      = parseInt(prefs.printCopies) || 1;
+                const printFontFamily  = 'Consolas, "Lucida Console", "Courier New", monospace';
 
                 // Remover espaços em branco no fim de cada linha (padding DOS/ESC/P)
                 // Sem isto, maxLen fica inflacionado e o font-size calculado fica demasiado pequeno
@@ -5049,20 +5168,13 @@ function testEmail() {
                 // Calcular font-size efectivo
                 let fontSize;
                 if (printFontSize === 'auto') {
-                    // Largura útil (mm) varia com papel e orientação
-                    const paperUsableWidths = {
-                        'A4:portrait': 190, 'A4:landscape': 277,
-                        'A3:portrait': 277, 'A3:landscape': 400,
-                        'Letter:portrait': 186, 'Letter:landscape': 248,
-                        'Legal:portrait': 186, 'Legal:landscape': 313,
-                    };
-                    const usableW = paperUsableWidths[`${printPaperSize}:${printOrientation}`] || 190;
-                    const lines = trimmedData.split('\n');
-                    const maxLen = lines.reduce((m, l) => Math.max(m, l.length), 1);
-                    // Courier New: 10 CPI → 1 char = 1/10" = 2.54mm a 10pt
-                    // charWidth_mm = (fontSize_pt / 10) × 2.54  →  fontSize_pt = usableW / (maxLen × 0.254)
-                    const computed = Math.round(usableW / (maxLen * 0.254));
-                    fontSize = Math.min(14, Math.max(6, computed)) + 'pt';
+                    fontSize = estimateAutoPrintFontSize(
+                        trimmedData,
+                        printPaperSize,
+                        printOrientation,
+                        printMargin,
+                        printLineHeight
+                    );
                 } else {
                     fontSize = printFontSize;
                 }
@@ -5081,15 +5193,19 @@ function testEmail() {
                 document.body.appendChild(printFrame);
 
                 // Escrever conteúdo no iframe (usar trimmedData para não causar overflow por espaços)
+                // @page com margin:0 — as margens ficam no padding do body (box-sizing:border-box)
+                // Isto evita que o browser escale o conteúdo para caber na área imprimível e garante tamanho de letra correto
                 const doc = printFrame.contentWindow.document;
                 doc.open();
                 doc.write('<html><head><meta charset="UTF-8"><title>LPT-UNO Print</title>');
                 doc.write('<style>');
+                doc.write(`@page { margin: 0; size: ${printPaperSize} ${printOrientation}; }`);
                 doc.write('@media print { ');
-                doc.write(`  @page { margin: ${printMargin}; size: ${printPaperSize} ${printOrientation}; }`);
-                doc.write(`  body { margin: 0; padding: 0; font-family: "Courier New", monospace; font-size: ${fontSize}; white-space: pre; overflow: hidden; line-height: ${printLineHeight}; text-align: ${printCenter ? 'center' : 'left'}; }`);
+                doc.write(`  html, body { margin: 0; padding: 0; }`);
+                doc.write(`  body { box-sizing: border-box; width: 100%; padding: ${printMargin}; font-family: ${printFontFamily}; font-size: ${fontSize}; white-space: pre; overflow: visible; line-height: ${printLineHeight}; text-align: ${printCenter ? 'center' : 'left'}; }`);
                 doc.write('}');
-                doc.write(`body { font-family: "Courier New", monospace; font-size: ${fontSize}; white-space: pre; overflow: hidden; line-height: ${printLineHeight}; text-align: ${printCenter ? 'center' : 'left'}; }`);
+                doc.write(`html, body { margin: 0; padding: 0; }`);
+                doc.write(`body { box-sizing: border-box; width: 100%; padding: ${printMargin}; font-family: ${printFontFamily}; font-size: ${fontSize}; white-space: pre; overflow: visible; line-height: ${printLineHeight}; text-align: ${printCenter ? 'center' : 'left'}; }`);
                 doc.write('</style>');
                 doc.write('</head><body>');
                 doc.write(trimmedData.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'));
@@ -5261,14 +5377,43 @@ function testEmail() {
         let wifiStreamReader = null;
         let wifiStreamAbort = null;
         let wifiStreamConnectId = 0;
-        const WIFI_QUICK_PROBE_TIMEOUT = 450;
-        const WIFI_CONNECT_TIMEOUT = 1500;
+        const WIFI_QUICK_PROBE_TIMEOUT = 1200;
+        const WIFI_CONNECT_TIMEOUT = 5000;
+        const WIFI_DIRECT_RETRY_ATTEMPTS = 3;
+        const WIFI_DIRECT_RETRY_DELAY_MS = 900;
         const WIFI_LAST_HOST_KEY = 'lptUnoWifiLastHost';
         const WIFI_LAST_HOSTS_KEY = 'lptUnoWifiLastHosts';
         const WIFI_MANUAL_IP_KEY = 'lptUnoWifiManualIp';
         let sseConnected = false;
         let wifiAutoRetryTimer = null;   // timer de retry automático
         let wifiUserDisconnected = false; // true se o utilizador desligou manualmente
+
+        // ── Watchdog: detecta stream TCP morto (sem receber bytes em 15s) ─────────────────
+        // O Arduino envia 0x00 (keepalive) a cada 5s quando não há dados.
+        // Se nada chegar em 15s, o stream está morto (half-open TCP) → abortar e reconectar.
+        let _wifiLastByteMs    = 0;
+        let _wifiWatchdogTimer = null;
+        const _WIFI_WATCHDOG_IDLE_MS = 15000;  // 15s sem bytes = stream morto
+        const _WIFI_WATCHDOG_CHECK_MS = 5000;  // verificar a cada 5s
+
+        function _startWifiWatchdog(ip) {
+            _stopWifiWatchdog();
+            _wifiLastByteMs = Date.now();
+            _wifiWatchdogTimer = setInterval(() => {
+                if (!sseConnected) { _stopWifiWatchdog(); return; }
+                const silent = Date.now() - _wifiLastByteMs;
+                if (silent > _WIFI_WATCHDOG_IDLE_MS) {
+                    _stopWifiWatchdog();
+                    console.warn(`⚠️ WiFi watchdog: stream inativo há ${Math.round(silent/1000)}s → a reconectar`);
+                    showSseStatus(`⚠️ Stream inativo (${Math.round(silent/1000)}s). A reconectar...`, 'warning');
+                    if (wifiStreamAbort) wifiStreamAbort.abort();
+                }
+            }, _WIFI_WATCHDOG_CHECK_MS);
+        }
+
+        function _stopWifiWatchdog() {
+            if (_wifiWatchdogTimer) { clearInterval(_wifiWatchdogTimer); _wifiWatchdogTimer = null; }
+        }
 
         const wifiModal = document.getElementById('wifiModal');
         const wifiBtn = document.getElementById('wifiBtn');
@@ -5279,7 +5424,7 @@ function testEmail() {
         const wifiSseStatusEl = document.getElementById('wifiSseStatus');
 
         if (wifiBtn) {
-            wifiBtn.addEventListener('click', () => {
+            wifiBtn.addEventListener('click', async () => {
                 requestWakeLock(); // Pede Wake Lock logo após clique do utilizador
                 
                 // Sempre abre o modal — permite configurar SSID/password em qualquer estado
@@ -5297,6 +5442,10 @@ function testEmail() {
                 // Auto-preencher SSID guardado
                 const savedSsid = localStorage.getItem('lptUnoWifiSsid');
                 if (savedSsid) document.getElementById('wifiSsidInput').value = savedSsid;
+
+                if (!sseConnected && !isConnected) {
+                    await connectLastSuccessfulWifiHost({ silent: false, timeoutMs: 2500 });
+                }
             });
         }
         if (closeWifiModal) {
@@ -5466,6 +5615,42 @@ function testEmail() {
             }
         }
 
+        function delayMs(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        async function tryDirectStreamHostWithRetry(host, attempts = WIFI_DIRECT_RETRY_ATTEMPTS, timeoutMs = WIFI_CONNECT_TIMEOUT) {
+            if (!host) return false;
+            for (let attempt = 1; attempt <= attempts; attempt++) {
+                if (await tryDirectStreamHost(host, timeoutMs)) return true;
+                if (attempt < attempts) await delayMs(WIFI_DIRECT_RETRY_DELAY_MS);
+            }
+            return false;
+        }
+
+        async function connectLastSuccessfulWifiHost(options = {}) {
+            if (sseConnected || isConnected) return false;
+
+            const lastGoodHost = localStorage.getItem(WIFI_LAST_HOST_KEY);
+            if (!lastGoodHost) return false;
+
+            const silent = !!options.silent;
+            const timeoutMs = options.timeoutMs || 2500;
+            const input = document.getElementById('wifiIpInput');
+            if (input) input.value = lastGoodHost;
+
+            if (!wifiBtn.classList.contains('wifi-active')) {
+                wifiBtn.classList.add('wifi-searching');
+                wifiBtn.textContent = '📶 Último IP...';
+            }
+
+            if (!silent) {
+                showSseStatus(`🔄 A tentar o último IP com sucesso: ${lastGoodHost}`, 'info');
+            }
+
+            return await tryDirectStreamHostWithRetry(lastGoodHost, WIFI_DIRECT_RETRY_ATTEMPTS, timeoutMs);
+        }
+
         async function probePreferredHosts(savedWifiIp) {
             const hosts = [];
             for (const host of getRecentWifiHosts()) hosts.push(host);
@@ -5554,7 +5739,7 @@ function testEmail() {
                 [1,   99],    // 2º: IPs baixos (estaticos / gateway)
                 [150, 254]    // 3º: range alto
             ];
-            const batchSize = 50;  // batch maior → menos rondas
+            const batchSize = 24;  // menos paralelismo → menos timeouts falsos em redes/router lentos
             const total = 254;
 
             // Resolve mal o 1.º probe responder OK dentro do batch — sem esperar os restantes
@@ -5658,6 +5843,7 @@ function testEmail() {
         function clearWifiStreamHandles() {
             wifiStreamReader = null;
             wifiStreamAbort = null;
+            _stopWifiWatchdog();  // cancelar watchdog ao fechar stream
         }
 
         // connectSSE — mantém o nome para minimizar alterações, mas agora usa
@@ -5690,6 +5876,7 @@ function testEmail() {
                 wifiStreamReader = response.body.getReader();
                 sseConnected = true;
                 _resetOnConnect();
+                _startWifiWatchdog(ip);  // iniciar watchdog de stream morto
                 if (wifiAutoRetryTimer) { clearTimeout(wifiAutoRetryTimer); wifiAutoRetryTimer = null; }
                 if (_cntInterval)       { clearInterval(_cntInterval);      _cntInterval = null; }
                 if (!options.silent) showSseStatus(`✅ Ligado a ${ip} via WiFi (stream)`, 'ok');
@@ -5761,15 +5948,8 @@ function testEmail() {
 
             const savedWifiIp = localStorage.getItem(WIFI_MANUAL_IP_KEY) || localStorage.getItem('lptUnoWifiIp');
 
-            // 0. Último host bom: tentar stream direto sem round-trip extra de /ping
-            const lastGoodHost = localStorage.getItem(WIFI_LAST_HOST_KEY);
-            if (lastGoodHost) {
-                if (!wifiBtn.classList.contains('wifi-active')) {
-                    wifiBtn.classList.add('wifi-searching');
-                    wifiBtn.textContent = '📶 Último host...';
-                }
-                if (await tryDirectStreamHost(lastGoodHost, 800)) return;
-            }
+            // 0. Último host bom: tentar ligação direta antes de qualquer scan
+            if (await connectLastSuccessfulWifiHost({ silent: true, timeoutMs: 2500 })) return;
 
             // 1. IP guardado + mDNS em paralelo — caminho mais rápido após o host conhecido
             if (!wifiBtn.classList.contains('wifi-active')) {
@@ -5784,7 +5964,7 @@ function testEmail() {
                     localStorage.setItem(WIFI_MANUAL_IP_KEY, preferredHost);
                     localStorage.setItem('lptUnoWifiIp', preferredHost);
                 }
-                connectSSE(preferredHost, { timeoutMs: 1000 });
+                connectSSE(preferredHost, { timeoutMs: 2500 });
                 return;
             }
 
@@ -5826,7 +6006,11 @@ function testEmail() {
             // Iniciar WiFi auto-discovery cedo para reduzir tempo de ligação perceptível
             wifiUserDisconnected = false;
             // Só inicia scan WiFi se ainda não houver ligação USB
-            setTimeout(() => { if (!isConnected) startAutoDiscovery(); }, 400);
+            setTimeout(async () => {
+                if (isConnected || sseConnected) return;
+                if (await connectLastSuccessfulWifiHost({ silent: true, timeoutMs: 2500 })) return;
+                if (!isConnected) startAutoDiscovery();
+            }, 250);
 
             if (isKioskMode) {
                 console.log('');

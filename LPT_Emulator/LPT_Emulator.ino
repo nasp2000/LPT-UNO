@@ -78,6 +78,10 @@ MDNS mdns(mdnsUdp);
 unsigned long lastWifiCheck    = 0;
 bool          wifiAttempting   = false;
 unsigned long wifiAttemptStart = 0;
+const unsigned long WIFI_CONNECT_ATTEMPT_TIMEOUT_MS = 12000UL;
+const unsigned long WIFI_RETRY_INTERVAL_MS          = 3000UL;
+bool          _wifiServicesStarted = false;   // impede webServer/udp.begin() repetido
+unsigned long _lastKeepaliveMs     = 0;       // keepalive TCP no stream (0x00 a cada 5s)
 #endif
 
 // Buffer de receção de comandos Serial (não-bloqueante)
@@ -95,6 +99,14 @@ void saveConfig(String s, String p) {
   p.toCharArray(wifiConfig.pass, 64);
   wifiConfig.valid = 0xAA;
   EEPROM.put(0, wifiConfig);
+}
+
+void startWifiConnectAttempt() {
+  WiFi.disconnect();
+  delay(60);
+  WiFi.begin(wifiConfig.ssid, wifiConfig.pass);
+  wifiAttempting   = true;
+  wifiAttemptStart = millis();
 }
 
 // Buffer de stream HTTP bruto — sem overhead SSE/texto.
@@ -370,10 +382,10 @@ void setup() {
       // Ligar ao WiFi — polling não-bloqueante (máx. 12s)
       // ⚠️ Drena o buffer durante a espera para não perder dados paralelos recebidos
       //    neste periodo (a ISR está activa mas o loop() ainda não iniciou)
-      WiFi.begin(wifiConfig.ssid, wifiConfig.pass);
+      startWifiConnectAttempt();
       {
         unsigned long _wStart = millis();
-        while (WiFi.status() != WL_CONNECTED && (millis() - _wStart) < 12000) {
+        while (WiFi.status() != WL_CONNECTED && (millis() - _wStart) < WIFI_CONNECT_ATTEMPT_TIMEOUT_MS) {
           delay(200);
           // Esvaziar buffer circular durante a espera
           while (bufferReadIndex != bufferWriteIndex) {
@@ -389,6 +401,7 @@ void setup() {
         webServer.begin();  // HTTP streaming para web interface (porta 80)
         udp.begin(2324);    // Start UDP on port 2324
         mdns.begin(WiFi.localIP(), "lpt-uno");  // mDNS: lpt-uno.local
+        _wifiServicesStarted = true;  // marcar para evitar begin() duplo no loop
         printWifiStatus();
       } else {
         Serial.println("WiFi: falha na ligacao inicial. Auto-reconecta em background.");
@@ -423,15 +436,14 @@ void loop() {
         wifiConnected      = false;
         streamClientConnected = false;
         wifiAttempting     = false;
+        WiFi.disconnect();
         lastWifiCheck      = _now;
       }
 
       // ── Iniciar tentativa de reconexão (cada 10s) ──────────────────────
       if (wifiConfig.valid == 0xAA && !wifiConnected && !wifiAttempting
-          && (_now - lastWifiCheck > 10000)) {
-        WiFi.begin(wifiConfig.ssid, wifiConfig.pass);
-        wifiAttempting   = true;
-        wifiAttemptStart = _now;
+          && (_now - lastWifiCheck > WIFI_RETRY_INTERVAL_MS)) {
+        startWifiConnectAttempt();
       }
 
       // ── Verificar resultado da tentativa ──────────────────────────────
@@ -439,11 +451,15 @@ void loop() {
         if (WiFi.status() == WL_CONNECTED) {
           wifiConnected  = true;
           wifiAttempting = false;
-          webServer.begin();
-          udp.begin(2324);
-          mdns.begin(WiFi.localIP(), "lpt-uno");
+          // webServer e udp são iniciados apenas uma vez (sockets sobrevivem ao reconnect WiFi)
+          if (!_wifiServicesStarted) {
+            webServer.begin();
+            udp.begin(2324);
+            _wifiServicesStarted = true;
+          }
+          mdns.begin(WiFi.localIP(), "lpt-uno");  // re-announce mDNS no novo IP
           printWifiStatus();
-        } else if (_now - wifiAttemptStart > 12000) {
+        } else if (_now - wifiAttemptStart > WIFI_CONNECT_ATTEMPT_TIMEOUT_MS) {
           wifiAttempting = false;
           lastWifiCheck  = _now;
         }
@@ -469,6 +485,19 @@ void loop() {
         // Flush stream só quando vale a pena: buffer grande ou janela curta.
         if (_streamBufLen >= 768 || (_streamBufLen > 0 && (_now - lastStreamFlush > 8))) {
           flushStream();
+        }
+
+        // ── Keepalive TCP: envia 0x00 a cada 5s quando stream activo e sem dados ───
+        // Evita que o router/WiFiS3 feche o socket TCP por idle e que o browser
+        // fique preso num read() infinito sem receber FIN.
+        // O browser filtra 0x00 (não aparece no output nem nos dados capturados).
+        if (streamClientConnected && (_now - _lastKeepaliveMs > 5000UL)) {
+          _lastKeepaliveMs = _now;
+          // Envio directo (fora do buffer) para garantir entrega imediata
+          if (streamClient.connected()) {
+            streamClient.write((uint8_t)0x00);
+            streamClient.flush();
+          }
         }
 
         // mDNS e HTTP — não-bloqueantes
