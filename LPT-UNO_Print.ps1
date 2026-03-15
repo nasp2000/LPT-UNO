@@ -3,7 +3,7 @@
 # Impressao de texto com configuracoes do web interface
 # ========================================
 # Uso: .\LPT-UNO_Print.ps1 -FilePath "caminho\para\arquivo.txt"
-# Le configuracoes do sidecar: arquivo.txt.lptcfg.json (se existir)
+# Le configuracoes da primeira linha do ficheiro: #LPTCFG:{...JSON...}
 # ========================================
 
 param(
@@ -24,12 +24,14 @@ $cfg = @{
     center      = $false
 }
 
-# ─── Carregar sidecar de configuracoes (se existir) ───────────────────────────
-$sidecarPath = $FilePath + ".lptcfg.json"
+# ─── Ler ficheiro e extrair cabecalho #LPTCFG: (se existir) ──────────────────
+$allFileLines = @(Get-Content $FilePath -Encoding UTF8)
+$rawLines     = $allFileLines
 
-if (Test-Path $sidecarPath) {
+if ($allFileLines.Count -gt 0 -and $allFileLines[0] -like '#LPTCFG:*') {
+    $jsonStr = $allFileLines[0].Substring(8)   # remover prefixo "#LPTCFG:"
     try {
-        $json = Get-Content $sidecarPath -Raw -Encoding UTF8 | ConvertFrom-Json
+        $json = $jsonStr | ConvertFrom-Json
         if ($json.fontSize)    { $cfg.fontSize    = $json.fontSize }
         if ($json.margin)      { $cfg.margin      = $json.margin }
         if ($json.orientation) { $cfg.orientation = $json.orientation }
@@ -37,12 +39,18 @@ if (Test-Path $sidecarPath) {
         if ($json.PSObject.Properties.Name -contains 'lineHeight') { $cfg.lineHeight = [double]$json.lineHeight }
         if ($json.PSObject.Properties.Name -contains 'copies')     { $cfg.copies     = [int]$json.copies }
         if ($json.PSObject.Properties.Name -contains 'center')     { $cfg.center     = [bool]$json.center }
-        Write-Host "  Configuracoes carregadas: $sidecarPath" -ForegroundColor Cyan
+        Write-Host "  Configuracoes carregadas do cabecalho #LPTCFG" -ForegroundColor Cyan
     } catch {
-        Write-Host "  [AVISO] Nao foi possivel ler configuracoes: $_" -ForegroundColor Yellow
+        Write-Host "  [AVISO] Nao foi possivel ler configuracoes do cabecalho: $_" -ForegroundColor Yellow
+    }
+    # Excluir primeira linha (cabecalho) do conteudo a imprimir
+    if ($allFileLines.Count -gt 1) {
+        $rawLines = $allFileLines[1..($allFileLines.Count - 1)]
+    } else {
+        $rawLines = @()
     }
 } else {
-    Write-Host "  [INFO] Sem sidecar de configuracoes - a usar defaults" -ForegroundColor Gray
+    Write-Host "  [INFO] Sem cabecalho #LPTCFG - a usar defaults" -ForegroundColor Gray
 }
 
 # ─── Validar ficheiro de texto ────────────────────────────────────────────────
@@ -69,8 +77,8 @@ $marginMm = 5.0
 if ($cfg.margin -match '(\d+(\.\d+)?)mm') { $marginMm = [double]$matches[1] }
 $marginHundredths = [int]($marginMm / 25.4 * 100)
 
-# ─── Ler texto ────────────────────────────────────────────────────────────────
-$rawLines = @(Get-Content $FilePath -Encoding UTF8 | ForEach-Object { $_.TrimEnd() })
+# ─── Normalizar linhas ───────────────────────────────────────────────────────
+$rawLines = @($rawLines | ForEach-Object { $_.TrimEnd() })
 Write-Host "  Linhas: $($rawLines.Count)" -ForegroundColor Gray
 
 # ─── Calcular tamanho de letra ────────────────────────────────────────────────

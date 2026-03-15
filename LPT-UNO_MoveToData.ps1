@@ -42,8 +42,8 @@ while ($true) {
     }
     
     foreach ($file in $files) {
-        # Verificar se é txt, csv, pdf ou sidecar de configurações de impressão (.lptcfg.json)
-        if ($file.Extension -match '\.(txt|csv|pdf)$' -or $file.Name -like '*.lptcfg.json') {
+        # Verificar se é txt, csv ou pdf
+        if ($file.Extension -match '\.(txt|csv|pdf)$') {
             $timestamp = Get-Date -Format "HH:mm:ss"
             Write-Host "[$timestamp] Detectado: $($file.Name)" -ForegroundColor White
             Write-Host "           Tamanho: $($file.Length) bytes" -ForegroundColor Gray

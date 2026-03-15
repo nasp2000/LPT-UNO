@@ -2533,8 +2533,13 @@
                 saveFormat: 'txt',
                 dataFolder: null,
                 subfolderName: 'default',
-                printFontSize: 'auto',
-                printMargin: '5mm'
+                printFontSize:    'auto',
+                printMargin:      '5mm',
+                printOrientation: 'portrait',
+                printPaperSize:   'A4',
+                printLineHeight:  '1.2',
+                printCenter:      false,
+                printCopies:      1
             };
             return loadPreferences._cache;
         }
@@ -4057,39 +4062,34 @@ baudRate=115200
                         break;
                         
                     case 'txt':
-                    default:
-                        blob = new Blob([text], { type: 'text/plain; charset=utf-8' });
+                    default: {
+                        // Se auto-print activo: embutir config de impressão na 1.a linha
+                        // O LPT-UNO_Print.ps1 lê e remove esta linha antes de imprimir.
+                        // Evita 2.o download (sidecar) que o Chrome bloqueia silenciosamente.
+                        let txtContent = text;
+                        if (sidecarForPrint) {
+                            const p = loadPreferences();
+                            const cfg = {
+                                fontSize:    p.printFontSize    || 'auto',
+                                margin:      p.printMargin      || '5mm',
+                                orientation: p.printOrientation || 'portrait',
+                                paperSize:   p.printPaperSize   || 'A4',
+                                lineHeight:  parseFloat(p.printLineHeight || '1.2'),
+                                copies:      parseInt(p.printCopies || '1'),
+                                center:      !!(p.printCenter)
+                            };
+                            txtContent = '#LPTCFG:' + JSON.stringify(cfg) + '\n' + text;
+                        }
+                        blob = new Blob([txtContent], { type: 'text/plain; charset=utf-8' });
                         filename = `${baseFilename}.txt`;
                         mimeType = 'text/plain';
                         break;
-                }
+                    }
                 
                 // 📁 SALVAR em Downloads (será movido para DATA pelo .bat monitor)
                 downloadAsBlob(blob, filename);
                 console.log(`💾 Arquivo salvo em Downloads: ${filename}`);
                 console.log(`📦 Será movido para pasta DATA automaticamente pelo monitor`);
-
-                // 📋 SIDECAR de configurações de impressão (apenas para auto-print de ficheiros .txt)
-                // O script LPT-UNO_Print.ps1 lê este ficheiro para aplicar as definições corretas
-                if (sidecarForPrint && format === 'txt') {
-                    const p = loadPreferences();
-                    const sidecarData = {
-                        fontSize:    p.printFontSize    || 'auto',
-                        margin:      p.printMargin      || '5mm',
-                        orientation: p.printOrientation || 'portrait',
-                        paperSize:   p.printPaperSize   || 'A4',
-                        lineHeight:  parseFloat(p.printLineHeight || '1.2'),
-                        copies:      parseInt(p.printCopies || '1'),
-                        center:      !!(p.printCenter)
-                    };
-                    const sidecarBlob = new Blob(
-                        [JSON.stringify(sidecarData, null, 2)],
-                        { type: 'application/json; charset=utf-8' }
-                    );
-                    // Pequeno atraso para evitar que o browser bloqueie dois downloads consecutivos
-                    setTimeout(() => downloadAsBlob(sidecarBlob, `${filename}.lptcfg.json`), 400);
-                    console.log(`📋 Sidecar de impressão criado: ${filename}.lptcfg.json`);
-                }
                 
             } catch (error) {
                 console.error('Erro ao salvar arquivo:', error);
