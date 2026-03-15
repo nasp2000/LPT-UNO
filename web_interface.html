@@ -3920,6 +3920,10 @@ baudRate=115200
                         _displayBuffer += displayChunk;
                         displayChunk = '';
                     }
+                    if (saveChunk) {
+                        pendingData += saveChunk;  // flush antes do FF para que handlePageBreak leia dados actuais
+                        saveChunk = '';
+                    }
                     const nextPage = _pageCounter + 1;
                     _displayBuffer += `\n────────── [ Troca de Folha → Pág. ${nextPage} ] ──────────\n`;
                     handlePageBreak();
