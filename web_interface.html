@@ -1520,13 +1520,6 @@
                                     <option value="300">5 minutos</option>
                                 </select>
                             </div>
-                            <div class="modal-select-group" style="margin-top: 10px;">
-                                <label id="formFeedImmediateLabel">Form Feed:</label>
-                                <label class="print-check-wrap" style="display:flex; align-items:center; gap:5px; cursor:pointer;">
-                                    <input type="checkbox" id="formFeedImmediateCheck" style="width:13px; height:13px; cursor:pointer; accent-color:#007bff;">
-                                    <span id="formFeedImmediateText" style="font-size:0.8em;">Processar imediatamente ao receber FF</span>
-                                </label>
-                            </div>
                         </div>
 
                         <!-- 💾 ARQUIVOS (abaixo de Auto-Salvar) -->
@@ -1534,23 +1527,7 @@
                             💾 Arquivos
                         </h3>
                         
-                        <div class="modal-section">
-                            <h4 id="saveFormatTitle" style="font-size: 0.95em; margin-bottom: 10px;">💾 Formato de Gravação</h4>
-                            <div class="modal-options">
-                                <label class="modal-option selected" data-format="txt">
-                                    <input type="radio" name="saveFormat" value="txt" checked>
-                                    <span>📝 Texto (.txt)</span>
-                                </label>
-                                <label class="modal-option" data-format="csv">
-                                    <input type="radio" name="saveFormat" value="csv">
-                                    <span>📊 CSV (.csv)</span>
-                                </label>
-                                <label class="modal-option" data-format="pdf">
-                                    <input type="radio" name="saveFormat" value="pdf">
-                                    <span>📄 PDF (.pdf)</span>
-                                </label>
-                            </div>
-                        </div>
+
                         
                         <div id="printOptionsSection" class="modal-section" style="margin-top: 8px;">
                             <h4 id="printScaleTitle" style="font-size: 0.95em; margin-bottom: 6px;">🖨️ Escala de Impressão</h4>
@@ -3021,9 +2998,6 @@ baudRate=115200
             const printPaperSizeLabel = document.getElementById('printPaperSizeLabel');
             if (printPaperSizeLabel) printPaperSizeLabel.textContent = t.printPaper;
 
-            const formFeedImmediateLabel = document.getElementById('formFeedImmediateLabel');
-            if (formFeedImmediateLabel) formFeedImmediateLabel.textContent = t.formFeedImmediate;
-
             const formFeedImmediateText = document.getElementById('formFeedImmediateText');
             if (formFeedImmediateText) formFeedImmediateText.textContent = t.formFeedImmediateLabel;
 
@@ -4043,36 +4017,9 @@ baudRate=115200
                 let blob, filename, mimeType;
                 const baseFilename = `${sanitizedPrefix}_${timestamp}`;
                 
-                switch(format) {
-                    case 'csv':
-                        // Converter texto para CSV (uma linha por byte/caractere)
-                        const csvContent = 'Timestamp,Character,ASCII,Hex\\n' + 
-                            text.split('').map((char, i) => {
-                                const ascii = char.charCodeAt(0);
-                                const hex = ascii.toString(16).toUpperCase().padStart(2, '0');
-                                return `${timestamp},"${char.replace(/"/g, '""')}",${ascii},0x${hex}`;
-                            }).join('\\n');
-                        blob = new Blob([csvContent], { type: 'text/csv; charset=utf-8' });
-                        filename = `${baseFilename}.csv`;
-                        mimeType = 'text/csv';
-                        break;
-                        
-                    case 'pdf':
-                        // Gerar PDF simples usando jsPDF (inline)
-                        const pdfContent = generateSimplePDF(text, timestamp);
-                        blob = new Blob([pdfContent], { type: 'application/pdf' });
-                        filename = `${baseFilename}.pdf`;
-                        mimeType = 'application/pdf';
-                        break;
-                        
-                    case 'txt':
-                    default: {
-                        blob = new Blob([text], { type: 'text/plain; charset=utf-8' });
-                        filename = `${baseFilename}.txt`;
-                        mimeType = 'text/plain';
-                        break;
-                    }
-                }
+                blob     = new Blob([text], { type: 'text/plain; charset=utf-8' });
+                filename  = `${baseFilename}.txt`;
+                mimeType  = 'text/plain';
                 
                 // 📁 SALVAR em Downloads (será movido para DATA pelo .bat monitor)
                 downloadAsBlob(blob, filename);
@@ -4239,17 +4186,6 @@ baudRate=115200
             if (isConnected) resetInactivityTimer();
         });
 
-        const formFeedImmediateCheck = document.getElementById('formFeedImmediateCheck');
-        if (formFeedImmediateCheck) {
-            formFeedImmediateCheck.addEventListener('change', () => {
-                const prefs = loadPreferences();
-                prefs.formFeedImmediate = formFeedImmediateCheck.checked;
-                savePreferences(prefs);
-                const t = translations[currentLanguage];
-                showInfo(`⏱️ ${formFeedImmediateCheck.checked ? t.formFeedImmediateEnabled : t.formFeedImmediateDisabled}`);
-            });
-        }
-
         // Escala de impressão — tamanho de fonte
         const printFontSizeSelect = document.getElementById('printFontSizeSelect');
         if (printFontSizeSelect) {
@@ -4366,22 +4302,7 @@ baudRate=115200
         }
         
         // Função: Alterar formato de salvamento
-        const saveFormatRadios = document.querySelectorAll('input[name="saveFormat"]');
-        saveFormatRadios.forEach(radio => {
-            radio.addEventListener('change', (e) => {
-                const format = e.target.value;
-                const prefs = loadPreferences();
-                prefs.saveFormat = format;
-                savePreferences(prefs);
-                
-                // Atualizar visual
-                document.querySelectorAll('[data-format]').forEach(el => el.classList.remove('selected'));
-                e.target.closest('[data-format]').classList.add('selected');
-                
-                const formatNames = { txt: 'TXT', csv: 'CSV', pdf: 'PDF' };
-                showInfo(`💾 Formato alterado para: ${formatNames[format]}`);
-            });
-        });
+
         
         // Função: Salvar nome do arquivo (prefixo)
         const subfolderNameInput = document.getElementById('subfolderNameInput');
@@ -5132,11 +5053,8 @@ function testEmail() {
             if (pendingData && !pendingData.endsWith('\n')) {
                 pendingData += '\n';
             }
-
-            const prefs = loadPreferences();
-            if (prefs.formFeedImmediate) {
-                processPendingCapture('formfeed');
-            }
+            // FF comporta-se sempre como impressora real: processa imediatamente
+            processPendingCapture('formfeed');
         }
 
         function parsePrintMarginMm(printMargin) {
@@ -5267,13 +5185,6 @@ function testEmail() {
         if (languageSelect) languageSelect.value = savedLang;
         applyTranslations(savedLang);
         
-        // Aplicar formato de salvamento
-        const savedFormat = savedPrefs.saveFormat || 'txt';
-        const formatRadio = document.querySelector(`input[name="saveFormat"][value="${savedFormat}"]`);
-        if (formatRadio) {
-            formatRadio.checked = true;
-            formatRadio.closest('[data-format]')?.classList.add('selected');
-        }
         
         // ========================================
         // DETECÇÃO AUTOMÁTICA DO MODO KIOSK (.BAT)
