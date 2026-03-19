@@ -133,6 +133,12 @@ $pd.DefaultPageSettings.Margins   = New-Object System.Drawing.Printing.Margins($
 $pd.add_PrintPage({
     $ev     = $args[1]
     $bounds  = $ev.MarginBounds
+
+    # Rendering de alta qualidade para impressora (sem anti-aliasing → texto mais escuro e solido)
+    $ev.Graphics.TextRenderingHint     = [System.Drawing.Text.TextRenderingHint]::SingleBitPerPixelGridFit
+    $ev.Graphics.SmoothingMode         = [System.Drawing.Drawing2D.SmoothingMode]::HighQuality
+    $ev.Graphics.CompositingQuality    = [System.Drawing.Drawing2D.CompositingQuality]::HighQuality
+
     $fontH   = $script:printFont.GetHeight($ev.Graphics)
     $spacing = $fontH * $script:lineSpaceMult
     $y       = [float]$bounds.Top

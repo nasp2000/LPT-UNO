@@ -1939,6 +1939,7 @@
         let lastDataTime = null;
         let pendingData = '';
         let _pageCounter = 0;  // contador de páginas por sessão
+        let _lastEmailData = null;  // último conteúdo para o qual foi enviado email (deduplicação)
         let firmwareVersion = 'Unknown';
         let firmwareBuild = 'Unknown';
         let currentEncoding = 'utf-8'; // Default to UTF-8 for modern systems
@@ -4961,7 +4962,20 @@ function testEmail() {
             const saveForBackgroundPrint = !!prefs.autoPrint;
             const shouldSaveFile = autoSaveBtn.classList.contains('active') || saveForBackgroundPrint;
 
-            const matchedRecipients = checkAndSendEmails(dataToSave, timestamp, filePrefix, sanitizedPrefix);
+            // Deduplicação de email: se os dados são iguais ao envio anterior, não re-envia email
+            const dataTrimmed = dataToSave.trim();
+            const isDuplicate = (_lastEmailData !== null && dataTrimmed === _lastEmailData);
+            let matchedRecipients;
+            if (isDuplicate) {
+                console.log('📧 Dados idênticos ao envio anterior — email suprimido (duplicado)');
+                showInfo('📧 Email suprimido: dados idênticos ao anterior');
+                matchedRecipients = [];
+            } else {
+                matchedRecipients = checkAndSendEmails(dataToSave, timestamp, filePrefix, sanitizedPrefix);
+                if (matchedRecipients.length > 0) {
+                    _lastEmailData = dataTrimmed;  // guardar para comparação futura
+                }
+            }
 
             if (shouldSaveFile) {
                 if (matchedRecipients.length > 0) {
