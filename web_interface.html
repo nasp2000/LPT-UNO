@@ -1653,11 +1653,12 @@
                     <button class="modal-btn" id="openEmailConfig" style="flex:1; min-width:120px; padding:6px 10px; font-size:0.82em;">
                         📧 Configurar Email
                     </button>
-                    <button class="modal-btn" id="importIniBtn" style="flex:1; min-width:140px; padding:6px 10px; font-size:0.82em; background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
-                        📥 Importar Configurações (.ini)
+                    <button class="modal-btn" id="importIniBtn" style="flex:1; min-width:140px; padding:6px 10px; font-size:0.82em; background: linear-gradient(135deg, #28a745 0%, #20c997 100%);" onclick="document.getElementById('importConfigInput').click()">
+                        📥 Importar Configurações (.json)
                     </button>
+                    <input type="file" id="importConfigInput" accept=".json,.ini" style="display:none;">
                     <button class="modal-btn" id="setupIniBtn" style="flex:1; min-width:140px; padding:6px 10px; font-size:0.82em; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                        💾 Exportar Configurações (.ini)
+                        💾 Exportar Configurações (.json)
                     </button>
                 </div>
             </div>
@@ -2022,8 +2023,8 @@
                 pdfFormat: 'PDF (.pdf)',
                 advanced: 'Avançado',
                 configureEmail: 'Configurar Email',
-                setupIni: 'Exportar Configurações (.ini)',
-                importIni: 'Importar Configurações (.ini)',
+                setupIni: 'Exportar Configurações (.json)',
+                importIni: 'Importar Configurações (.json)',
                 footer1: 'Interface Paralela LPT (DB25) | Web Serial API',
                 footer2: 'Requer navegador compatível com Web Serial API (Chrome, Edge, Opera)',
                 contact: 'Contacto:',
@@ -2192,8 +2193,8 @@
                 pdfFormat: 'PDF (.pdf)',
                 advanced: 'Advanced',
                 configureEmail: 'Configure Email',
-                setupIni: 'Export Settings (.ini)',
-                importIni: 'Import Settings (.ini)',
+                setupIni: 'Export Settings (.json)',
+                importIni: 'Import Settings (.json)',
                 footer1: 'Parallel Interface LPT (DB25) | Web Serial API',
                 footer2: 'Requires browser compatible with Web Serial API (Chrome, Edge, Opera)',
                 contact: 'Contact:',
@@ -2364,8 +2365,8 @@
                 pdfFormat: 'PDF (.pdf)',
                 advanced: 'Avanzado',
                 configureEmail: 'Configurar Email',
-                setupIni: 'Exportar Configuración (.ini)',
-                importIni: 'Importar Configuración (.ini)',
+                setupIni: 'Exportar Configuración (.json)',
+                importIni: 'Importar Configuración (.json)',
                 footer1: 'Interfaz Paralela LPT (DB25) | Web Serial API',
                 footer2: 'Requiere navegador compatible con Web Serial API (Chrome, Edge, Opera)',
                 contact: 'Contacto:',
@@ -2504,7 +2505,28 @@
         
         // LocalStorage - Salvar preferências
         const STORAGE_KEY = 'lpt-uno-preferences';
-        
+
+        // Constantes WiFi (usadas em buildConfigJson e no módulo WiFi abaixo)
+        const WIFI_LAST_HOST_KEY = 'lptUnoWifiLastHost';
+        const WIFI_LAST_HOSTS_KEY = 'lptUnoWifiLastHosts';
+        const WIFI_MANUAL_IP_KEY = 'lptUnoWifiManualIp';
+
+        // Função: Construir objeto JSON completo com todas as configurações
+        function buildConfigJson() {
+            const prefs = loadPreferences();
+            return {
+                version: '1.0',
+                lastSaved: new Date().toISOString(),
+                appName: 'LPT-UNO Web Interface',
+                preferences: prefs,
+                wifi: {
+                    lastHost:  localStorage.getItem(WIFI_LAST_HOST_KEY)  || null,
+                    lastHosts: (() => { try { return JSON.parse(localStorage.getItem(WIFI_LAST_HOSTS_KEY) || '[]'); } catch { return []; } })(),
+                    manualIp:  localStorage.getItem(WIFI_MANUAL_IP_KEY)  || null
+                }
+            };
+        }
+
         // Função: Carregar preferências
         function loadPreferences() {
             try {
@@ -2600,78 +2622,73 @@ baudRate=115200
 `;
         }
         
-        // Função: Exportar configurações para arquivo .ini
+        // Função: Exportar configurações para ficheiro .json (download direto)
         async function setupIniFile() {
             try {
-                if (!window.showSaveFilePicker) {
-                    showInfo('❌ Seu navegador não suporta salvamento de arquivos');
-                    return;
-                }
-                
-                // Tentar salvar na pasta DATA se disponível
-                const handle = await window.showSaveFilePicker({
-                    suggestedName: 'lpt-uno-config.ini',
-                    startIn: 'documents', // Começar em Documentos
-                    types: [{
-                        description: 'Configuration File',
-                        accept: { 'text/plain': ['.ini'] }
-                    }]
-                });
-                                // Auto-imprimir agora só ativa/desativa cópia para DATA
-                                // Impressão automática é feita pelo monitor externo (PowerShell/.bat)
-                                const prefs = loadPreferences();
-                                if (prefs.autoPrint) {
-                                    console.log('🖨️ Auto-imprimir ATIVO: arquivos copiados para DATA serão impressos automaticamente pelo sistema externo.');
-                                } else {
-                                    console.log('🖨️ Auto-imprimir DESATIVADO: arquivos copiados para DATA, mas NÃO serão impressos automaticamente.');
-                                }
+                const json = JSON.stringify(buildConfigJson(), null, 2);
+                const blob = new Blob([json], { type: 'application/json; charset=utf-8' });
+                const url  = URL.createObjectURL(blob);
+                const a    = document.createElement('a');
+                a.href = url;
+                a.download = 'lpt-uno-config.json';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showInfo('✅ Configurações exportadas para Downloads: lpt-uno-config.json');
             } catch (e) {
-                if (e.name !== 'AbortError') {
-                    console.error('Erro ao exportar .ini:', e);
-                    showError('❌ Erro ao exportar configurações');
-                }
+                console.error('Erro ao exportar config:', e);
+                showError('❌ Erro ao exportar configurações');
             }
         }
         
-        // Função: Importar configurações de arquivo .ini
+        // Função: Importar configurações de ficheiro .json ou .ini
         async function importIniFile() {
-            try {
-                if (!window.showOpenFilePicker) {
-                    showInfo('❌ Seu navegador não suporta abertura de arquivos');
-                    return;
-                }
-                
-                const [handle] = await window.showOpenFilePicker({
-                    types: [{
-                        description: 'Configuration File',
-                        accept: { 'text/plain': ['.ini'] }
-                    }],
-                    multiple: false
-                });
-                
-                const file = await handle.getFile();
-                const content = await file.text();
-                
-                // Parse do arquivo .ini
-                const prefs = parseIniFile(content);
-                
-                if (!prefs) {
-                    showError('❌ Arquivo .ini inválido ou corrompido');
-                    return;
-                }
-                
-                // Salvar preferências importadas
-                savePreferences(prefs);
-                
-                // Aplicar imediatamente
-                location.reload(); // Recarregar página para aplicar todas as configurações
-                
-            } catch (e) {
-                if (e.name !== 'AbortError') {
-                    console.error('Erro ao importar .ini:', e);
+            // Acionado via <input type="file"> oculto (sem dialog nativo do browser)
+        }
+
+        // Handler do input de ficheiro de configuração
+        const importConfigInput = document.getElementById('importConfigInput');
+        if (importConfigInput) {
+            importConfigInput.addEventListener('change', async () => {
+                const file = importConfigInput.files && importConfigInput.files[0];
+                if (!file) return;
+                importConfigInput.value = '';  // reset para poder reimportar o mesmo ficheiro
+                try {
+                    const content = await file.text();
+                    let restored = false;
+
+                    // Tentar JSON primeiro
+                    try {
+                        const data = JSON.parse(content);
+                        if (data.preferences) {
+                            await savePreferences(data.preferences);
+                            if (data.wifi) {
+                                if (data.wifi.lastHost)  localStorage.setItem(WIFI_LAST_HOST_KEY,  data.wifi.lastHost);
+                                if (data.wifi.lastHosts) localStorage.setItem(WIFI_LAST_HOSTS_KEY, JSON.stringify(data.wifi.lastHosts));
+                                if (data.wifi.manualIp)  { localStorage.setItem(WIFI_MANUAL_IP_KEY, data.wifi.manualIp); localStorage.setItem('lptUnoWifiIp', data.wifi.manualIp); }
+                            }
+                            restored = true;
+                        }
+                    } catch (_) { /* não é JSON */ }
+
+                    // Fallback formato .ini legado
+                    if (!restored) {
+                        const prefs = parseIniFile(content);
+                        if (prefs) { await savePreferences(prefs); restored = true; }
+                    }
+
+                    if (restored) {
+                        showInfo('✅ Configurações importadas! A recarregar...');
+                        setTimeout(() => location.reload(), 1200);
+                    } else {
+                        showError('❌ Ficheiro inválido ou formato não reconhecido');
+                    }
+                } catch (e) {
+                    console.error('Erro ao importar config:', e);
                     showError('❌ Erro ao importar configurações');
                 }
-            }
+            });
         }
         
         // Função: Parse de arquivo .ini para objeto de preferências
@@ -3659,6 +3676,7 @@ baudRate=115200
                 }
                 
                 isConnected = false;
+                _lastEmailData = null;  // Reset deduplicação de email ao desligar
                 updateStatus(false);
 
                 // Limpar buffers internos ao desligar
@@ -4202,6 +4220,13 @@ baudRate=115200
             if (pcoEl) pcoEl.value = String(prefs.printCopies || 1);
             const ffiEl = document.getElementById('formFeedImmediateCheck');
             if (ffiEl) ffiEl.checked = !!prefs.formFeedImmediate;
+            if (ffiEl) {
+                ffiEl.addEventListener('change', () => {
+                    const p = loadPreferences();
+                    p.formFeedImmediate = ffiEl.checked;
+                    savePreferences(p);
+                });
+            }
         });
         
         // Função: Fechar modal
@@ -4408,15 +4433,7 @@ baudRate=115200
             });
         }
         
-        // Botão para importar arquivo .ini
-        const importIniBtn = document.getElementById('importIniBtn');
-        if (importIniBtn) {
-            importIniBtn.addEventListener('click', async () => {
-                await importIniFile();
-            });
-        }
-        
-        // Botão para exportar arquivo .ini
+        // Botão exportar config (.json) — download direto, sem dialog
         const setupIniBtn = document.getElementById('setupIniBtn');
         if (setupIniBtn) {
             setupIniBtn.addEventListener('click', async () => {
@@ -4624,7 +4641,9 @@ function testEmail() {
                     appsScriptUrl: url,
                     senderName: senderName
                 };
-                localStorage.setItem('emailConfig', JSON.stringify(emailConfig));
+                const curPrefs = loadPreferences();
+                curPrefs.email = emailConfig;
+                savePreferences(curPrefs);
                 
                 // Feedback de sucesso
                 showInfo('🎉 Configuração salva com sucesso!');
@@ -4978,6 +4997,9 @@ function testEmail() {
                     // No-cors não retorna resposta, assumimos sucesso se não houver erro
                     console.log('✅ Email enviado para:', recipient.name, '<' + email + '>');
                     console.log('   Via Google Apps Script');
+                    _emailsSent++;
+                    const _esEl = document.getElementById('emailsSentCount');
+                    if (_esEl) _esEl.textContent = _emailsSent;
                 }
                 
             } catch (error) {
@@ -5456,9 +5478,6 @@ function testEmail() {
         const WIFI_CONNECT_TIMEOUT = 5000;
         const WIFI_DIRECT_RETRY_ATTEMPTS = 3;
         const WIFI_DIRECT_RETRY_DELAY_MS = 900;
-        const WIFI_LAST_HOST_KEY = 'lptUnoWifiLastHost';
-        const WIFI_LAST_HOSTS_KEY = 'lptUnoWifiLastHosts';
-        const WIFI_MANUAL_IP_KEY = 'lptUnoWifiManualIp';
         let sseConnected = false;
         let wifiAutoRetryTimer = null;   // timer de retry automático
         let wifiUserDisconnected = false; // true se o utilizador desligou manualmente
