@@ -1459,13 +1459,6 @@
             <button id="autoSaveBtn" class="toggle active">💾 Auto-salvar</button>
                 <!-- Botão de auto print removido conforme solicitado -->
             <div style="flex: 1;"></div>
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <div style="display: flex; flex-direction: column; gap: 3px;">
-                    <label for="subfolderNameInput" id="fileNameLabel" style="font-size: 0.85em; color: #666; white-space: nowrap;">Nome do ficheiro:</label>
-                    <input type="text" id="subfolderNameInput" placeholder="Ex: Cliente_A" 
-                           style="width: 160px; padding: 6px 10px; border: 2px solid #007bff; border-radius: 5px; font-size: 0.9em;" title="Prefixo do arquivo: [nome]_[timestamp].ext">
-                </div>
-            </div>
         </div>
         
         <div class="stats-bar">
@@ -1480,6 +1473,14 @@
             <div class="stat-item">
                 <span class="stat-label">Tempo ativo:</span>
                 <span id="uptime">00:00:00</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label" id="labelFilesSaved">Ficheiros guardados:</span>
+                <span id="filesSavedCount">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label" id="labelEmailsSent">Emails enviados:</span>
+                <span id="emailsSentCount">0</span>
             </div>
         </div>
         
@@ -1598,6 +1599,12 @@
                                         <option value="5">5 cópias</option>
                                     </select>
                                 </div>
+                            </div>
+                            <!-- Restaurar configurações de impressão do ficheiro _lptcfg.json -->
+                            <div style="margin-top:10px; display:flex; gap:8px; align-items:center;">
+                                <button id="restorePrintConfigBtn" onclick="document.getElementById('restorePrintConfigInput').click()" style="font-size:0.82em; padding:4px 10px; border-radius:5px; border:1px solid #007bff; background:#e8f4ff; color:#007bff; cursor:pointer;" title="Carrega _lptcfg.json e restaura definições de impressão (usado após limpar cache)">&#128194; Restaurar do ficheiro</button>
+                                <input type="file" id="restorePrintConfigInput" accept=".json" style="display:none;">
+                                <span id="restorePrintConfigStatus" style="font-size:0.78em; color:#666;"></span>
                             </div>
                         </div>
                     </div>
@@ -1940,6 +1947,8 @@
         let pendingData = '';
         let _pageCounter = 0;  // contador de páginas por sessão
         let _lastEmailData = null;  // último conteúdo para o qual foi enviado email (deduplicação)
+        let _emailsSent = 0;          // contador de emails enviados na sessão
+        let _filesSaved = 0;          // contador de ficheiros guardados na sessão
         let firmwareVersion = 'Unknown';
         let firmwareBuild = 'Unknown';
         let currentEncoding = 'utf-8'; // Default to UTF-8 for modern systems
@@ -1994,6 +2003,8 @@
                 bytesReceived: 'Bytes recebidos:',
                 rate: 'Taxa:',
                 uptime: 'Tempo ativo:',
+                filesSaved: 'Ficheiros guardados:',
+                emailsSent: 'Emails enviados:',
                 infoMessage: 'Clique em "Conectar Arduino" e selecione a porta COM do Arduino Uno (115200 baud)',
                 settingsTitle: 'Definições',
                 autoSaveTime: 'Tempo de Auto-Salvar',
@@ -2162,6 +2173,8 @@
                 bytesReceived: 'Bytes received:',
                 rate: 'Rate:',
                 uptime: 'Uptime:',
+                filesSaved: 'Files saved:',
+                emailsSent: 'Emails sent:',
                 infoMessage: 'Click "Connect Arduino" and select the Arduino Uno COM port (115200 baud)',
                 settingsTitle: 'Settings',
                 autoSaveTime: 'Auto-Save Time',
@@ -2330,6 +2343,10 @@
                 bytesReceived: 'Bytes recibidos:',
                 rate: 'Tasa:',
                 uptime: 'Tiempo activo:',
+                filesSaved: 'Archivos guardados:',
+                emailsSent: 'Emails enviados:',
+                filesSaved: 'Archivos guardados:',
+                emailsSent: 'Emails enviados:',
                 infoMessage: 'Haga clic en "Conectar Arduino" y seleccione el puerto COM del Arduino Uno (115200 baud)',
                 settingsTitle: 'Configuración',
                 autoSaveTime: 'Tiempo de Auto-Guardado',
@@ -2528,7 +2545,17 @@
                 loadPreferences._cache = prefs;  // invalidar cache
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
             } catch (e) {
-                console.error('Erro ao salvar preferências:', e);
+                if (e.name === 'QuotaExceededError') {
+                    console.warn('⚠️ localStorage cheio! A remover dados antigos...');
+                    showError('⚠️ Armazenamento do browser cheio. A limpar dados antigos...');
+                    // Remover chaves menos críticas para libertar espaço
+                    ['lptUnoAutoConnect', 'lptUnoPortInfo', 'lptUnoWifiSsid', 'lptUnoWifiPass'].forEach(k => {
+                        try { localStorage.removeItem(k); } catch (_) {}
+                    });
+                    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs)); } catch (_) {}
+                } else {
+                    console.error('Erro ao salvar preferências:', e);
+                }
             }
         }
         
@@ -2752,6 +2779,10 @@ baudRate=115200
                 statLabels[1].textContent = t.rate;
                 statLabels[2].textContent = t.uptime;
             }
+            const lFS = document.getElementById('labelFilesSaved');
+            const lES = document.getElementById('labelEmailsSent');
+            if (lFS) lFS.textContent = t.filesSaved || 'Ficheiros guardados:';
+            if (lES) lES.textContent = t.emailsSent || 'Emails enviados:';
             
             // Mensagem info
             if (infoMsg) {
@@ -3989,17 +4020,21 @@ baudRate=115200
         
         // Função: Salvar output
         saveBtn.addEventListener('click', async () => {
+            if (saveBtn.disabled) return;
             const text = output.textContent;
             if (!text || text.trim().length === 0) {
                 showError('Nenhum dado para salvar');
                 return;
             }
-            
-            const prefs = loadPreferences();
-            const format = prefs.saveFormat || 'txt';
-            const timestamp = generateTimestamp();
-            
-            await saveToFile(text, timestamp, format);
+            saveBtn.disabled = true;
+            try {
+                const prefs = loadPreferences();
+                const format = prefs.saveFormat || 'txt';
+                const timestamp = generateTimestamp();
+                await saveToFile(text, timestamp, format);
+            } finally {
+                setTimeout(() => { saveBtn.disabled = false; }, 1500);
+            }
         });
         
         // Função: Salvar arquivo no formato escolhido
@@ -4071,6 +4106,9 @@ baudRate=115200
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
             
+            _filesSaved++;
+            const elFS = document.getElementById('filesSavedCount');
+            if (elFS) elFS.textContent = _filesSaved;
             showInfo(`💾 Arquivo ${filename} salvo na pasta Downloads!`);
             console.log(`💾 Arquivo salvo: ${filename} (Downloads)`);
         }
@@ -4091,6 +4129,7 @@ baudRate=115200
         
         // Função: Imprimir agora
         printBtn.addEventListener('click', () => {
+            if (printBtn.disabled) return;
             if (isSilentPrintMode) {
                 showError(translations[currentLanguage].silentPrintManualDisabled);
                 return;
@@ -4100,7 +4139,12 @@ baudRate=115200
                 showError('Nenhum dado para imprimir');
                 return;
             }
-            printData(text);
+            printBtn.disabled = true;
+            try {
+                printData(text);
+            } finally {
+                setTimeout(() => { printBtn.disabled = false; }, 3000);
+            }
         });
         
         // Função: Toggle Auto-salvar
@@ -4273,6 +4317,55 @@ baudRate=115200
                 showInfo(`🖨️ Cópias: ${printCopiesSelect.value}`);
             });
         }
+
+        // Restaurar definições de impressão a partir de _lptcfg.json (após limpar cache)
+        const restoreInput = document.getElementById('restorePrintConfigInput');
+        if (restoreInput) {
+            restoreInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    try {
+                        const cfg = JSON.parse(ev.target.result);
+                        const prefs = loadPreferences();
+                        if (cfg.fontSize)    prefs.printFontSize    = cfg.fontSize;
+                        if (cfg.margin)      prefs.printMargin      = cfg.margin;
+                        if (cfg.orientation) prefs.printOrientation = cfg.orientation;
+                        if (cfg.paperSize)   prefs.printPaperSize   = cfg.paperSize;
+                        if (cfg.lineHeight != null) prefs.printLineHeight = String(cfg.lineHeight);
+                        if (cfg.copies   != null)   prefs.printCopies    = cfg.copies;
+                        if (cfg.center   != null)   prefs.printCenter    = cfg.center;
+                        savePreferences(prefs);
+                        // Atualizar UI dos controlos de impressão
+                        const pfsEl = document.getElementById('printFontSizeSelect');
+                        const pmEl  = document.getElementById('printMarginSelect');
+                        const poEl  = document.getElementById('printOrientationSelect');
+                        const ppEl  = document.getElementById('printPaperSizeSelect');
+                        const plhEl = document.getElementById('printLineHeightSelect');
+                        const pcoEl = document.getElementById('printCopiesSelect');
+                        const pccEl = document.getElementById('printCenterCheck');
+                        if (pfsEl) pfsEl.value = prefs.printFontSize;
+                        if (pmEl)  pmEl.value  = prefs.printMargin;
+                        if (poEl)  poEl.value  = prefs.printOrientation;
+                        if (ppEl)  ppEl.value  = prefs.printPaperSize;
+                        if (plhEl) plhEl.value = prefs.printLineHeight;
+                        if (pcoEl) pcoEl.value = String(prefs.printCopies);
+                        if (pccEl) pccEl.checked = !!prefs.printCenter;
+                        const statusEl = document.getElementById('restorePrintConfigStatus');
+                        if (statusEl) statusEl.textContent = '✅ Restaurado com sucesso';
+                        setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 3000);
+                        console.log('⚙️ Definições de impressão restauradas de _lptcfg.json');
+                    } catch (err) {
+                        const statusEl = document.getElementById('restorePrintConfigStatus');
+                        if (statusEl) statusEl.textContent = '❌ Ficheiro inválido';
+                        console.error('Erro ao restaurar _lptcfg.json:', err);
+                    }
+                    restoreInput.value = '';  // permite seleccionar o mesmo ficheiro de novo
+                };
+                reader.readAsText(file, 'utf-8');
+            });
+        }
         
         // Função: Alterar idioma
         if (languageSelect) {
@@ -4304,30 +4397,6 @@ baudRate=115200
         
         // Função: Alterar formato de salvamento
 
-        
-        // Função: Salvar nome do arquivo (prefixo)
-        const subfolderNameInput = document.getElementById('subfolderNameInput');
-        if (subfolderNameInput) {
-            // Carregar valor salvo
-            const prefs = loadPreferences();
-            subfolderNameInput.value = prefs.subfolderName || '';
-            
-            // Salvar quando o usuário digitar (com debounce)
-            let debounceTimer;
-            subfolderNameInput.addEventListener('input', (e) => {
-                clearTimeout(debounceTimer);
-                debounceTimer = setTimeout(() => {
-                    const value = e.target.value.trim();
-                    const prefs = loadPreferences();
-                    prefs.subfolderName = value || 'lpt-uno';
-                    savePreferences(prefs);
-                    
-                    if (value) {
-                        showInfo(`📝 Prefixo do arquivo: ${value}_[timestamp].[ext]`);
-                    }
-                }, 500); // 500ms debounce
-            });
-        }
         
         // Abrir modal de configuração de email
         if (openEmailConfig) {
@@ -4798,6 +4867,13 @@ function testEmail() {
         }
         
         // Função: Extrair nome do concurso/prova dos dados recebidos
+        // Função: Detectar tipo de lista (Encestamento / Chegada) — BRICON e UNIKON
+        function extractListType(data) {
+            if (/Lista\s+de\s+Chegada/i.test(data))      return 'Chegada';
+            if (/Lista\s+de\s+Encestamento/i.test(data)) return 'Encestamento';
+            return null;
+        }
+
         function extractContestName(data) {
             // UNIKON: "No. concurso 09   Data ...   Local de solta ALMANSA"
             // "Local de solta" pode estar a meio de uma linha (sem ancora ^)
@@ -4826,14 +4902,14 @@ function testEmail() {
             const unikonConc = data.match(/Concorrente\s+\d+\s+([^\n\r]+)/i);
             if (unikonConc) return unikonConc[1].trim();
 
-            // ── BRICON (formato "Campo: Valor") ──────────────────────────────
-            const briconNome = data.match(/^Nome\s*:\s*(.+)/im);
+            // ── BRICON: "      Nome: Ilhus" (pode ter espaços à esquerda — sem âncora ^)
+            const briconNome = data.match(/\bNome\s*:\s*(.+)/i);
             if (briconNome) return briconNome[1].trim();
 
-            const briconCriador = data.match(/^Criador\s*:\s*(.+)/im);
+            const briconCriador = data.match(/\bCriador\s*:\s*(.+)/i);
             if (briconCriador) return briconCriador[1].trim();
 
-            const briconColom = data.match(/^Colombo[fF]ilo\s*:\s*(.+)/im);
+            const briconColom = data.match(/\bColombofilo\s*:\s*(.+)/i);
             if (briconColom) return briconColom[1].trim();
 
             // ── UNIKON: "Colombofilo NOME" (sem dois-pontos, fallback) ──────────
@@ -4870,15 +4946,19 @@ function testEmail() {
                         toName: recipient.name,
                         fromName: emailConfig.senderName || 'LPT-UNO',
                         subject: (() => {
-                            const contest = extractContestName(data);
+                            const contest  = extractContestName(data);
+                            const listType = extractListType(data);
+                            const tipo = listType || 'Encestamento';
                             return contest
-                                ? `LPT-UNO - Encestamento ${contest}`
+                                ? `LPT-UNO - ${tipo} ${contest}`
                                 : `LPT-UNO - ${fileName}`;
                         })(),
                         body: (() => {
-                            const contest = extractContestName(data);
+                            const contest  = extractContestName(data);
+                            const listType = extractListType(data);
+                            const tipo = listType ? listType.toLowerCase() : 'encestamento';
                             const contestLine = contest
-                                ? `Segue em anexo os dados do encestamento de ${contest}.`
+                                ? `Segue em anexo os dados da lista de ${tipo} de ${contest}.`
                                 : `Segue em anexo os dados recebidos pela impressora LPT-UNO.`;
                             return `Olá ${recipient.name},\n\n${contestLine}\n\n---\nEnviado automaticamente em ${new Date().toLocaleString('pt-PT')}`;
                         })(),
@@ -4991,14 +5071,16 @@ function testEmail() {
             const saveForBackgroundPrint = !!prefs.autoPrint;
             const shouldSaveFile = autoSaveBtn.classList.contains('active') || saveForBackgroundPrint;
 
-            // Detecção inteligente: extrair nome do criador e concurso dos dados (BRICON / UNIKON)
+            // Detecção inteligente: extrair nome do criador, concurso e tipo de lista (BRICON / UNIKON)
             const ownerName   = extractOwnerName(dataToSave);
             const contestName = extractContestName(dataToSave);
+            const listType    = extractListType(dataToSave);
             const smartParts  = [ownerName, contestName].filter(Boolean);
+            // listType entra no timestamp em vez de no prefixo para ficar: prefix_Encestamento_timestamp
             const smartSuffix = smartParts.length > 0
                 ? smartParts.join(' - ').replace(/[<>:"/\\|?*]/g, '_')
                 : null;
-            if (smartSuffix) console.log(`🔍 Detecção inteligente → ${smartSuffix}`);
+            if (smartSuffix) console.log(`🔍 Detecção inteligente → ${smartSuffix}${listType ? ' [' + listType + ']' : ''}`);
 
             // Deduplicação de email: se os dados são iguais ao envio anterior, não re-envia email
             const dataTrimmed = dataToSave.trim();
@@ -5018,17 +5100,21 @@ function testEmail() {
             if (shouldSaveFile) {
                 let finalPrefix;
                 if (matchedRecipients.length > 0) {
-                    // Destinatários configurados têm prioridade
+                    // Destinatários configurados + concurso (se detectado)
                     const recipientNames = matchedRecipients.map(r => r.name).join(' - ');
-                    finalPrefix = `${sanitizedPrefix} - ${recipientNames}`;
+                    const contestSuffix  = contestName ? ` - ${contestName.replace(/[<>:"/\\|?*]/g, '_')}` : '';
+                    finalPrefix = `${sanitizedPrefix} - ${recipientNames}${contestSuffix}`;
                 } else if (smartSuffix) {
                     // Sem destinatários configurados → usa detecção inteligente (criador + concurso)
                     finalPrefix = `${sanitizedPrefix} - ${smartSuffix}`;
                 } else {
                     finalPrefix = sanitizedPrefix;
                 }
-                saveToFile(dataToSave, timestamp, format, finalPrefix, saveForBackgroundPrint);
-                showInfo(`💾 Arquivo salvo: ${finalPrefix}_${timestamp}.txt`);
+                // Tipo de lista (Encestamento / Chegada) inserido entre prefixo e timestamp
+                const listLabel = listType ? `_${listType}` : '';
+                const finalTimestamp = `${listLabel}_${timestamp}`.replace(/^_/, '');
+                saveToFile(dataToSave, finalTimestamp, format, finalPrefix, saveForBackgroundPrint);
+                showInfo(`💾 Arquivo salvo: ${finalPrefix}_${finalTimestamp}.txt`);
             }
 
             if (prefs.autoPrint) {

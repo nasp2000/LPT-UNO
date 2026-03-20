@@ -3,7 +3,8 @@
 # ========================================
 
 $downloadsPath = "$env:USERPROFILE\Downloads"
-$dataPath = Split-Path -Parent $PSCommandPath | Join-Path -ChildPath "DATA"
+$dataPath   = Join-Path $PSScriptRoot 'DATA'
+$rootPath   = $PSScriptRoot
 
 # Criar pasta DATA se não existir
 if (-not (Test-Path $dataPath)) {
@@ -34,14 +35,15 @@ Write-Host ""
 # Loop infinito
 while ($true) {
     # Verificar se _lptcfg.json chegou em Downloads (configurações de impressão)
+    # → Mover para a pasta raiz LPT-UNO (ao lado do web_interface.html e dos scripts)
     $cfgFile = Join-Path $downloadsPath '_lptcfg.json'
     if (Test-Path $cfgFile) {
         $timestamp = Get-Date -Format "HH:mm:ss"
-        $cfgDest   = Join-Path $dataPath '_lptcfg.json'
+        $cfgDest   = Join-Path $rootPath '_lptcfg.json'
         Write-Host "[$timestamp] Config de impressão detectada: _lptcfg.json" -ForegroundColor Cyan
         try {
             Move-Item -Path $cfgFile -Destination $cfgDest -Force -ErrorAction Stop
-            Write-Host "           [OK] _lptcfg.json atualizada em DATA" -ForegroundColor Green
+            Write-Host "           [OK] _lptcfg.json atualizada em: $rootPath" -ForegroundColor Green
         } catch {
             Write-Host "           [AVISO] Nao foi possivel mover _lptcfg.json: $_" -ForegroundColor Yellow
         }
@@ -74,9 +76,33 @@ while ($true) {
                 continue
             }
             
+            # Verificar se ficheiro está bloqueado (ainda a ser escrito pelo browser)
+            $fileLocked = $true
             try {
-                # Tentar mover arquivo
-                $destPath = Join-Path $dataPath $file.Name
+                $stream = [System.IO.File]::Open($file.FullName, 'Open', 'Read', 'None')
+                $stream.Close()
+                $stream.Dispose()
+                $fileLocked = $false
+            } catch {
+                $fileLocked = $true
+            }
+            if ($fileLocked) {
+                Write-Host "           [AVISO] Ficheiro ainda bloqueado - aguardar próximo ciclo." -ForegroundColor Yellow
+                Write-Host ""
+                continue
+            }
+            
+            try {
+                # Criar subpasta DATA\YYYY-MM-DD\ para o dia de hoje
+                $dateFolder = Get-Date -Format "yyyy-MM-dd"
+                $datePath   = Join-Path $dataPath $dateFolder
+                if (-not (Test-Path $datePath)) {
+                    New-Item -ItemType Directory -Path $datePath -Force | Out-Null
+                    Write-Host "           [OK] Subpasta criada: $dateFolder" -ForegroundColor Cyan
+                }
+
+                # Tentar mover arquivo para subpasta do dia
+                $destPath = Join-Path $datePath $file.Name
                 Write-Host "           Tentando mover para: $destPath" -ForegroundColor Gray
                 
                 Move-Item -Path $file.FullName -Destination $destPath -Force -ErrorAction Stop
@@ -90,6 +116,12 @@ while ($true) {
                 
                 try {
                     # Plano B: Copiar e depois deletar
+                    $dateFolder = Get-Date -Format "yyyy-MM-dd"
+                    $datePath   = Join-Path $dataPath $dateFolder
+                    if (-not (Test-Path $datePath)) {
+                        New-Item -ItemType Directory -Path $datePath -Force | Out-Null
+                    }
+                    $destPath = Join-Path $datePath $file.Name
                     Copy-Item -Path $file.FullName -Destination $destPath -Force -ErrorAction Stop
                     Start-Sleep -Milliseconds 500
                     Remove-Item -Path $file.FullName -Force -ErrorAction Stop
@@ -105,13 +137,4 @@ while ($true) {
     
     # Aguardar 3 segundos antes de próxima verificação
     Start-Sleep -Seconds 3
-}
-
-# Só imprime se o flag .autoprint_enabled existir
-$autoPrintFlag = Join-Path $dataPath ".autoprint_enabled"
-$autoPrintActive = Test-Path $autoPrintFlag
-if (-not $autoPrintActive) {
-    Write-Host "[INFO] Impressão automática DESATIVADA (.autoprint_enabled não encontrado)" -ForegroundColor Yellow
-    Start-Sleep -Seconds 3
-    continue
 }

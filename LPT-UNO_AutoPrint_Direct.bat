@@ -70,8 +70,15 @@ REM Loop infinito monitorando pasta DATA
         goto :LOOP
     )
     
-    REM Procurar arquivos recentes (excluindo IMPRESSO_*)
-    for /f "delims=" %%f in ('dir /b /o-d /tc "%DATA_FOLDER%\*_????-??-??_??-??-??.*" 2^>nul ^| findstr /v /i "^IMPRESSO_"') do (
+    REM Procurar arquivos recentes na subpasta do dia (DATA\YYYY-MM-DD\)
+    REM Usar PowerShell para obter data no formato correto (independente da locale do Windows)
+    for /f "delims=" %%d in ('powershell -NoProfile -Command "Get-Date -Format 'yyyy-MM-dd'"') do set "TODAY_DATE=%%d"
+    set "TODAY_FOLDER=%DATA_FOLDER%\%TODAY_DATE%"
+
+    REM Criar subpasta do dia se nao existir
+    if not exist "%TODAY_FOLDER%" mkdir "%TODAY_FOLDER%"
+
+    for /f "delims=" %%f in ('dir /b /o-d /tc "%TODAY_FOLDER%\*_????-??-??_??-??-??.*" 2^>nul ^| findstr /v /i "^IMPRESSO_"') do (
         set "LATEST_FILE=%%f"
         goto :FOUND
     )
@@ -97,11 +104,11 @@ echo.
 REM Verificar extensão e imprimir adequadamente
 echo !LATEST_FILE! | findstr /i ".txt" >nul
 if !errorlevel! equ 0 (
-    REM Arquivos texto - usar LPT-UNO_Print.ps1 (respeita definicoes do web interface)
-    powershell -ExecutionPolicy Bypass -File "%~dp0LPT-UNO_Print.ps1" -FilePath "%DATA_FOLDER%\!LATEST_FILE!"
+    REM Arquivos texto - usar LPT-UNO_Print.ps1 com timeout de 60s (evita bloqueio por driver)
+    powershell -NoProfile -ExecutionPolicy Bypass -Command "& { $ps1='%~dp0LPT-UNO_Print.ps1'; $fp='%TODAY_FOLDER%\!LATEST_FILE!'; $j=Start-Job -ScriptBlock { param($s,$f); & $s -FilePath $f } -ArgumentList $ps1,$fp; if(-not(Wait-Job $j -Timeout 60)){Stop-Job $j;Write-Host '[AVISO] Timeout de impressao (60s)' -ForegroundColor Yellow}else{Receive-Job $j}; Remove-Job $j -Force }"
 ) else (
     REM Outros formatos - usar Start-Process com verbo Print
-    powershell -Command "Start-Process -FilePath '%DATA_FOLDER%\!LATEST_FILE!' -Verb Print -Wait"
+    powershell -Command "Start-Process -FilePath '%TODAY_FOLDER%\!LATEST_FILE!' -Verb Print -Wait"
 )
 
 if !errorlevel! equ 0 (
@@ -119,7 +126,7 @@ if !errorlevel! equ 0 (
 )
 
 REM Renomear arquivo para evitar reimprimir
-ren "%DATA_FOLDER%\!LATEST_FILE!" "IMPRESSO_!LATEST_FILE!"
+ren "%TODAY_FOLDER%\!LATEST_FILE!" "IMPRESSO_!LATEST_FILE!"
 echo [8] Arquivo renomeado: IMPRESSO_!LATEST_FILE!
 
 REM Continuar monitorando para proximos arquivos

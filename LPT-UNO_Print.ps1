@@ -30,8 +30,8 @@ if (-not (Test-Path $FilePath)) {
     exit 1
 }
 
-# ─── Carregar _lptcfg.json da mesma pasta (se existir) ────────────────────────
-$cfgPath = Join-Path (Split-Path $FilePath -Parent) '_lptcfg.json'
+# ─── Carregar _lptcfg.json da pasta raiz do script (ao lado do web_interface.html) ────
+$cfgPath = Join-Path $PSScriptRoot '_lptcfg.json'
 
 if (Test-Path $cfgPath) {
     try {
