@@ -4799,17 +4799,46 @@ function testEmail() {
         
         // Função: Extrair nome do concurso/prova dos dados recebidos
         function extractContestName(data) {
-            // BRICON: "Concurso: BMANZANARES"
-            const briconMatch = data.match(/Concurso\s*:\s*(\S+)/i);
-            if (briconMatch) return briconMatch[1];
+            // UNIKON: "No. concurso 09   Data ...   Local de solta ALMANSA"
+            // "Local de solta" pode estar a meio de uma linha (sem ancora ^)
+            const unikonLocal = data.match(/Local\s+de\s+solta\s+(\S+)/i);
+            if (unikonLocal) return unikonLocal[1].trim();
 
-            // UNIKON: "Local de solta MANZAN"
-            const unikonMatch = data.match(/Local\s+de\s+solta\s+(\S+)/i);
-            if (unikonMatch) return unikonMatch[1];
+            // BRICON: "Concurso: BMANZANARES" (com dois-pontos, início de linha)
+            const briconConcurso = data.match(/^Concurso\s*:\s*(\S+)/im);
+            if (briconConcurso) return briconConcurso[1].trim();
 
-            // Genérico: "Concurso XXXXX" ou "concurso 07"
-            const genericMatch = data.match(/concurso\s+(\S+)/i);
-            if (genericMatch) return genericMatch[1];
+            // BRICON: "Prova: BMANZANARES"
+            const briconProva = data.match(/^Prova\s*:\s*(\S+)/im);
+            if (briconProva) return briconProva[1].trim();
+
+            // UNIKON: "No. concurso 09" (número do concurso como fallback)
+            const unikonNum = data.match(/No\.\s*concurso\s+(\S+)/i);
+            if (unikonNum) return unikonNum[1].trim();
+
+            return null;
+        }
+
+        // Função: Extrair nome do criador/colombófilo dos dados (BRICON / UNIKON)
+        function extractOwnerName(data) {
+            // ── UNIKON: "Concorrente 003   Alexandre I. Pereira" ───────────
+            // Número seguido de nome (resto da linha)
+            const unikonConc = data.match(/Concorrente\s+\d+\s+([^\n\r]+)/i);
+            if (unikonConc) return unikonConc[1].trim();
+
+            // ── BRICON (formato "Campo: Valor") ──────────────────────────────
+            const briconNome = data.match(/^Nome\s*:\s*(.+)/im);
+            if (briconNome) return briconNome[1].trim();
+
+            const briconCriador = data.match(/^Criador\s*:\s*(.+)/im);
+            if (briconCriador) return briconCriador[1].trim();
+
+            const briconColom = data.match(/^Colombo[fF]ilo\s*:\s*(.+)/im);
+            if (briconColom) return briconColom[1].trim();
+
+            // ── UNIKON: "Colombofilo NOME" (sem dois-pontos, fallback) ──────────
+            const unikonColom = data.match(/Colombo[fF]ilo\s+([^\n\r:]+)/i);
+            if (unikonColom) return unikonColom[1].trim();
 
             return null;
         }
@@ -4962,6 +4991,15 @@ function testEmail() {
             const saveForBackgroundPrint = !!prefs.autoPrint;
             const shouldSaveFile = autoSaveBtn.classList.contains('active') || saveForBackgroundPrint;
 
+            // Detecção inteligente: extrair nome do criador e concurso dos dados (BRICON / UNIKON)
+            const ownerName   = extractOwnerName(dataToSave);
+            const contestName = extractContestName(dataToSave);
+            const smartParts  = [ownerName, contestName].filter(Boolean);
+            const smartSuffix = smartParts.length > 0
+                ? smartParts.join(' - ').replace(/[<>:"/\\|?*]/g, '_')
+                : null;
+            if (smartSuffix) console.log(`🔍 Detecção inteligente → ${smartSuffix}`);
+
             // Deduplicação de email: se os dados são iguais ao envio anterior, não re-envia email
             const dataTrimmed = dataToSave.trim();
             const isDuplicate = (_lastEmailData !== null && dataTrimmed === _lastEmailData);
@@ -4978,15 +5016,19 @@ function testEmail() {
             }
 
             if (shouldSaveFile) {
+                let finalPrefix;
                 if (matchedRecipients.length > 0) {
+                    // Destinatários configurados têm prioridade
                     const recipientNames = matchedRecipients.map(r => r.name).join(' - ');
-                    const customPrefix = `${sanitizedPrefix} - ${recipientNames}`;
-                    saveToFile(dataToSave, timestamp, format, customPrefix, saveForBackgroundPrint);
-                    showInfo(`💾 Arquivo salvo: ${customPrefix}_${timestamp}.${format}`);
+                    finalPrefix = `${sanitizedPrefix} - ${recipientNames}`;
+                } else if (smartSuffix) {
+                    // Sem destinatários configurados → usa detecção inteligente (criador + concurso)
+                    finalPrefix = `${sanitizedPrefix} - ${smartSuffix}`;
                 } else {
-                    saveToFile(dataToSave, timestamp, format, undefined, saveForBackgroundPrint);
-                    showInfo(`💾 Arquivo salvo automaticamente: ${timestamp}.${format}`);
+                    finalPrefix = sanitizedPrefix;
                 }
+                saveToFile(dataToSave, timestamp, format, finalPrefix, saveForBackgroundPrint);
+                showInfo(`💾 Arquivo salvo: ${finalPrefix}_${timestamp}.txt`);
             }
 
             if (prefs.autoPrint) {
