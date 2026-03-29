@@ -1947,7 +1947,10 @@
         let lastDataTime = null;
         let pendingData = '';
         let _pageCounter = 0;  // contador de páginas por sessão
-        let _lastEmailData = null;  // último conteúdo para o qual foi enviado email (deduplicação)
+        let _lastEmailData = null;  // fingerprint do último email enviado (deduplicação)
+        let _lastEmailTime = 0;         // timestamp do último email (ms) — cooldown de 30s
+        let _lastFileData = null;       // fingerprint do último ficheiro guardado (deduplicação)
+        let _lastFileTime = 0;          // timestamp do último ficheiro (ms) — cooldown de 30s
         let _emailsSent = 0;          // contador de emails enviados na sessão
         let _filesSaved = 0;          // contador de ficheiros guardados na sessão
         let firmwareVersion = 'Unknown';
@@ -3677,6 +3680,9 @@ baudRate=115200
                 
                 isConnected = false;
                 _lastEmailData = null;  // Reset deduplicação de email ao desligar
+                _lastEmailTime = 0;
+                _lastFileData = null;   // Reset deduplicação de ficheiro ao desligar
+                _lastFileTime = 0;
                 updateStatus(false);
 
                 // Limpar buffers internos ao desligar
@@ -5104,22 +5110,36 @@ function testEmail() {
                 : null;
             if (smartSuffix) console.log(`🔍 Detecção inteligente → ${smartSuffix}${listType ? ' [' + listType + ']' : ''}`);
 
-            // Deduplicação de email: se os dados são iguais ao envio anterior, não re-envia email
-            const dataTrimmed = dataToSave.trim();
-            const isDuplicate = (_lastEmailData !== null && dataTrimmed === _lastEmailData);
+            // Deduplicação de email: normalizar dados (linha endings + espaços) e aplicar cooldown de 30s
+            const dataFingerprint = dataToSave.trim().replace(/\r\n/g, '\n').replace(/\r/g, '\n').replace(/[ \t]+/g, ' ').replace(/\n +/g, '\n').replace(/ +\n/g, '\n');
+            const now = Date.now();
+            const cooldownMs = 30000; // 30 segundos de cooldown entre emails idênticos
+            const isDuplicate = (_lastEmailData !== null
+                && dataFingerprint === _lastEmailData
+                && (now - _lastEmailTime) < cooldownMs);
             let matchedRecipients;
             if (isDuplicate) {
-                console.log('📧 Dados idênticos ao envio anterior — email suprimido (duplicado)');
+                const secondsAgo = Math.round((now - _lastEmailTime) / 1000);
+                console.log(`📧 Dados idênticos ao envio anterior (há ${secondsAgo}s) — email suprimido (duplicado)`);
                 showInfo('📧 Email suprimido: dados idênticos ao anterior');
                 matchedRecipients = [];
             } else {
                 matchedRecipients = checkAndSendEmails(dataToSave, timestamp, filePrefix, sanitizedPrefix);
                 if (matchedRecipients.length > 0) {
-                    _lastEmailData = dataTrimmed;  // guardar para comparação futura
+                    _lastEmailData = dataFingerprint;  // guardar fingerprint para comparação futura
+                    _lastEmailTime = now;
                 }
             }
 
             if (shouldSaveFile) {
+                // Deduplicação de ficheiro: mesma normalização + cooldown de 30s
+                const isFileDuplicate = (_lastFileData !== null
+                    && dataFingerprint === _lastFileData
+                    && (now - _lastFileTime) < cooldownMs);
+                if (isFileDuplicate) {
+                    const secondsAgo = Math.round((now - _lastFileTime) / 1000);
+                    console.log(`💾 Dados idênticos ao ficheiro anterior (há ${secondsAgo}s) — guardação suprimida (duplicado)`);
+                } else {
                 let finalPrefix;
                 if (matchedRecipients.length > 0) {
                     // Destinatários configurados + concurso (se detectado)
@@ -5137,6 +5157,9 @@ function testEmail() {
                 const finalTimestamp = `${listLabel}_${timestamp}`.replace(/^_/, '');
                 saveToFile(dataToSave, finalTimestamp, format, finalPrefix, saveForBackgroundPrint);
                 showInfo(`💾 Arquivo salvo: ${finalPrefix}_${finalTimestamp}.txt`);
+                _lastFileData = dataFingerprint;
+                _lastFileTime = now;
+                }
             }
 
             if (prefs.autoPrint) {
