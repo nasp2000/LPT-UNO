@@ -4894,8 +4894,13 @@ function testEmail() {
         // Função: Extrair nome do concurso/prova dos dados recebidos
         // Função: Detectar tipo de lista (Encestamento / Chegada) — BRICON e UNIKON
         function extractListType(data) {
-            if (/Lista\s+de\s+Chegada/i.test(data))      return 'Chegada';
-            if (/Lista\s+de\s+Encestamento/i.test(data)) return 'Encestamento';
+            // Normalizar letras espaçadas do UNIKON (ex: "L I S T A   D E   C H E G A D A" → "LISTA DE CHEGADA")
+            const normalized = data.replace(/(\b\w)(?:\s+(\w))+/g, (match) => match.replace(/\s+/g, ''));
+            if (/Lista\s*de\s*Chegada/i.test(normalized) || /LISTA\s*DE\s*CHEGADA/i.test(normalized))      return 'Chegada';
+            if (/Lista\s*de\s*Encestamento/i.test(normalized) || /LISTA\s*DE\s*ENCESTAMENTO/i.test(normalized)) return 'Encestamento';
+            // Detetar pelo título UNIKON espaçado diretamente
+            if (/U\s*N\s*I\s*K\s*O\s*N\s*-\s*L\s*I\s*S\s*T\s*A\s*D\s*E\s*C\s*H\s*E\s*G\s*A\s*D\s*A/i.test(data)) return 'Chegada';
+            if (/U\s*N\s*I\s*K\s*O\s*N\s*-\s*L\s*I\s*S\s*T\s*A\s*D\s*E\s*E\s*N\s*C\s*E\s*S\s*T\s*A\s*M\s*E\s*N\s*T\s*O/i.test(data)) return 'Encestamento';
             return null;
         }
 
@@ -4973,7 +4978,7 @@ function testEmail() {
                         subject: (() => {
                             const contest  = extractContestName(data);
                             const listType = extractListType(data);
-                            const tipo = listType || 'Encestamento';
+                            const tipo = listType || 'Resultados';
                             return contest
                                 ? `LPT-UNO - ${tipo} ${contest}`
                                 : `LPT-UNO - ${fileName}`;
@@ -4981,9 +4986,11 @@ function testEmail() {
                         body: (() => {
                             const contest  = extractContestName(data);
                             const listType = extractListType(data);
-                            const tipo = listType ? listType.toLowerCase() : 'encestamento';
-                            const contestLine = contest
+                            const tipo = listType ? listType.toLowerCase() : null;
+                            const contestLine = contest && tipo
                                 ? `Segue em anexo os dados da lista de ${tipo} de ${contest}.`
+                                : contest
+                                ? `Segue em anexo os dados do concurso ${contest}.`
                                 : `Segue em anexo os dados recebidos pela impressora LPT-UNO.`;
                             return `Olá ${recipient.name},\n\n${contestLine}\n\n---\nEnviado automaticamente em ${new Date().toLocaleString('pt-PT')}`;
                         })(),
